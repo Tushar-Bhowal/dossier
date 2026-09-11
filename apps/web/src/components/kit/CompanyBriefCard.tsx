@@ -38,7 +38,7 @@ export function CompanyBriefCard({ editor }: { editor: KitEditor }) {
             <span className="text-xs font-medium text-muted-foreground">Sources</span>
             <ul className="flex flex-col gap-0.5">
               {brief.sources.map((s) => (
-                <li key={s} className="truncate text-xs text-muted-foreground">
+                <li key={s} className="min-w-0 truncate text-xs text-muted-foreground">
                   {s}
                 </li>
               ))}

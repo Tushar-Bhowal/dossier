@@ -153,3 +153,34 @@ export type RegenerateSection = "company_brief" | "requirements" | "flashcards" 
 export function regenerateSection(id: string, section: RegenerateSection): Promise<KitSummary> {
   return request<KitSummary>(`/kits/${id}/sections/${encodeURIComponent(section)}/regenerate`, { method: "POST" });
 }
+
+export type Confidence = "low" | "medium" | "high";
+
+export interface PracticeCard {
+  id: string;
+  front: string;
+  back: string;
+  requirement_ids: string[];
+  box: 1 | 2 | 3 | 4 | 5;
+  dueAt: string;
+  due: boolean;
+  covered: boolean;
+  lastConfidence: Confidence | null;
+  reviewedAt: string | null;
+}
+
+export interface PracticeSession {
+  daysRemaining: number;
+  cards: PracticeCard[];
+}
+
+export function getPracticeSession(kitId: string): Promise<PracticeSession> {
+  return request<PracticeSession>(`/kits/${kitId}/practice`);
+}
+
+export function recordPracticeReview(kitId: string, flashcardId: string, confidence: Confidence): Promise<PracticeSession> {
+  return request<PracticeSession>(`/kits/${kitId}/practice`, {
+    method: "POST",
+    body: JSON.stringify({ flashcardId, confidence }),
+  });
+}

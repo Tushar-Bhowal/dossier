@@ -1,11 +1,14 @@
 "use client";
 
 import type { Kit } from "@dossier/core";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { CompanyBriefCard } from "./CompanyBriefCard";
 import { RequirementsSection } from "./RequirementsSection";
 import { QuestionsBoard } from "./QuestionsBoard";
 import { FlashcardsSection } from "./FlashcardsSection";
+import { ScheduleView } from "./ScheduleView";
 import { useKitEditor } from "./useKitEditor";
 
 export function KitBuilder({ id, initial }: { id: string; initial: { kit: Kit; version: number } }) {
@@ -14,11 +17,16 @@ export function KitBuilder({ id, initial }: { id: string; initial: { kit: Kit; v
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{kit.role.title || "Untitled role"}</h1>
-        <p className="text-sm text-muted-foreground">
-          {kit.source.company} · {kit.role.seniority} · {kit.source.location}
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold tracking-tight text-balance">{kit.role.title || "Untitled role"}</h1>
+          <p className="text-sm text-muted-foreground">
+            {kit.source.company} · {kit.role.seniority} · {kit.source.location}
+          </p>
+        </div>
+        <Button asChild variant="outline" size="sm">
+          <Link href={`/kits/${id}/practice`}>Practice</Link>
+        </Button>
       </div>
 
       <CompanyBriefCard editor={editor} />
@@ -31,25 +39,7 @@ export function KitBuilder({ id, initial }: { id: string; initial: { kit: Kit; v
 
       <FlashcardsSection editor={editor} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">
-            Schedule ({kit.schedule.days_available} day{kit.schedule.days_available === 1 ? "" : "s"})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="flex flex-col gap-3">
-            {kit.schedule.days.map((d) => (
-              <li key={d.day} className="text-sm">
-                <span className="font-medium">Day {d.day}</span>{" "}
-                <span className="text-muted-foreground">
-                  — {d.focus} ({d.minutes} min, {d.question_ids.length} questions)
-                </span>
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
+      <ScheduleView kit={kit} />
 
       {kit.coverage.uncovered_requirement_ids.length > 0 ? (
         <Card>

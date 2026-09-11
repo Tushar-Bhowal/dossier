@@ -131,8 +131,62 @@ making its own tool choices. Using it would have argued against the thing being 
 
 ## Setup
 
-*(Pending — filled in once the batch CLI (Task 19) and deployment (Task 32) exist. Until then:
-`npm install && npm run typecheck && npm test` from the repo root.)*
+### Local development
+
+```
+npm install
+cp .env.example .env   # fill in the values below
+npm run typecheck
+npm run lint
+cd apps/web && npm run dev   # http://localhost:3000 — serves both the app and /api/v1/*
+```
+
+`apps/web` must run on webpack, not Turbopack (`next dev --webpack`, already the default in its
+`package.json`) — this monorepo's NodeNext-style relative `.js`-pointing-at-`.ts` imports are a
+confirmed Turbopack limitation. If a route 500s with a stale webpack module error after pulling new
+changes, `rm -rf apps/web/.next` first.
+
+### Environment variables (`.env.example`)
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `GEMINI_API_KEY` | Yes | Google Gemini API key — every generation/extraction/coverage LLM call |
+| `LLM_RPM` / `LLM_TPM` | No (defaults set) | Requests/tokens-per-minute the shared rate limiter enforces in front of Gemini calls — match your key's tier |
+| `TAVILY_API_KEY` | No | Public interview-discussion search; unset falls through silently to the keyless DuckDuckGo/Reddit fallback |
+| `MONGODB_URI` | Yes | MongoDB Atlas connection string (M0 free tier works) — needs `0.0.0.0/0` network access for serverless functions |
+| `MONGODB_DB` | No (defaults to `dossier`) | Database name |
+| `JWT_SECRET` | Yes | Signs session JWTs — any long random string; rotating it invalidates every existing session |
+| `ALLOW_PRIVATE_HOSTS` | No — **never set in a deployed environment** | CLI-only escape hatch so the batch command can crawl a company site served from `localhost` (§9's fixture requirement). Read only by `tools/evaluate`, never by `apps/api` — §11's private/loopback rejection always holds in the deployed app regardless of this variable |
+
+### Batch CLI
+
+```
+npm run evaluate -- --input cases.json --output kits.json
+```
+
+Runs from a clean clone with only `npm install` and the env vars above — no separate build step.
+Uses the same retrieval/generation/validation pipeline (`packages/core`) as the web app, not a
+parallel implementation.
+
+### Deploying to Vercel
+
+One Vercel project serves both `apps/web` and the Express API mounted under it (§ Architecture) —
+there is no separate backend deployment.
+
+```
+vercel login
+vercel link
+vercel env add GEMINI_API_KEY production   # repeat for MONGODB_URI, MONGODB_DB, JWT_SECRET, TAVILY_API_KEY
+vercel --prod
+```
+
+Do **not** set `ALLOW_PRIVATE_HOSTS` in the Vercel environment — its absence is what keeps §11's
+private-address rejection active in production; it's a CLI-only escape hatch the batch command uses
+to reach the local-address test fixtures, and `apps/api` never reads it regardless. After deploying,
+confirm: `/api/v1/health` responds on the same public URL as the app; a signed-out visitor is
+redirected away from a protected page or gets a 401 from a protected endpoint; and login round-trips
+the session cookie in a fresh browser profile (proving the same-origin delegation from Task 2 holds
+under Vercel's serverless runtime, not just `next dev`).
 
 ## Known limitations
 

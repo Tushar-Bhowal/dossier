@@ -38,11 +38,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="border-b border-border">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-3">
+        <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3">
           <Link href="/kits" className="font-semibold tracking-tight">
             Dossier
           </Link>
-          <nav className="flex items-center gap-3">
+          <nav className="flex flex-wrap items-center gap-3">
             <Link href="/kits" className="text-sm text-muted-foreground hover:text-foreground">
               Kits
             </Link>
