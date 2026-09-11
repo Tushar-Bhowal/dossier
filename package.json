@@ -10,7 +10,8 @@
   "scripts": {
     "test": "vitest run",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit -p tsconfig.json && npm run typecheck --workspaces --if-present"
+    "typecheck": "tsc --noEmit -p tsconfig.json && npm run typecheck --workspaces --if-present",
+    "evaluate": "tsx tools/evaluate/src/main.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

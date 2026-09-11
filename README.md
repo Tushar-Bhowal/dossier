@@ -207,3 +207,141 @@ architecture doc's retrieval rationale.)*
 requirement rules, link ranking, and Leitner spacing — are pure, unit-tested (63 tests, including
 three property tests over hundreds of randomized trials each), and built before a single line of
 network code. Phase 1 (the actual pipeline — LLM calls, crawling, search) starts next.
+- Ports + in-memory fakes (`packages/core/src/ports/{llm,fetcher,search,runStore,clock}.ts`,
+  `tests/fixtures/fakes/*`) define every seam between `domain/` and the outside world: an `LlmPort`
+  that takes a Zod schema and returns validated, typed output (so `core` never imports a provider
+  SDK), a `FetchPort` that returns structured results or throws a typed `FetchPortError` carrying a
+  machine-readable reason, a `SearchPort`, a `RunStore` matching the run-document shape the durable
+  runner will use, and an injectable `Clock`. Every port has a hand-rolled in-memory fake — no
+  mocking library — so pipeline and runner tests never touch the network, an LLM, or a database. A
+  dedicated test asserts nothing under `domain/` imports `fs`, `http`, `net`, `dns`, or `fetch`,
+  enforcing the pure/impure boundary as a check rather than a convention.
+- Gemini adapter (`adapters/llm/{geminiClient,rateLimiter}.ts`) — the real `LlmPort` implementation,
+  calling Gemini's REST `generateContent` endpoint directly over the platform `fetch` (no SDK
+  dependency added). Every call sets `responseSchema` from the caller's Zod schema (via Zod 4's
+  built-in `z.toJSONSchema`, sanitized to the subset Gemini accepts), so the model's output is
+  type-constrained rather than free-form prose — the strongest single defence against prompt
+  injection from crawled pages, used on every call. A response that still fails schema validation
+  gets exactly one repair attempt (a follow-up call showing the model its own bad output and the
+  validation errors), then is reported as a failure rather than persisted. A shared `RateLimiter`
+  sits in front of every call, enforcing both requests-per-minute and an estimated tokens-per-minute
+  budget (`chars/4` in, `maxOutputTokens` out) across all concurrent callers — reservations are
+  chained through a promise queue so concurrent batch cases are admitted strictly in arrival order
+  instead of racing the same window state. On `429`/`5xx`, the client honours Gemini's `retry-delay`
+  when present, otherwise backs off exponentially with full jitter, capped at 30s, for up to 5
+  attempts, and a fully exhausted retry budget surfaces as a typed `LlmCallError` rather than an
+  unhandled rejection. `LLM_RPM`/`LLM_TPM` are read from the environment (`.env.example`), not
+  hard-coded, so a free-tier change is a config edit.
+- HTTP fetcher (`adapters/fetch/{httpFetcher,urlPolicy,htmlToText}.ts`) — the real `FetchPort`,
+  built entirely on Node's global `fetch` (no `axios`, no `undici` install, zero HTTP dependencies).
+  `urlPolicy.ts` is the SSRF gate: scheme restricted to http/https, hostnames resolved via DNS (IP
+  literals skip the lookup) and checked against private, loopback, link-local and CGNAT ranges —
+  gated by `ALLOW_PRIVATE_HOSTS`, which the batch CLI sets (its fixture "company sites" run on
+  localhost, §9) and a real deployment never does (§11). `httpFetcher.ts` follows redirects manually
+  and **re-validates the target through the same gate after every hop**, so a redirect can't smuggle
+  a private-IP target past the first check — closing the DNS-rebinding window a `redirect: 'follow'`
+  fetch would leave open. The response body is read as a stream and aborted the instant it crosses a
+  2MB cap, `AbortSignal.timeout` bounds every request to 8s, `Content-Type` is allowlisted
+  (`text/html`/`text/plain`/`application/xhtml+xml`/`application/xml`), and `robots.txt` is parsed
+  (wildcard user-agent group only) and cached per fetcher instance, i.e. per run. A small per-host
+  limiter spaces out requests to the same host regardless of how many crawl workers are calling in.
+  `htmlToText.ts` strips scripts/styles/nav/hidden elements and decodes entities via regex rather
+  than a DOM-parser dependency — acceptable because the output only ever reaches an LLM prompt as
+  fenced, untrusted data, never rendered — and caps output at ~6k chars (§11's token-budget win). Its
+  `extractLinks` resolves every `href` against the page's own URL, so relative links crawled off a
+  real site come back as absolute URLs the crawler (Task 12) can queue directly.
+- Crawler + hiring-page discovery (`pipeline/steps/{crawlCompany,discoverHiringPages}.ts`) — the
+  first real pipeline steps, composed from Tasks 9-11's ports rather than reaching for I/O directly.
+  `crawlCompany` fetches the homepage and `sitemap.xml`, collecting every same-origin link (with
+  anchor text, for scoring) from both; either failing is recorded in `sourcesSkipped` and the crawl
+  continues, never throws. `discoverHiringPages` scores the collected links with `domain/linkRanker`
+  (never a fixed list of paths, §2), fetches the top 8 at concurrency 2, then asks a cheap
+  `flash-lite` call to re-rank the *fetched* shortlist by actual content — returning indices into
+  the array we built, never URLs, so a page's own content cannot introduce a new fetch target
+  (§11's prompt-injection defence #5). Whichever fetched page the model considers closest to hiring
+  content becomes the anchor for one further hop (depth 2 maximum) — this is what finds a genuine
+  interview-process page one level below a merely-relevant page like "About", which a page found
+  only from the sitemap or homepage would miss entirely. No hiring page found is treated as a normal
+  outcome and reported honestly, never thrown as an error.
+- Search adapter chain (`adapters/search/{tavily,keylessFallback}.ts`,
+  `pipeline/steps/searchPublicDiscussion.ts`) — finds public discussion of a company's interview
+  process outside its own site. `TavilySearchAdapter` calls Tavily's API; `KeylessSearchAdapter` is
+  the no-API-key fallback, running DuckDuckGo's HTML search and Reddit's public `.json` search in
+  parallel and combining whatever succeeds, only failing if both are unreachable — no scraping
+  dependency added, just `fetch` and regex/JSON parsing. `createSearchChain` composes the two:
+  no `TAVILY_API_KEY` configured falls through to the keyless adapter silently, and a configured key
+  that errors at call time falls back the same way, so a Tavily outage never costs the run its only
+  search path. `searchPublicDiscussion` wraps the whole chain in one more layer of "a missing source
+  is not a failed kit" (§2) — total failure is recorded as a gap and the pipeline continues, never
+  throws.
+- Step: extract requirements (`pipeline/steps/extractRequirements.ts`, `prompts/extractRequirements.ts`)
+  — the first pipeline step wiring an LLM call to a domain rule (Task 7). The model returns
+  candidates with a verbatim `quote`; `verifyAgainstSource` drops anything whose quote isn't
+  actually in the JD before an id is ever minted, so a hallucinated requirement never reaches a real
+  `Requirement` object. Fewer than 3 verified requirements is flagged `thin: true` — an honest signal
+  for a sparse JD, not a failure to paper over.
+- Step: company brief (`pipeline/steps/generateCompanyBrief.ts`,
+  `prompts/generateCompanyBrief.ts`) — `sources` is built in code from the URLs actually fetched by
+  Tasks 12-13, never trusted from the model's own output, so a hallucinated citation is structurally
+  impossible. When nothing was reachable at all (no crawled pages, no search results), the step
+  skips the LLM call entirely and returns an explicitly honest brief saying so — the extreme end of
+  the "thin JD" philosophy applied to retrieval rather than extraction.
+- Step: question generation (`pipeline/steps/generateQuestions.ts`, `prompts/questions.*.ts`) — one
+  LLM call per category, each with its own prompt file and its own slice of the requirements, exactly
+  as §3 requires ("5 years of React" and "mentoring junior engineers" reach different calls with
+  different instructions). `technical`/`behavioural` are skipped entirely (no call made) when there
+  are no matching requirements to ask about. `system-design` is gated on the JD reading senior
+  *and* technical requirement density — a two-line junior JD never gets a system-design call.
+  `company-fit` always runs, fed the brief plus whatever hiring-process material Tasks 12-13 found.
+  Every category filters `requirement_ids` down to ids the step actually handed the model — an
+  invented id is dropped the same way an invented requirement was in Task 14.
+- Steps: coverage check, gap-fill loop, flashcards (`pipeline/steps/{checkCoverage,fillCoverageGaps,generateFlashcards}.ts`)
+  — `checkCoverage` (step-level) wraps `domain/coverage.ts`'s pure set-difference with no LLM
+  involved, exposed under the name `evaluateCoverage` specifically to avoid colliding with the
+  domain function of the same name once both are re-exported from the package's public surface (an
+  `export *` collision that silently resolves to `undefined` rather than a build error — caught by
+  its own step-level test failing, not by the type checker). `fillCoverageGaps` runs up to 3 targeted
+  passes, stopping the moment every `must` requirement is covered; uncovered `nice` requirements are
+  reported honestly and never chased. A `must` still bare after pass 3 gets a deterministic template
+  question (`origin: 'template'`) instead of shipping with a hole in the one thing that actually
+  matters. `generateFlashcards` is a single cheap `flash-lite` call over the final requirement list,
+  skipped entirely when there are no requirements to make cards from.
+- The runner + step graph (`pipeline/{definition,runner}.ts`) — `definition.ts` wires the real
+  steps from Tasks 12-17 plus the deterministic schedule builder (Task 5) into one ordered graph,
+  each step tagged `critical` or not. `runner.ts` is the durable executor both the API (Task 22) and
+  the batch CLI (Task 19) share: it persists a `RunRecord` after every step via `RunStore`, rebuilds
+  pipeline context on resume by replaying every already-`ok` step's stored output (so nothing already
+  paid for gets redone), and picks resume back up at the first step that isn't `ok` or `skipped` —
+  `skipped` is treated as a resolved, terminal outcome so a permanently-unreachable source doesn't
+  get retried forever, while a crashed `running` step or a `failed` one does. A non-critical step's
+  failure is recorded `skipped` with a note and the run continues; a critical step's failure fails
+  the whole run (but stays retryable on the next call). A wall-clock budget check before each step
+  returns `partial` instead of blocking past it — the CLI runs the exact same function with
+  `budgetMs: Infinity`, so there is no separate "batch mode" code path to keep in sync.
+- Batch CLI (`tools/evaluate/src/main.ts`, `npm run evaluate`) — §9's fastest dev loop, built early
+  rather than saved for last. `npm run evaluate -- --input cases.json --output kits.json` runs
+  straight from TypeScript source via `tsx` (no build step), validates the input against
+  `BatchInput`, and processes cases at concurrency 2 through one shared `RateLimiter` and `RunStore`
+  so parallel cases queue rather than stampede. SSRF protection stays **on** by default even for
+  batch runs; `--allow-private-hosts` is an explicit opt-in flag for localhost fixture company
+  sites (§9 vs §11) — it is never turned on for the whole run unconditionally. Each case runs the
+  exact same `runPipeline` the API
+  will use (`budgetMs: Infinity`), then `assembleKit` turns the finished context into a real `Kit`
+  and `Kit.safeParse` validates it before it's ever written — an invalid kit is reported `failed`
+  with a code, same as a pipeline failure, never silently written. One case failing never stops the
+  others or crashes the batch; the output is a schema-valid `BatchOutput` with one `BatchKitResult`
+  per input case. `packages/core/src/pipeline/assembleKit.ts` derives the few Appendix A fields with
+  no dedicated extraction step in this phase (company name from the URL, role title from the JD's
+  own first line, location from a "Location:" line if present) honestly as "Not specified" rather
+  than inventing them when absent. **The 5-cases-in-15-minutes timing requirement (§9) needs a real
+  `GEMINI_API_KEY` and live network access to measure** — neither is available in this build
+  environment, so that number has not yet been measured against the live API and is a follow-up
+  before submission, per the architecture doc's own risk-table advice to measure it days early.
+- Post-Phase-1 security review fixed: batch CLI no longer force-disables SSRF protection, IPv6
+  loopback/link-local literals (bracketed or DNS-resolved) are actually checked, `robots.txt`
+  fetches are size-capped, hop-2 crawl links are origin-restricted, the Gemini key travels as a
+  header not a query param, and a malformed `LLM_RPM`/`LLM_TPM` no longer hangs the process.
+  **Known accepted limitation:** the SSRF gate resolves DNS once for its check and once again for
+  the actual `fetch` — a TTL-0 DNS-rebinding attacker could theoretically answer differently between
+  the two lookups. Closing this fully needs pinning the validated IP through to the socket (a custom
+  `fetch` dispatcher), not done in this phase.
