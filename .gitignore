@@ -9,3 +9,5 @@ coverage/
 .DS_Store
 .claude/plans/
 .claude/handoff.md
+apps/web/AGENTS.md
+apps/web/CLAUDE.md

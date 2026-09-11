@@ -1,5 +1,5 @@
 {
-  "name": "ai-interview-kit",
+  "name": "dossier",
   "private": true,
   "type": "module",
   "workspaces": [
@@ -10,7 +10,7 @@
   "scripts": {
     "test": "vitest run",
     "lint": "eslint .",
-    "typecheck": "npm run typecheck --workspaces --if-present"
+    "typecheck": "tsc --noEmit -p tsconfig.json && npm run typecheck --workspaces --if-present"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

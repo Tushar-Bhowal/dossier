@@ -1,11 +1,11 @@
 {
-  "name": "@kit/evaluate",
+  "name": "@dossier/evaluate",
   "private": true,
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@kit/core": "*"
+    "@dossier/core": "*"
   }
 }

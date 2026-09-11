@@ -1,5 +1,5 @@
 {
-  "name": "@kit/api",
+  "name": "@dossier/api",
   "private": true,
   "type": "module",
   "main": "./src/app.ts",
@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@kit/core": "*",
+    "@dossier/core": "*",
     "express": "^5.2.1"
   },
   "devDependencies": {
