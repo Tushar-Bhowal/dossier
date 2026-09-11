@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.next/
+.vercel/
+.env
+.env.local
+*.local
+coverage/
+.DS_Store
+.claude/plans/
+.claude/handoff.md
