@@ -31,7 +31,9 @@ const ResponseSchema = z.object({ questions: z.array(QuestionCandidateSchema) })
 const SENIOR_PATTERN = /\b(senior|staff|principal|lead|architect)\b/i;
 const TECHNICAL_DENSITY_THRESHOLD = 3;
 
-async function generateCategory(
+// Exported so a single-category regeneration (Task 23) can call the exact same generation logic
+// as the initial fan-out, rather than a parallel implementation.
+export async function generateCategory(
   llm: LlmPort,
   category: Question['category'],
   system: string,

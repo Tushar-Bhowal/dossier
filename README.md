@@ -345,3 +345,27 @@ network code. Phase 1 (the actual pipeline — LLM calls, crawling, search) star
   the actual `fetch` — a TTL-0 DNS-rebinding attacker could theoretically answer differently between
   the two lookups. Closing this fully needs pinning the validated IP through to the socket (a custom
   `fetch` dispatcher), not done in this phase.
+- Next.js shell (Task 24): dark-only theme via shadcn's "Nova" preset tokens collapsed onto `:root`
+  (`apps/web/src/app/globals.css`), all pairs checked ≥4.5:1 by script. `MotionConfig
+  reducedMotion="user"` + a TanStack Query client in `app/providers.tsx`. Typed fetch wrapper in
+  `lib/api.ts` (throws `ApiError{code,message}`). `(auth)/login`, `(auth)/register` call the auth
+  endpoints; `(app)/layout.tsx` gates on `GET /auth/me` client-side, redirecting signed-out visitors
+  without flashing content. **Found `next dev`/`next build` (Turbopack, the Next 16 default) cannot
+  resolve `apps/api`'s and `packages/core`'s `./foo.js`-style relative imports to their `.ts` files —
+  Turbopack has no `extensionAlias` support (explicitly unimplemented per Next's own turbopack-warning
+  list), so every Express route import failed to bundle.** Fixed entirely inside `apps/web`: `next dev
+  --webpack` / `next build --webpack` (`package.json` scripts) plus `experimental.extensionAlias` in
+  `next.config.ts`, which webpack's resolver honours. No import in `apps/api`/`packages/core` changed.
+- Create-kit flow (Task 25): `app/(app)/kits/new/page.tsx` — single-kit tab (JD/URL/days →
+  `POST /runs` → routes to the run page) and a bulk-upload tab (JSON array of
+  `{jd, company_url, days}`, validated client-side row by row with specific messages, then started
+  at concurrency 2 with per-row status/links, server 400s surfaced per row).
+- Run progress UI (Task 26): `app/(app)/runs/[id]/page.tsx` polls `GET /runs/:id` every 1.5s, stops
+  on `succeeded`/`failed`, auto-calls `POST /runs/:id/resume` on `partial`.
+  `components/run/{StepList,SkippedSources,FailureState}.tsx` — step dots animate via `motion`
+  (respecting reduced-motion through the global `MotionConfig`), skipped steps read "skipped: note"
+  rather than as errors, failed runs show a manual resume button. `app/(app)/kits/[id]/page.tsx` is
+  the minimal read-only kit view (brief, requirements, questions, flashcards, schedule) Task 26 needed
+  and the next agent's builder will replace. No `GEMINI_API_KEY`/`MONGODB_URI` were available in this
+  environment, so the live generation path is unverified beyond code review and the auth error-path
+  smoke test (a 401/500 from `/auth/*` renders correctly end to end through the delegation route).
