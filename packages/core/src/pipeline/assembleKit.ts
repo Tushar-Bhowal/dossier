@@ -1,28 +1,45 @@
 import type { Clock } from '../ports/clock.js';
 import type { Kit } from '../contracts/kit.js';
+import { deriveCompanyName } from '../domain/companyName.js';
 import type { PipelineContext } from './definition.js';
 
 const SENIOR_PATTERN = /\b(senior|staff|principal|lead|architect)\b/i;
 
-function deriveCompanyName(companyUrl: string): string {
-  try {
-    const hostname = new URL(companyUrl).hostname.replace(/^www\./, '');
-    const label = hostname.split('.')[0] ?? hostname;
-    return label.charAt(0).toUpperCase() + label.slice(1);
-  } catch {
-    return 'Unknown company';
-  }
-}
-
 // The JD's own first line is almost always its title, and a "Location:" line is a common
 // convention — both are honest, extracted facts. Anything not actually found says so plainly
 // rather than guessing (§5's "never invent" applied to the fields extraction doesn't cover).
-function deriveRoleTitle(jdText: string): string {
-  const firstLine = jdText
+// Postings routinely open with a section heading rather than the job title, so taking line 1
+// verbatim yields titles like "About The Role:". Headings are skipped, then the title is read from
+// the posting's own phrasing — and when neither is there it says so instead of promoting a sentence.
+const HEADING_PATTERN =
+  /^(about|job|role|position|overview|summary|introduction|responsibilities|key responsibilities|requirements|qualifications|what you|who you|description)\b/i;
+
+const TITLE_FROM_SENTENCE =
+  /\b(?:looking for|hiring|seeking|recruiting)\s+(?:an?\s+)?([^.,\n]{3,60}?)(?=\s+(?:who|whom|that|to|with|for|in|at)\b|[.,\n])/i;
+
+function looksLikeHeading(line: string): boolean {
+  return line.endsWith(':') || HEADING_PATTERN.test(line);
+}
+
+function looksLikeTitle(line: string): boolean {
+  // A title is a short noun phrase, not prose: sentence punctuation or a narrative opener means
+  // we are looking at the body copy, not the role name.
+  return line.length <= 80 && !line.endsWith('.') && !/^(we|you|our|the team|this role)\b/i.test(line);
+}
+
+export function deriveRoleTitle(jdText: string): string {
+  const lines = jdText
     .split('\n')
     .map((line) => line.trim())
-    .find((line) => line.length > 0);
-  return firstLine && firstLine.length <= 120 ? firstLine : 'Not specified';
+    .filter((line) => line.length > 0);
+
+  // A real title, when present, is at the very top — scanning deeper starts matching bullet points.
+  for (const line of lines.slice(0, 3)) {
+    if (!looksLikeHeading(line) && looksLikeTitle(line)) return line;
+  }
+
+  const fromSentence = jdText.match(TITLE_FROM_SENTENCE)?.[1]?.trim();
+  return fromSentence && fromSentence.length > 0 ? fromSentence : 'Not specified';
 }
 
 function deriveLocation(jdText: string): string {

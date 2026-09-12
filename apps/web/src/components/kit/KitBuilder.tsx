@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CompanyBriefCard } from "./CompanyBriefCard";
+import { EditableField } from "./EditableField";
+import { editRoleTitle } from "./kitMutations";
 import { RequirementsSection } from "./RequirementsSection";
 import { QuestionsBoard } from "./QuestionsBoard";
 import { FlashcardsSection } from "./FlashcardsSection";
@@ -18,8 +20,16 @@ export function KitBuilder({ id, initial }: { id: string; initial: { kit: Kit; v
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight text-balance">{kit.role.title || "Untitled role"}</h1>
+        <div className="min-w-0 flex-1">
+          <EditableField
+            value={kit.role.title}
+            onChange={(value) => editor.editField("role.title", editRoleTitle(value))}
+            status={editor.status["role.title"]}
+            ariaLabel="Role title"
+            placeholder="Untitled role"
+            rows={1}
+            className="border-transparent bg-transparent px-0 text-2xl font-semibold tracking-tight md:text-2xl"
+          />
           <p className="text-sm text-muted-foreground">
             {kit.source.company} · {kit.role.seniority} · {kit.source.location}
           </p>

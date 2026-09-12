@@ -28,6 +28,16 @@ export function editCompanyBriefField(field: "summary" | "what_they_do", value: 
   });
 }
 
+export function editRoleTitle(value: string) {
+  return (kit: Kit): Kit => ({
+    ...kit,
+    role: { ...kit.role, title: value },
+    // source.role carries the same title in Appendix A, so leaving it behind would make the kit
+    // disagree with itself about what the role is called.
+    source: { ...kit.source, role: value },
+  });
+}
+
 export function editRequirementText(id: string, value: string) {
   return (kit: Kit): Kit => ({
     ...kit,
