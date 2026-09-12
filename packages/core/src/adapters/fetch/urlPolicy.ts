@@ -101,8 +101,10 @@ export async function assertUrlAllowed(rawUrl: string, options: UrlPolicyOptions
     ? [hostname]
     : (await dns.lookup(hostname, { all: true }).catch(() => [])).map((r) => r.address);
 
+  // A name that doesn't resolve is a typo or a dead domain, not a host we refused on §11 grounds —
+  // reporting it as 'blocked-host' told the user we had blocked their company URL for security.
   if (ips.length === 0) {
-    throw new FetchPortError(`could not resolve host: ${hostname}`, 'blocked-host');
+    throw new FetchPortError(`could not resolve host: ${hostname}`, 'unresolvable-host');
   }
   if (ips.some(isBlockedIp)) {
     throw new FetchPortError(`blocked host: ${hostname} resolves to a private/loopback/CGNAT address`, 'blocked-host');

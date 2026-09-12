@@ -127,6 +127,12 @@ export async function runPipeline(options: RunPipelineOptions): Promise<RunRecor
       runStep.endedAt = nowIso(clock);
       runStep.output = output;
       delete runStep.error;
+      const note = stepDef.note?.(ctx);
+      if (note) {
+        runStep.note = note;
+      } else {
+        delete runStep.note;
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       runStep.endedAt = nowIso(clock);

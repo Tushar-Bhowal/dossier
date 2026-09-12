@@ -10,6 +10,7 @@ export interface FetchResult {
 // sourcesSkipped entry without needing to inspect error internals.
 export type FetchFailureReason =
   | 'blocked-host'
+  | 'unresolvable-host'
   | 'disallowed-scheme'
   | 'robots-disallowed'
   | 'unsupported-content-type'

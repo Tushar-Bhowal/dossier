@@ -69,6 +69,12 @@ export interface StepDefinition {
   // source is not a failed kit). A critical step failing fails the whole run.
   critical: boolean;
   run: (ctx: PipelineContext, deps: PipelineDeps) => Promise<Partial<PipelineContext>>;
+  // Read against the resulting context after the step succeeds. A step that completes correctly
+  // but comes back with nothing usable can say so here, so the run view reports what actually
+  // happened instead of an unqualified green check. Throwing instead would be wrong: a step that
+  // handled an unreachable source did not fail, and a throw discards its sourcesSkipped output —
+  // the very diagnostic that explains the gap.
+  note?: (ctx: PipelineContext) => string | undefined;
 }
 
 // The ordered step graph (§3's sequencing diagram), wired from the real step functions built in
@@ -95,6 +101,10 @@ export function createPipelineSteps(): StepDefinition[] {
           sourcesSkipped: [...ctx.sourcesSkipped, ...result.sourcesSkipped],
         };
       },
+      note: (ctx) =>
+        ctx.homepage === null && ctx.crawlLinks.length === 0
+          ? 'The company site could not be reached — this kit was built from the job description alone.'
+          : undefined,
     },
     {
       name: 'discoverHiringPages',
