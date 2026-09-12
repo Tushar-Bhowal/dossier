@@ -24,7 +24,7 @@ export function CategoryColumn({ category, label, questions, editor }: CategoryC
   const sectionKey = `questions:${category}`;
 
   return (
-    <Card className="flex h-full flex-col">
+    <Card className="flex h-full min-w-0 flex-col">
       <SectionHeader
         title={`${label} (${questions.length})`}
         onRegenerate={() => void editor.regenerate(`questions:${category}`, sectionKey)}
