@@ -10,9 +10,12 @@ const FLASHCARDS_SYSTEM =
 
 function buildFlashcardsPrompt(requirements: Requirement[]): string {
   const listing = requirements.map((r) => `- [${r.id}] ${r.text} (${r.priority})`).join('\n');
+  // Bounded for the same reason as question generation: "one or more per requirement" over a long
+  // requirement list overruns maxOutputTokens and the JSON comes back truncated mid-string.
+  const maxFlashcards = Math.min(Math.max(requirements.length, 5), 20);
   return (
     'Write flashcards covering the requirements below — favour quality and memorability over ' +
-    'quantity, one or more per requirement as useful. For each, return front, back, and ' +
+    `quantity. Return at most ${maxFlashcards} flashcards. For each, return front, back, and ` +
     'requirement_ids (ids from the list below this flashcard covers).\n\n' +
     `--- REQUIREMENTS ---\n${listing}\n--- END REQUIREMENTS ---`
   );
@@ -37,7 +40,7 @@ export async function generateFlashcards(llm: LlmPort, requirements: Requirement
     system: FLASHCARDS_SYSTEM,
     prompt: buildFlashcardsPrompt(requirements),
     schema: ResponseSchema,
-    maxOutputTokens: 2048,
+    maxOutputTokens: 4096,
   });
 
   const validRequirementIds = new Set(requirements.map((r) => r.id));

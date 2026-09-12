@@ -208,6 +208,16 @@ export class GeminiClient implements LlmPort {
       const reason = candidate?.finishReason ?? 'unknown';
       throw new LlmCallError(`Gemini response contained no text candidate (finishReason: ${reason})`);
     }
+    // MAX_TOKENS comes back *with* partial text — JSON cut off mid-value. Left undetected it reads
+    // as a schema failure, and the repair attempt then re-sends the truncated text under the same
+    // ceiling and truncates again. The budget is the bug, so fail here rather than pay for a second
+    // call that cannot succeed.
+    if (candidate?.finishReason === 'MAX_TOKENS') {
+      const limit = params.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS;
+      throw new LlmCallError(
+        `Gemini hit maxOutputTokens (${limit}) and returned truncated JSON — raise the limit for this step or bound how much it is asked to produce`,
+      );
+    }
     return text;
   }
 }

@@ -4,6 +4,7 @@ import type { SearchPort, SearchResult } from '../ports/search.js';
 import type { SourceSkipped } from '../ports/runStore.js';
 import type { CompanyBrief, Flashcard, Question, Requirement, Schedule } from '../contracts/kit.js';
 import { buildSchedule } from '../domain/schedule.js';
+import { deriveCompanyName } from '../domain/companyName.js';
 import { crawlCompany, type CrawledPage } from './steps/crawlCompany.js';
 import { discoverHiringPages } from './steps/discoverHiringPages.js';
 import { searchPublicDiscussion } from './steps/searchPublicDiscussion.js';
@@ -115,7 +116,12 @@ export function createPipelineSteps(): StepDefinition[] {
       name: 'searchPublicDiscussion',
       critical: false,
       async run(ctx, deps) {
-        const result = await searchPublicDiscussion(deps.search, `${ctx.companyUrl} interview process`);
+        // The company *name*, not the raw URL — searching for "https://acme.com/ interview
+        // process" matches almost nothing, since discussion threads name the company, not its URL.
+        const result = await searchPublicDiscussion(
+          deps.search,
+          `${deriveCompanyName(ctx.companyUrl)} interview process`,
+        );
         return {
           searchResults: result.results,
           sourcesSkipped: [...ctx.sourcesSkipped, ...result.sourcesSkipped],

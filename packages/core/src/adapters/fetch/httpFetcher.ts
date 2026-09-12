@@ -2,7 +2,15 @@ import type { Clock } from '../../ports/clock.js';
 import { FetchPortError, type FetchPort, type FetchResult } from '../../ports/fetcher.js';
 import { assertUrlAllowed } from './urlPolicy.js';
 
-const ALLOWED_CONTENT_TYPES = ['text/html', 'text/plain', 'application/xhtml+xml', 'application/xml'];
+// text/xml belongs here alongside application/xml: it is what most servers actually serve
+// sitemap.xml as, and omitting it silently cost us the sitemap — often the highest-yield source.
+const ALLOWED_CONTENT_TYPES = [
+  'text/html',
+  'text/plain',
+  'text/xml',
+  'application/xhtml+xml',
+  'application/xml',
+];
 const DEFAULT_MAX_BYTES = 2 * 1024 * 1024;
 const DEFAULT_TIMEOUT_MS = 8000;
 const DEFAULT_MAX_REDIRECTS = 3;

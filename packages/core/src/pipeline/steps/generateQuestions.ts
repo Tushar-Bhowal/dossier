@@ -42,12 +42,17 @@ export async function generateCategory(
   mintId: () => string,
   startOrder: number,
 ): Promise<Question[]> {
+  // Output size has to be predictable. Nothing capped the question count, so a JD with many
+  // requirements produced a response longer than maxOutputTokens and came back as JSON truncated
+  // mid-string. Bounding the ask and raising the ceiling together keeps a long JD inside the budget.
+  const maxQuestions = Math.min(Math.max(validRequirementIds.size, 3), 10);
+
   const { questions } = await llm.generate({
     model: 'flash',
     system,
-    prompt,
+    prompt: `${prompt}\n\nReturn at most ${maxQuestions} questions.`,
     schema: ResponseSchema,
-    maxOutputTokens: 2048,
+    maxOutputTokens: 4096,
   });
 
   return questions.map((q, index) => ({
