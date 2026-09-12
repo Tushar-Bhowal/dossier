@@ -19,8 +19,8 @@ function skipReason(err: unknown): string {
   return err instanceof FetchPortError ? err.reason : 'unknown-error';
 }
 
-async function fetchSitemapLinks(fetcher: FetchPort, origin: string, sourcesSkipped: SourceSkipped[]): Promise<ExtractedLink[]> {
-  const sitemapUrl = `${origin}/sitemap.xml`;
+async function fetchSitemapLinks(fetcher: FetchPort, companyUrl: string, origin: string, sourcesSkipped: SourceSkipped[]): Promise<ExtractedLink[]> {
+  const sitemapUrl = new URL('sitemap.xml', companyUrl).href;
   try {
     const result = await fetcher.fetch(sitemapUrl);
     const locs = [...result.text.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/gi)].map((m) => m[1]!.trim());
@@ -55,7 +55,7 @@ export async function crawlCompany(fetcher: FetchPort, companyUrl: string): Prom
   let homepage: CrawledPage | null = null;
   let homepageLinks: ExtractedLink[] = [];
   try {
-    const result = await fetcher.fetch(`${origin}/`);
+    const result = await fetcher.fetch(companyUrl);
     homepage = { url: result.finalUrl, text: htmlToText(result.text) };
     homepageLinks = extractAnchors(result.text, result.finalUrl).filter((link) => {
       try {
@@ -65,10 +65,10 @@ export async function crawlCompany(fetcher: FetchPort, companyUrl: string): Prom
       }
     });
   } catch (err) {
-    sourcesSkipped.push({ url: `${origin}/`, reason: skipReason(err) });
+    sourcesSkipped.push({ url: companyUrl, reason: skipReason(err) });
   }
 
-  const sitemapLinks = await fetchSitemapLinks(fetcher, origin, sourcesSkipped);
+  const sitemapLinks = await fetchSitemapLinks(fetcher, companyUrl, origin, sourcesSkipped);
 
   const seen = new Set<string>();
   const links: ExtractedLink[] = [];

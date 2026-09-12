@@ -50,6 +50,25 @@ describe('crawlCompany', () => {
     ]);
   });
 
+  it('crawls the given path, not just the host origin', async () => {
+    const fetcher = new FakeFetchPort();
+    fetcher.set(
+      'https://acme.example/careers-site/',
+      page('https://acme.example/careers-site/', '<a href="/careers-site/jobs">Jobs</a>'),
+    );
+    fetcher.set(
+      'https://acme.example/careers-site/sitemap.xml',
+      page('https://acme.example/careers-site/sitemap.xml', '<urlset><url><loc>https://acme.example/careers-site/culture</loc></url></urlset>'),
+    );
+
+    const result = await crawlCompany(fetcher, 'https://acme.example/careers-site/');
+
+    expect(result.homepage?.url).toBe('https://acme.example/careers-site/');
+    const urls = result.links.map((l) => l.url);
+    expect(urls).toContain('https://acme.example/careers-site/jobs');
+    expect(urls).toContain('https://acme.example/careers-site/culture');
+  });
+
   it('reports an invalid company URL without throwing', async () => {
     const fetcher = new FakeFetchPort();
     const result = await crawlCompany(fetcher, 'not a url');
