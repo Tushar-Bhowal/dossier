@@ -14,6 +14,8 @@ export * from './ports/search.js';
 export * from './ports/runStore.js';
 export * from './adapters/llm/rateLimiter.js';
 export * from './adapters/llm/geminiClient.js';
+export * from './adapters/llm/groqClient.js';
+export * from './adapters/llm/llmChain.js';
 export * from './adapters/fetch/urlPolicy.js';
 export * from './adapters/fetch/htmlToText.js';
 export * from './adapters/fetch/httpFetcher.js';

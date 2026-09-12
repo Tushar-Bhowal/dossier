@@ -11,3 +11,4 @@ coverage/
 .claude/handoff.md
 apps/web/AGENTS.md
 apps/web/CLAUDE.md
+kits-out.json

@@ -1,0 +1,6 @@
+[
+  { "jd": "Backend Engineer with 3+ years of Node.js experience required.", "company_url": "https://example.com/", "days": 5 },
+  { "jd": "Frontend Engineer with React experience required.", "company_url": "https://example.com/", "days": 5 },
+  { "jd": "This row is broken on purpose", "company_url": "https://example.com/", "days": 0 },
+  { "jd": "Data Engineer with SQL experience required.", "company_url": "https://example.com/", "days": 5 }
+]

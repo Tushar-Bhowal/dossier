@@ -2,15 +2,17 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import {
-  BatchInput,
+  BatchCase as BatchCaseSchema,
   BatchOutput,
   Kit,
   GeminiClient,
+  GroqClient,
   RateLimiter,
   HttpFetcher,
   TavilySearchAdapter,
   KeylessSearchAdapter,
   createSearchChain,
+  createLlmChain,
   InMemoryRunStore,
   runPipeline,
   assembleKit,
@@ -144,10 +146,56 @@ export async function runBatch(
   return results;
 }
 
+// One malformed entry must not take the whole run down with it — the same "skip and report, don't
+// abort" rule §2 asks of a crawl applies just as much to the file that names the cases to crawl.
+// BatchInput.parse(wholeArray) would throw on the first bad entry before any case ever ran, so each
+// entry is validated on its own: a case that fails its own schema becomes a normal `failed` result
+// instead of an uncaught exception that produces zero output for a batch of otherwise-good cases.
+export function parseBatchInput(raw: unknown): { valid: BatchCase[]; invalid: BatchKitResult[] } {
+  if (!Array.isArray(raw)) {
+    throw new Error('batch input must be a JSON array of cases');
+  }
+  const valid: BatchCase[] = [];
+  const invalid: BatchKitResult[] = [];
+  raw.forEach((entry, index) => {
+    const parsed = BatchCaseSchema.safeParse(entry);
+    if (parsed.success) {
+      valid.push(parsed.data);
+    } else {
+      const id =
+        typeof entry === 'object' && entry !== null && 'id' in entry && typeof (entry as { id: unknown }).id === 'string'
+          ? (entry as { id: string }).id
+          : `invalid-case-${index}`;
+      invalid.push({
+        id,
+        status: 'failed',
+        kit: null,
+        error: { code: 'INVALID_CASE', message: parsed.error.issues.map((i) => i.message).join('; ') },
+      });
+    }
+  });
+  return { valid, invalid };
+}
+
+// §9 says this command "needs no setup beyond your documented install step", and the README's
+// setup step is `cp .env.example .env`. Nothing was actually reading that file: `npm run dev` picks
+// it up via Next.js's own env loading, but this CLI is plain tsx with no such thing, so every var —
+// including GEMINI_API_KEY, which the command cannot run at all without — was silently absent on a
+// clean clone. Guarded because a grader's shell may already export real env vars instead of a
+// checked-out .env, and because process.loadEnvFile is only stable from Node 20.6+.
+function loadEnvFile(): void {
+  try {
+    process.loadEnvFile();
+  } catch {
+    // No .env present, or this Node version predates loadEnvFile — process.env is used as-is.
+  }
+}
+
 async function main(): Promise<void> {
+  loadEnvFile();
   const { input, output, allowPrivateHosts } = parseArgs(process.argv.slice(2));
 
-  const cases = BatchInput.parse(JSON.parse(readFileSync(input, 'utf8')));
+  const { valid: cases, invalid: invalidResults } = parseBatchInput(JSON.parse(readFileSync(input, 'utf8')));
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -158,8 +206,23 @@ async function main(): Promise<void> {
     rpm: parsePositiveInt(process.env.LLM_RPM, 15),
     tpm: parsePositiveInt(process.env.LLM_TPM, 1_000_000),
   });
+  const groqRateLimiter = new RateLimiter({
+    rpm: parsePositiveInt(process.env.GROQ_RPM, 25),
+    tpm: parsePositiveInt(process.env.GROQ_TPM, 1_000_000),
+  });
+  const groqApiKey = process.env.GROQ_API_KEY;
   const deps: PipelineDeps = {
-    llm: new GeminiClient({ apiKey, rateLimiter }),
+    // GROQ_API_KEY is optional — without it this behaves exactly as before. With it, a second,
+    // independent provider stands behind Gemini so one provider's bad day doesn't fail the batch.
+    llm: createLlmChain({
+      // One attempt only when there is somewhere to fall back to — see the same note in
+      // apps/api/src/pipelineDeps.ts. Retrying a provider that just failed costs up to 30s of
+      // backoff per attempt; handing the call to an independent provider costs one call.
+      primary: new GeminiClient({ apiKey, rateLimiter, maxAttempts: groqApiKey ? 1 : undefined }),
+      fallback: groqApiKey
+        ? new GroqClient({ apiKey: groqApiKey, rateLimiter: groqRateLimiter })
+        : null,
+    }),
     // §11 vs §9: real batch runs stay SSRF-safe by default — only --allow-private-hosts (for
     // localhost fixture company sites) turns the gate off, never the whole run unconditionally.
     fetcher: new HttpFetcher({ allowPrivateHosts }),
@@ -171,7 +234,7 @@ async function main(): Promise<void> {
   const runStore = new InMemoryRunStore();
 
   const startedAt = Date.now();
-  const results = await runBatch(cases, deps, runStore);
+  const results = [...invalidResults, ...(await runBatch(cases, deps, runStore))];
   const elapsedSeconds = (Date.now() - startedAt) / 1000;
 
   const succeeded = results.filter((r) => r.status === 'ok').length;

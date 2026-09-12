@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { InMemoryRunStore, createSearchChain, type PipelineDeps } from '@dossier/core';
-import { parseArgs, processCase, runBatch } from '../src/main.js';
+import { parseArgs, parseBatchInput, processCase, runBatch } from '../src/main.js';
 import { FakeLlmPort } from '../../../tests/fixtures/fakes/llm.js';
 import { FakeFetchPort } from '../../../tests/fixtures/fakes/fetcher.js';
 import { FakeSearchPort } from '../../../tests/fixtures/fakes/search.js';
@@ -31,6 +31,38 @@ describe('parseArgs', () => {
 
   it('throws a clear error when a required flag is missing', () => {
     expect(() => parseArgs(['--input', 'a.json'])).toThrow(/usage: evaluate/);
+  });
+});
+
+describe('parseBatchInput', () => {
+  it('separates schema-valid cases from invalid ones instead of throwing for the whole file', () => {
+    const raw = [
+      { id: 'case-01', jd: 'A real posting', company_url: 'https://example.com/', days: 5 },
+      { id: 'case-02', jd: 'Another one', company_url: 'not-a-real-url', days: 5 },
+    ];
+    const { valid, invalid } = parseBatchInput(raw);
+    expect(valid).toHaveLength(1);
+    expect(valid[0]!.id).toBe('case-01');
+    expect(invalid).toHaveLength(1);
+    expect(invalid[0]).toMatchObject({ id: 'case-02', status: 'failed', kit: null });
+    expect(invalid[0]!.error?.code).toBe('INVALID_CASE');
+  });
+
+  it('falls back to a positional id when the invalid entry has none of its own', () => {
+    const { invalid } = parseBatchInput([{ jd: 'x', company_url: 'not-a-url', days: 1 }]);
+    expect(invalid[0]!.id).toBe('invalid-case-0');
+  });
+
+  it('rejects a top-level non-array outright — there is no per-case id to report against', () => {
+    expect(() => parseBatchInput({ jd: 'x' })).toThrow(/must be a JSON array/);
+  });
+
+  it('accepts a file that is entirely valid', () => {
+    const { valid, invalid } = parseBatchInput([
+      { id: 'case-01', jd: 'x', company_url: 'https://example.com/', days: 5 },
+    ]);
+    expect(valid).toHaveLength(1);
+    expect(invalid).toHaveLength(0);
   });
 });
 

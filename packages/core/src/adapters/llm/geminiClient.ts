@@ -2,9 +2,13 @@ import { z, type ZodType } from 'zod';
 import { LlmCallError, type LlmCallParams, type LlmModel, type LlmPort } from '../../ports/llm.js';
 import type { RateLimiter } from './rateLimiter.js';
 
+// gemini-2.5-flash/-flash-lite stopped being reachable by newly created API keys (confirmed live:
+// a fresh key gets a 404 "no longer available to new users" on both, pointing at these 3.x
+// successors) — an older, already-established key can still reach 2.5, which is what made this
+// look like only a quota problem at first. Using the 3.x ids works on both an old and a new key.
 const MODEL_IDS: Record<LlmModel, string> = {
-  flash: 'gemini-2.5-flash',
-  'flash-lite': 'gemini-2.5-flash-lite',
+  flash: 'gemini-3.6-flash',
+  'flash-lite': 'gemini-3.5-flash-lite',
 };
 
 const DEFAULT_MAX_OUTPUT_TOKENS = 2048;
@@ -164,10 +168,12 @@ export class GeminiClient implements LlmPort {
         responseMimeType: 'application/json',
         responseSchema: geminiSchema,
         maxOutputTokens: params.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
-        // 2.5 models think by default, and thinking tokens count against maxOutputTokens — with
+        // These models think by default, and thinking tokens count against maxOutputTokens — with
         // the small budgets used here that silently truncates the actual JSON response. Structured
-        // extraction/generation doesn't need it.
-        thinkingConfig: { thinkingBudget: 0 },
+        // extraction/generation doesn't need it, but unlike 2.5, the 3.x family rejects
+        // thinkingBudget: 0 outright (400 invalid argument) — 128 is the smallest budget confirmed
+        // to work, and in practice the model spends none of it on straightforward JSON output.
+        thinkingConfig: { thinkingBudget: 128 },
       },
     };
 

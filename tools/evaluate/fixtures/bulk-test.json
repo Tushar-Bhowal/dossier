@@ -1,0 +1,27 @@
+[
+  {
+    "jd": "MERN Stack Developer\n\nWe are looking for a MERN Stack Developer to build and maintain full-stack web applications using MongoDB, Express, React and Node.js. 3+ years experience required. Familiarity with REST APIs and Git is a must.",
+    "company_url": "https://sundewsolutions.com/",
+    "days": 5
+  },
+  {
+    "jd": "Frontend dev needed.\nMust know React.",
+    "company_url": "https://sundewsolutions.com/",
+    "days": 3
+  },
+  {
+    "jd": "Senior Backend Engineer\n\nWe are looking for a Senior Backend Engineer with 5+ years of experience in Node.js, PostgreSQL, and distributed systems design. Must lead architecture decisions and mentor junior engineers.",
+    "company_url": "https://this-domain-does-not-exist-dossier-test.com/",
+    "days": 5
+  },
+  {
+    "jd": "Data Analyst\n\nWe are seeking a Data Analyst skilled in SQL, Python and data visualization to join our growing analytics team. 2+ years experience with dashboarding tools required.",
+    "company_url": "https://example.com/",
+    "days": 1
+  },
+  {
+    "jd": "Platform Engineer\n\nWe are hiring a Platform Engineer with strong Kubernetes and AWS experience to own our infrastructure and CI/CD pipelines. 4+ years required.",
+    "company_url": "https://sundewsolutions.com/",
+    "days": 14
+  }
+]

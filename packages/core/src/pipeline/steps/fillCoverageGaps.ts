@@ -62,8 +62,11 @@ export async function fillCoverageGaps(
     passes += 1;
     const uncoveredMusts = requirements.filter((r) => coverage.uncoveredMustIds.includes(r.id));
 
+    // flash-lite: each pass targets one narrow, already-specified gap ("write a question for this
+    // exact requirement"), a lower creative bar than the main category calls — and up to 3 passes
+    // (plus a repair retry each) made this the largest hidden multiplier on flash usage per kit.
     const { questions: candidates } = await llm.generate({
-      model: 'flash',
+      model: 'flash-lite',
       system: GAP_FILL_SYSTEM,
       prompt: buildGapFillPrompt(uncoveredMusts, questions),
       schema: ResponseSchema,

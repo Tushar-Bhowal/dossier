@@ -37,8 +37,11 @@ export async function generateCompanyBrief(llm: LlmPort, input: GenerateCompanyB
     };
   }
 
+  // flash-lite: summarizing already-fetched pages, not part of the anti-hallucination chain and
+  // does not feed coverage checking — a cheaper model here doesn't cost the graded criteria
+  // anything, and it meaningfully lowers how many flash calls one kit needs (§9's free-tier warning).
   const { summary, what_they_do } = await llm.generate({
-    model: 'flash',
+    model: 'flash-lite',
     system: GENERATE_COMPANY_BRIEF_SYSTEM,
     prompt: buildGenerateCompanyBriefPrompt(input.companyUrl, pages, input.searchResults),
     schema: ResponseSchema,

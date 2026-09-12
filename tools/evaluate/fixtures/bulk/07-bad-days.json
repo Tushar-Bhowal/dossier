@@ -1,0 +1,6 @@
+[
+  { "jd": "Backend Engineer", "company_url": "https://example.com/", "days": 0 },
+  { "jd": "Backend Engineer", "company_url": "https://example.com/", "days": -1 },
+  { "jd": "Backend Engineer", "company_url": "https://example.com/", "days": 1.5 },
+  { "jd": "Backend Engineer", "company_url": "https://example.com/", "days": 91 }
+]
