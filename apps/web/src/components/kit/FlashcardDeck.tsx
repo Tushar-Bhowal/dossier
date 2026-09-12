@@ -76,7 +76,7 @@ export function FlashcardDeck({ kitId }: { kitId: string }) {
         </p>
         <ul className="flex flex-col gap-2">
           {data.cards.map((c) => (
-            <li key={c.id} className="flex items-center justify-between gap-2 rounded-md border border-border p-2 text-sm">
+            <li key={c.id} className="flex items-center justify-between gap-2 rounded-lg border border-border p-2 text-sm">
               <span className="min-w-0 flex-1 truncate">{c.front}</span>
               <span className="shrink-0 text-xs text-muted-foreground">next review {formatDueDate(c.dueAt)}</span>
             </li>

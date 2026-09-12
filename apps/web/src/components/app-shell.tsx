@@ -16,10 +16,10 @@ function AppHeader() {
   const { isOpen } = useSidebar();
 
   let pageTitle = "Interview Kits";
-  if (pathname === "/kits/new") {
-    pageTitle = "New Kit";
-  } else if (pathname.startsWith("/kits/") && pathname.endsWith("/edit")) {
+  if (pathname.startsWith("/kits/") && pathname.endsWith("/edit")) {
     pageTitle = "Edit Kit";
+  } else if (pathname.startsWith("/kits/") && pathname.endsWith("/practice")) {
+    pageTitle = "Practice Mode";
   } else if (pathname.startsWith("/kits/")) {
     pageTitle = "Kit Details";
   }

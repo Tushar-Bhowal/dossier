@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
     return [
       { source: '/login', destination: '/?mode=login', permanent: false },
       { source: '/register', destination: '/?mode=register', permanent: false },
+      { source: '/kits/new', destination: '/kits?new=true', permanent: false },
     ];
   },
 };

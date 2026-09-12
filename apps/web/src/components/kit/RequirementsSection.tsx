@@ -32,7 +32,7 @@ export function RequirementsSection({ editor }: { editor: KitEditor }) {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.25 }}
-                className="flex items-start gap-2 rounded-md border border-border p-2"
+                className="flex items-start gap-2 rounded-lg border border-border p-2"
               >
                 <Badge variant={r.priority === "must" ? "default" : "secondary"} className="mt-1 shrink-0">
                   {r.priority}

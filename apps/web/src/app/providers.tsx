@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MotionConfig } from "motion/react";
+import { ActiveRunsProvider } from "@/hooks/use-active-runs";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -19,7 +20,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <MotionConfig reducedMotion="user">{children}</MotionConfig>
+      <ActiveRunsProvider>
+        <MotionConfig reducedMotion="user">{children}</MotionConfig>
+      </ActiveRunsProvider>
     </QueryClientProvider>
   );
 }
+

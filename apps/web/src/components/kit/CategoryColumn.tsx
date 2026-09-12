@@ -35,7 +35,7 @@ export function CategoryColumn({ category, label, questions, editor }: CategoryC
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>
           <ul
             ref={setNodeRef}
-            className={`flex min-h-24 flex-1 flex-col gap-2 rounded-md p-1 transition-colors ${isOver ? "bg-muted/50" : ""}`}
+            className={`flex min-h-24 flex-1 flex-col gap-2 rounded-lg p-1 transition-colors ${isOver ? "bg-muted/50" : ""}`}
           >
             <AnimatePresence initial={false}>
               {questions.map((q) => (

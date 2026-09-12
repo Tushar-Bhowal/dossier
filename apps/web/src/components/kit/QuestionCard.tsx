@@ -32,30 +32,39 @@ export function QuestionCard({ question, editor }: { question: Question; editor:
       animate={{ opacity: isDragging ? 0.5 : 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25 }}
-      className="flex flex-col gap-2 rounded-md border border-border bg-card p-2.5 text-sm"
+      className="flex flex-col gap-2 rounded-lg border border-border bg-card p-2.5 text-sm"
     >
-      <div className="flex items-start gap-2">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          className="mt-0.5 shrink-0 cursor-grab touch-none active:cursor-grabbing"
-          aria-label={`Reorder question: ${question.prompt || "untitled"}`}
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical />
-        </Button>
-        <div className="min-w-0 flex-1">
+      {/* Responsive card header: drag handle & badges on left, difficulty & controls on right */}
+      <div className="flex flex-wrap items-center justify-between gap-1.5">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            className="size-7 shrink-0 cursor-grab touch-none active:cursor-grabbing text-muted-foreground hover:text-foreground"
+            aria-label={`Reorder question: ${question.prompt || "untitled"}`}
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="size-3.5" />
+          </Button>
           <OriginBadge origin={question.origin} pinned={question.pinned} />
         </div>
-        <span className="shrink-0 text-xs text-muted-foreground">difficulty {question.difficulty}/3</span>
-        <ItemControls
-          pinned={question.pinned}
-          onTogglePin={() => editor.mutateNow(`question:${question.id}.pinned`, toggleQuestionPin(question.id))}
-          onDelete={() => editor.mutateNow(`question:${question.id}.delete`, deleteQuestion(question.id))}
-          deleteLabel="Delete question"
-        />
+
+        <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+          <span
+            className="inline-flex items-center rounded-md bg-muted/60 border border-border/40 px-1.5 py-0.5 text-[0.68rem] font-medium text-muted-foreground"
+            title={`Difficulty: ${question.difficulty} of 3`}
+          >
+            Diff {question.difficulty}/3
+          </span>
+          <ItemControls
+            pinned={question.pinned}
+            onTogglePin={() => editor.mutateNow(`question:${question.id}.pinned`, toggleQuestionPin(question.id))}
+            onDelete={() => editor.mutateNow(`question:${question.id}.delete`, deleteQuestion(question.id))}
+            deleteLabel="Delete question"
+          />
+        </div>
       </div>
       <EditableField
         value={question.prompt}

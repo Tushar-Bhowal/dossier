@@ -1,5 +1,5 @@
 import * as React from "react";
-import { FolderGit2, PlusCircle } from "lucide-react";
+import { FolderGit2 } from "lucide-react";
 
 export interface NavItem {
   title: string;
@@ -20,11 +20,6 @@ export const navGroups: NavGroup[] = [
         title: "Interview Kits",
         path: "/kits",
         icon: <FolderGit2 className="size-4" />,
-      },
-      {
-        title: "New Kit",
-        path: "/kits/new",
-        icon: <PlusCircle className="size-4" />,
       },
     ],
   },

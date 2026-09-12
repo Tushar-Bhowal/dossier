@@ -32,7 +32,7 @@ export function FlashcardsSection({ editor }: { editor: KitEditor }) {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.25 }}
-                className="flex flex-col rounded-md border border-border p-3 text-sm"
+                className="flex flex-col rounded-lg border border-border p-3 text-sm"
               >
                 <div className="mb-1 flex items-start justify-between gap-2">
                   <OriginBadge origin={f.origin} pinned={f.pinned} />

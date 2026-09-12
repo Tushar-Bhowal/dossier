@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { Router } from 'express';
 import { z } from 'zod';
-import { assembleKit, createInitialContext, Kit, runPipeline, type RunRecord } from '@dossier/core';
+import { assembleKit, createInitialContext, createPipelineSteps, Kit, runPipeline, type RunRecord } from '@dossier/core';
 import { MongoRunStore } from '../db/mongoRunStore.js';
 import { createKit } from '../db/kits.js';
 import { requireAuth } from '../middleware/auth.js';
@@ -71,31 +71,69 @@ runsRouter.post('/', validateBody(RunCreateBody), async (req, res, next) => {
     const runStore = new MongoRunStore();
     const pipelineInput = { jdText: input.jd, companyUrl: input.company_url, daysAvailable: input.days };
 
-    let record: RunRecord;
-    try {
-      record = await runPipeline({
-        runStore,
-        deps: buildPipelineDeps(),
-        userId,
-        idempotencyKey,
-        jdText: pipelineInput.jdText,
-        companyUrl: pipelineInput.companyUrl,
-        daysAvailable: pipelineInput.daysAvailable,
-        newRunId: () => randomUUID(),
-      });
-    } catch (err) {
-      // §10: the unique index is what actually rejects a duplicate submission; a race that hits
-      // it mid-flight surfaces here as a create() throw — fall back to the run it collided with
-      // rather than erroring the second submitter.
-      const existing = await runStore.findByIdempotencyKey(userId, idempotencyKey);
-      if (!existing) throw err;
-      record = existing;
+    let existing = await runStore.findByIdempotencyKey(userId, idempotencyKey);
+    if (existing) {
+      if (existing.status === 'succeeded' && !existing.kitId) {
+        existing = await ensureKitSaved(runStore, existing, userId, pipelineInput);
+      }
+      res.status(statusCodeFor(existing)).json(existing);
+      return;
     }
 
-    await runStore.setInput(record.id, pipelineInput);
-    record = await ensureKitSaved(runStore, record, userId, pipelineInput);
+    const runId = randomUUID();
+    const steps = createPipelineSteps();
+    const initialRecord: RunRecord = {
+      id: runId,
+      userId,
+      kitId: null,
+      idempotencyKey,
+      status: 'queued',
+      steps: steps.map((s: { name: string }) => ({
+        name: s.name,
+        status: 'pending',
+        startedAt: null,
+        endedAt: null,
+        attempts: 0,
+      })),
+      sourcesSkipped: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      heartbeatAt: new Date().toISOString(),
+    };
 
-    res.status(statusCodeFor(record)).json(record);
+    await runStore.create(initialRecord);
+    await runStore.setInput(runId, pipelineInput);
+
+    const executePipeline = async () => {
+      try {
+        const finished = await runPipeline({
+          runStore,
+          deps: buildPipelineDeps(),
+          userId,
+          idempotencyKey,
+          jdText: pipelineInput.jdText,
+          companyUrl: pipelineInput.companyUrl,
+          daysAvailable: pipelineInput.daysAvailable,
+          newRunId: () => runId,
+        });
+        await ensureKitSaved(runStore, finished, userId, pipelineInput);
+        return finished;
+      } catch (err) {
+        console.error(`runPipeline execution error for ${runId}:`, err);
+        return initialRecord;
+      }
+    };
+
+    const runPromise = executePipeline();
+
+    if (req.query.sync === 'true') {
+      const finished = await runPromise;
+      const latest = (await runStore.get(runId)) ?? finished;
+      res.status(statusCodeFor(latest)).json(latest);
+      return;
+    }
+
+    res.status(202).json(initialRecord);
   } catch (err) {
     next(err);
   }
@@ -130,26 +168,45 @@ runsRouter.post('/:id/resume', async (req, res, next) => {
       return;
     }
 
-    if (record.status === 'succeeded' || record.status === 'failed') {
+    if (record.status === 'succeeded') {
       record = await ensureKitSaved(runStore, record, req.userId!, input);
       res.status(statusCodeFor(record)).json(record);
       return;
     }
 
-    record = await runPipeline({
-      runStore,
-      deps: buildPipelineDeps(),
-      userId: req.userId!,
-      idempotencyKey: record.idempotencyKey,
-      jdText: input.jdText,
-      companyUrl: input.companyUrl,
-      daysAvailable: input.daysAvailable,
-      newRunId: () => randomUUID(),
-    });
+    const executeResume = async () => {
+      try {
+        const resumed = await runPipeline({
+          runStore,
+          deps: buildPipelineDeps(),
+          userId: req.userId!,
+          idempotencyKey: record.idempotencyKey,
+          jdText: input.jdText,
+          companyUrl: input.companyUrl,
+          daysAvailable: input.daysAvailable,
+          newRunId: () => randomUUID(),
+        });
+        await ensureKitSaved(runStore, resumed, req.userId!, input);
+        return resumed;
+      } catch (err) {
+        console.error(`resume execution error for ${record.id}:`, err);
+        return record;
+      }
+    };
 
-    record = await ensureKitSaved(runStore, record, req.userId!, input);
-    res.status(statusCodeFor(record)).json(record);
+    const resumePromise = executeResume();
+
+    if (req.query.sync === 'true') {
+      const finished = await resumePromise;
+      res.status(statusCodeFor(finished)).json(finished);
+      return;
+    }
+
+    await runStore.update(record.id, { status: 'running', updatedAt: new Date().toISOString() });
+    const updated = (await runStore.get(record.id)) ?? record;
+    res.status(202).json(updated);
   } catch (err) {
     next(err);
   }
 });
+

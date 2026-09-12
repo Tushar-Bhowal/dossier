@@ -22,7 +22,7 @@ export function ScheduleView({ kit }: { kit: Kit }) {
                 .map((qid) => questionsById.get(qid))
                 .filter((q): q is Question => q !== undefined);
               return (
-                <li key={d.day} className="rounded-md border border-border p-3">
+                <li key={d.day} className="rounded-lg border border-border p-3">
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <span className="font-medium">Day {d.day}</span>
                     <span className="text-xs text-muted-foreground">{d.minutes} min</span>

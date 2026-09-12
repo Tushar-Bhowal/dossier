@@ -12,27 +12,29 @@ interface ItemControlsProps {
 
 export function ItemControls({ pinned, onTogglePin, onDelete, deleteLabel }: ItemControlsProps) {
   return (
-    <div className="flex shrink-0 items-center gap-1">
+    <div className="flex shrink-0 items-center gap-0.5">
       <Button
         type="button"
         variant="ghost"
         size="icon-sm"
+        className="size-7 text-muted-foreground hover:text-foreground"
         aria-label={pinned ? "Unpin" : "Pin"}
         aria-pressed={pinned}
         onClick={onTogglePin}
       >
-        {pinned ? <Pin className="fill-current" /> : <PinOff />}
+        {pinned ? <Pin className="size-3.5 fill-current text-primary" /> : <PinOff className="size-3.5" />}
       </Button>
       <Button
         type="button"
         variant="ghost"
         size="icon-sm"
+        className="size-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
         aria-label={deleteLabel}
         onClick={() => {
           if (window.confirm(`${deleteLabel}? This can't be undone.`)) onDelete();
         }}
       >
-        <Trash2 />
+        <Trash2 className="size-3.5" />
       </Button>
     </div>
   );

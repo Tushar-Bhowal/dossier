@@ -2,6 +2,7 @@
 
 import { use } from "react";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getKit } from "@/lib/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,23 +20,33 @@ export default function KitPage({ params }: PageProps<"/kits/[id]">) {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-4">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-40 w-full" />
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center justify-between gap-4">
+          <Skeleton className="h-9 w-28 rounded-lg" />
+          <Skeleton className="h-9 w-24 rounded-lg" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-64 rounded-lg" />
+          <Skeleton className="h-4 w-44 rounded-lg" />
+        </div>
+        <Skeleton className="h-40 w-full rounded-lg" />
       </div>
     );
   }
 
   if (isError || !data) {
     return (
-      <Card>
+      <Card className="rounded-lg">
         <CardHeader>
           <CardTitle>Couldn&apos;t load this kit</CardTitle>
           <CardDescription>It may not exist, or it isn&apos;t yours.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button asChild variant="outline">
-            <Link href="/kits">Back to kits</Link>
+          <Button asChild variant="outline" className="rounded-lg gap-2">
+            <Link href="/kits">
+              <ArrowLeft className="size-4" />
+              <span>Back to kits</span>
+            </Link>
           </Button>
         </CardContent>
       </Card>
