@@ -10,6 +10,12 @@ const nextConfig: NextConfig = {
       '.js': ['.ts', '.tsx', '.js'],
     },
   },
+  async redirects() {
+    return [
+      { source: '/login', destination: '/?mode=login', permanent: false },
+      { source: '/register', destination: '/?mode=register', permanent: false },
+    ];
+  },
 };
 
 export default nextConfig;
