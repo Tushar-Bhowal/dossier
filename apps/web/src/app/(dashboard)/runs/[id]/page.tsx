@@ -2,6 +2,7 @@
 
 import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
 import { getRun, resumeRun } from "@/lib/api";
@@ -64,6 +65,7 @@ export default function RunPage({ params }: PageProps<"/runs/[id]">) {
   if (isLoading) {
     return (
       <div className="flex flex-col gap-4">
+        <Skeleton className="h-9 w-28 rounded-lg" />
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-64 w-full" />
       </div>
@@ -91,6 +93,13 @@ export default function RunPage({ params }: PageProps<"/runs/[id]">) {
 
   return (
     <div className="flex flex-col gap-6">
+      <Button asChild variant="outline" className="rounded-lg gap-2 self-start">
+        <Link href="/kits">
+          <ArrowLeft className="size-4" />
+          <span>Back to kits</span>
+        </Link>
+      </Button>
+
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">
           {STATUS_COPY[run.status] ?? run.status}
