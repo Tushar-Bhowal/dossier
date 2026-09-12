@@ -1,5 +1,5 @@
 import * as React from "react";
-import { FolderGit2, PlusCircle, Layers } from "lucide-react";
+import { FolderGit2, PlusCircle } from "lucide-react";
 
 export interface NavItem {
   title: string;

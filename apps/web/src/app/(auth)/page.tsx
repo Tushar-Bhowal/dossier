@@ -7,6 +7,47 @@ import Image from "next/image";
 import { login, register, ApiError } from "@/lib/api";
 import { useMe } from "@/hooks/use-me";
 
+// three.js is loaded from a CDN at runtime, so it brings no types with it. This describes only the
+// surface the background actually touches — enough for real type checking without adding a ~600KB
+// dependency to the bundle for a decorative effect.
+interface ThreeDisposable {
+  dispose(): void;
+}
+interface ThreeScene {
+  add(object: object): void;
+}
+type ThreeCamera = object;
+interface ThreeRenderer extends ThreeDisposable {
+  setPixelRatio(ratio: number): void;
+  setSize(width: number, height: number): void;
+  render(scene: ThreeScene, camera: ThreeCamera): void;
+}
+interface ThreeNamespace {
+  WebGLRenderer: new (params: {
+    canvas: HTMLCanvasElement;
+    alpha?: boolean;
+    antialias?: boolean;
+  }) => ThreeRenderer;
+  Scene: new () => ThreeScene;
+  OrthographicCamera: new (
+    left: number,
+    right: number,
+    top: number,
+    bottom: number,
+    near: number,
+    far: number,
+  ) => ThreeCamera;
+  Vector2: new (x: number, y: number) => { set(x: number, y: number): void };
+  Vector3: new (x: number, y: number, z: number) => object;
+  ShaderMaterial: new (params: Record<string, unknown>) => ThreeDisposable;
+  PlaneGeometry: new (width: number, height: number) => ThreeDisposable;
+  Mesh: new (geometry: ThreeDisposable, material: ThreeDisposable) => object;
+  GLSL3: unknown;
+  CustomBlending: unknown;
+  SrcAlphaFactor: unknown;
+  OneFactor: unknown;
+}
+
 function AuthContent() {
   const searchParams = useSearchParams();
   const paramMode = searchParams?.get("mode");
@@ -30,26 +71,30 @@ function AuthContent() {
     }
   }, [user, isCheckingAuth, router]);
 
-  useEffect(() => {
+  // Adjusted during render rather than from an effect: an effect would paint the previous tab
+  // first and correct it on the next frame.
+  const [lastMode, setLastMode] = useState(paramMode);
+  if (paramMode !== lastMode) {
+    setLastMode(paramMode);
     if (paramMode === "login") {
       setIsLogin(true);
     } else if (paramMode === "register") {
       setIsLogin(false);
     }
-  }, [paramMode]);
+  }
 
   // Three.js animated WebGL dot matrix background
   useEffect(() => {
     let active = true;
-    let renderer: any;
-    let geometry: any;
-    let material: any;
-    let scene: any;
-    let camera: any;
+    let renderer: ThreeRenderer | undefined;
+    let geometry: ThreeDisposable | undefined;
+    let material: ThreeDisposable | undefined;
+    let scene: ThreeScene | undefined;
+    let camera: ThreeCamera | undefined;
     let animationId: number;
     let cleanUpResize: (() => void) | null = null;
 
-    const initThree = (THREE: any) => {
+    const initThree = (THREE: ThreeNamespace) => {
       if (!canvasRef.current || !active) return;
       const canvas = canvasRef.current;
 
@@ -163,6 +208,7 @@ function AuthContent() {
 
       const startTime = performance.now();
       const renderFrame = () => {
+        if (!renderer || !scene || !camera) return;
         uniforms.u_time.value = (performance.now() - startTime) / 1000.0;
         renderer.render(scene, camera);
       };
@@ -180,7 +226,7 @@ function AuthContent() {
       }
 
       const handleResize = () => {
-        if (!renderer) return;
+        if (!renderer || !scene || !camera) return;
         renderer.setSize(window.innerWidth, window.innerHeight);
         uniforms.u_resolution.value.set(window.innerWidth * 2, window.innerHeight * 2);
         if (prefersReducedMotion) {
@@ -194,15 +240,19 @@ function AuthContent() {
       };
     };
 
-    if ((window as any).THREE) {
-      initThree((window as any).THREE);
+    const loadedThree = () => (window as unknown as { THREE?: ThreeNamespace }).THREE;
+
+    const alreadyLoaded = loadedThree();
+    if (alreadyLoaded) {
+      initThree(alreadyLoaded);
     } else {
       const script = document.createElement("script");
       script.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
       script.async = true;
       script.onload = () => {
-        if (active && (window as any).THREE) {
-          initThree((window as any).THREE);
+        const three = loadedThree();
+        if (active && three) {
+          initThree(three);
         }
       };
       document.head.appendChild(script);
@@ -302,7 +352,7 @@ function AuthContent() {
         textAlign: "center",
       }}
     >
-      By proceeding, you agree to Dossier's
+      By proceeding, you agree to Dossier&apos;s
       <br />
       <span style={{ color: "#888", textDecoration: "underline" }}>Terms of Service</span> and{" "}
       <span style={{ color: "#888", textDecoration: "underline" }}>Privacy Policy</span>.
