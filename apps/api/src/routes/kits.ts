@@ -30,10 +30,14 @@ kitsRouter.get('/:id', async (req, res, next) => {
   }
 });
 
-// Optimistic concurrency: the client must send the version it read, either as `If-Match` (the
-// conventional header for this) or a `version` field in the body. A mismatch is a 409 carrying
-// the current document so the client can rebase the in-flight edit (§13's edit-in-flight case) —
-// never a silent last-write-wins overwrite.
+// Optimistic concurrency: the client must send the version it read as a `version` field in the
+// body. A mismatch is a 409 carrying the current document so the client can rebase the in-flight
+// edit (§13's edit-in-flight case) — never a silent last-write-wins overwrite.
+//
+// `If-Match` is still accepted for direct API callers, but the app deliberately does not use it:
+// its value is spec'd to be an ETag, so a cache or CDN in front of this origin evaluates the
+// precondition itself and rejects a version integer with a 412 before the request arrives. Only
+// safe when nothing is proxying — see the note in apps/web/src/lib/api.ts.
 kitsRouter.patch('/:id', async (req, res, next) => {
   try {
     const ifMatch = req.get('If-Match');

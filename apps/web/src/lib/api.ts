@@ -132,12 +132,18 @@ export type PatchKitResult = { ok: true; data: KitSummary } | { ok: false; confl
 
 // Doesn't go through `request()`: a 409 here is an expected, handleable outcome (the caller
 // rebases onto `conflict.kit`), not an exception.
+//
+// The version travels in the body, deliberately not in an `If-Match` header. `If-Match` is a
+// conditional-request header whose value must be an ETag, and it is evaluated by any spec-compliant
+// cache or CDN in front of the origin — Vercel's edge compares it against the response's real ETag,
+// fails the precondition, and returns 412 before the request ever reaches the function. Carrying an
+// application-level version integer there only appears to work when nothing is proxying the request.
 export async function patchKit(id: string, version: number, kit: Kit): Promise<PatchKitResult> {
   const res = await fetch(`/api/v1/kits/${id}`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json", "If-Match": String(version) },
+    headers: { "Content-Type": "application/json" },
     credentials: "same-origin",
-    body: JSON.stringify({ kit }),
+    body: JSON.stringify({ version, kit }),
   });
   const body = await res.json().catch(() => null);
 
