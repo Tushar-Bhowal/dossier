@@ -12,3 +12,5 @@ coverage/
 apps/web/AGENTS.md
 apps/web/CLAUDE.md
 kits-out.json
+.vercel
+.env*
