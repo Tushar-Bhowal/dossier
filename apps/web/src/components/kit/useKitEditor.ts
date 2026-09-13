@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import type { Kit } from "@dossier/core";
 import { ApiError, getKit, patchKit, regenerateSection, type RegenerateSection } from "@/lib/api";
 import { useDebouncedCallback, type SaveStatus } from "@/lib/optimistic";
+import { toast } from "@/components/ui/toast";
 
 export interface KitEditor {
   kit: Kit;
@@ -66,6 +67,17 @@ export function useKitEditor(id: string, initial: { kit: Kit; version: number })
         versionRef.current = result.data.version;
         setKit(nextKit);
         setVersion(result.data.version);
+        const hasTextEdit = keys.some(
+          (k) =>
+            !k.includes(".pinned") &&
+            !k.includes(".delete") &&
+            !k.includes(".add") &&
+            !k.includes(".move")
+        );
+        if (hasTextEdit) {
+          toast.success("Changes saved");
+        }
+
         for (const k of keys) editorsRef.current.delete(k);
         setStatus((prev) => {
           const next = { ...prev };
@@ -95,6 +107,7 @@ export function useKitEditor(id: string, initial: { kit: Kit; version: number })
             for (const k of keys) next[k] = "retry";
             return next;
           });
+          toast.error("Failed to save changes. Please try again.");
         }
         return;
       }
@@ -105,6 +118,7 @@ export function useKitEditor(id: string, initial: { kit: Kit; version: number })
         for (const k of keys) next[k] = "retry";
         return next;
       });
+      toast.error("Network error while saving changes.");
     } finally {
       flushInFlightRef.current = false;
       if (flushQueuedRef.current) {
@@ -136,6 +150,7 @@ export function useKitEditor(id: string, initial: { kit: Kit; version: number })
   }
 
   async function regenerate(section: RegenerateSection, key: string): Promise<void> {
+    const sectionName = section.replace(/^[a-z]/, (c) => c.toUpperCase());
     cancelFlush();
     await flush();
     setRegenerateError((prev) => {
@@ -144,12 +159,16 @@ export function useKitEditor(id: string, initial: { kit: Kit; version: number })
       return next;
     });
     setRegenerating((prev) => new Set(prev).add(key));
+    toast.info(`Regenerating ${sectionName}…`, {
+      description: "Generating fresh content with AI...",
+    });
     try {
       const data = await regenerateSection(id, section);
       kitRef.current = data.kit;
       versionRef.current = data.version;
       setKit(data.kit);
       setVersion(data.version);
+      toast.success(`${sectionName} regenerated successfully!`);
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         const fresh = await getKit(id);
@@ -157,10 +176,13 @@ export function useKitEditor(id: string, initial: { kit: Kit; version: number })
         versionRef.current = fresh.version;
         setKit(fresh.kit);
         setVersion(fresh.version);
-        setRegenerateError((prev) => ({ ...prev, [key]: "This kit changed elsewhere — reloaded the latest version, try again." }));
+        const msg = "This kit changed elsewhere — reloaded the latest version, try again.";
+        setRegenerateError((prev) => ({ ...prev, [key]: msg }));
+        toast.error("Conflict detected", { description: msg });
       } else {
         const message = err instanceof ApiError ? err.message : "Regeneration failed.";
         setRegenerateError((prev) => ({ ...prev, [key]: message }));
+        toast.error(`Regeneration failed`, { description: message });
       }
     } finally {
       setRegenerating((prev) => {

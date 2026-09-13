@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "@/components/ui/toast";
 
 const STATUS_COPY: Record<string, string> = {
   queued: "Queued",
@@ -46,9 +47,16 @@ export default function RunPage({ params }: PageProps<"/runs/[id]">) {
     if (resumeInFlight.current) return;
     resumeInFlight.current = true;
     setResuming(true);
+    toast.info("Resuming generation", {
+      description: "Continuing kit creation from the last checkpoint...",
+    });
     try {
       const updated = await resumeRun(id);
       queryClient.setQueryData(["run", id], updated);
+    } catch (err) {
+      toast.error("Resume failed", {
+        description: err instanceof Error ? err.message : "Failed to resume run.",
+      });
     } finally {
       resumeInFlight.current = false;
       setResuming(false);

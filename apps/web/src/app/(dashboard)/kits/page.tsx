@@ -121,7 +121,7 @@ export default function KitsPage() {
             Interview Kits
           </h1>
           {kits && (
-            <Badge variant="secondary" className="px-2 py-0.5 text-xs font-semibold rounded-lg">
+            <Badge variant="secondary" className="px-2 py-0.5 text-xs font-semibold rounded">
               {kits.length}
             </Badge>
           )}
@@ -129,7 +129,7 @@ export default function KitsPage() {
             <Badge
               variant="outline"
               className={cn(
-                "gap-1.5 px-2.5 py-0.5 text-xs rounded-lg",
+                "gap-1.5 px-2.5 py-0.5 text-xs rounded",
                 isBusy
                   ? "border-sky-500/30 bg-sky-500/10 text-sky-400"
                   : "border-amber-500/30 bg-amber-500/10 text-amber-400"

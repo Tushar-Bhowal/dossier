@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import {
   DndContext,
@@ -13,9 +14,12 @@ import {
   type UniqueIdentifier,
 } from "@dnd-kit/core";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { HelpCircle } from "lucide-react";
 import type { Question } from "@dossier/core";
+import { Badge } from "@/components/ui/badge";
 import { CategoryColumn } from "./CategoryColumn";
 import { reorderQuestions } from "./kitMutations";
+import { toast } from "@/components/ui/toast";
 import type { KitEditor } from "./useKitEditor";
 
 const CATEGORIES = ["technical", "behavioural", "system-design", "company-fit"] as const;
@@ -24,8 +28,8 @@ type Category = (typeof CATEGORIES)[number];
 const LABELS: Record<Category, string> = {
   technical: "Technical",
   behavioural: "Behavioural",
-  "system-design": "System design",
-  "company-fit": "Company fit",
+  "system-design": "System Design",
+  "company-fit": "Company Fit",
 };
 
 function groupByCategory(questions: Question[]): Record<Category, string[]> {
@@ -45,9 +49,6 @@ export function QuestionsBoard({ editor }: { editor: KitEditor }) {
   const [columns, setColumns] = useState<Record<Category, string[]>>(() => groupByCategory(kit.questions));
   const draggingRef = useRef(false);
 
-  // Re-sync the local drag-time layout from the source of truth on every kit change (save,
-  // rebase, regenerate) — but never mid-drag, or an in-flight save from another field would yank
-  // the board out from under an active drag.
   useEffect(() => {
     if (!draggingRef.current) setColumns(groupByCategory(kit.questions));
   }, [kit.questions]);
@@ -67,10 +68,6 @@ export function QuestionsBoard({ editor }: { editor: KitEditor }) {
     draggingRef.current = true;
   }
 
-  // Moves the active item into the hovered column live, as it's dragged — this is what makes
-  // cross-column movement reachable with the keyboard sensor at all: without it, an item never
-  // becomes a measurable member of another column's SortableContext, so arrow-key navigation has
-  // nowhere in that column to land.
   function handleDragOver(event: DragOverEvent) {
     const { active, over } = event;
     if (!over) return;
@@ -110,27 +107,51 @@ export function QuestionsBoard({ editor }: { editor: KitEditor }) {
     const updates = touchedCategories.flatMap((c) => next[c].map((id, index) => ({ id, category: c, order: index })));
     setColumns(next);
     editor.mutateNow(`questions.move:${active.id}`, reorderQuestions(updates));
+    toast.success("Question moved");
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCorners}
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {CATEGORIES.map((category) => (
-          <CategoryColumn
-            key={category}
-            category={category}
-            label={LABELS[category]}
-            questions={columns[category].map((id) => questionsById.get(id)).filter((q): q is Question => Boolean(q))}
-            editor={editor}
-          />
-        ))}
+    <div className="flex flex-col gap-3.5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-0.5">
+        <div className="flex items-start gap-2.5">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded bg-secondary/80 border border-border/60 text-[#FB4128] mt-0.5">
+            <HelpCircle className="size-4" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-base sm:text-lg font-semibold tracking-tight text-foreground">
+                Question Bank
+              </h3>
+              <Badge variant="secondary" className="px-1.5 py-0 h-5 text-xs font-semibold rounded bg-secondary/80">
+                {kit.questions.length}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Comprehensive role questions categorized into 4 tracks. Drag and drop cards between tracks to reorganize.
+            </p>
+          </div>
+        </div>
       </div>
-    </DndContext>
+
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
+          {CATEGORIES.map((category) => (
+            <CategoryColumn
+              key={category}
+              category={category}
+              label={LABELS[category]}
+              questions={columns[category].map((id) => questionsById.get(id)).filter((q): q is Question => Boolean(q))}
+              editor={editor}
+            />
+          ))}
+        </div>
+      </DndContext>
+    </div>
   );
 }

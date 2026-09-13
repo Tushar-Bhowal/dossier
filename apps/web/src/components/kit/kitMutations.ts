@@ -58,6 +58,20 @@ export function toggleRequirementPin(id: string) {
   });
 }
 
+export function toggleRequirementPriority(id: string) {
+  return (kit: Kit): Kit => ({
+    ...kit,
+    role: {
+      ...kit.role,
+      requirements: kit.role.requirements.map((r) =>
+        r.id === id
+          ? { ...r, priority: r.priority === "must" ? "nice" : "must", origin: markEdited(r.origin) }
+          : r
+      ),
+    },
+  });
+}
+
 export function deleteRequirement(id: string) {
   return (kit: Kit): Kit => ({
     ...kit,

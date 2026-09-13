@@ -124,6 +124,10 @@ export function getKit(id: string): Promise<KitSummary> {
   return request<KitSummary>(`/kits/${id}`);
 }
 
+export function deleteKit(id: string): Promise<void> {
+  return request<void>(`/kits/${id}`, { method: "DELETE" });
+}
+
 export type PatchKitResult = { ok: true; data: KitSummary } | { ok: false; conflict: KitSummary };
 
 // Doesn't go through `request()`: a 409 here is an expected, handleable outcome (the caller

@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ApiError, createRun, getRun, resumeRun, type RunCreateInput } from "@/lib/api";
+import { toast } from "@/components/ui/toast";
 
 export interface ActiveRun {
   id: string;
@@ -86,6 +87,7 @@ export function ActiveRunsProvider({ children }: { children: React.ReactNode }) 
   // cancel the very removal it just scheduled and strand the card on screen.
   const removalTimersRef = React.useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const pollFailuresRef = React.useRef<Map<string, number>>(new Map());
+  const notifiedRunsRef = React.useRef<Set<string>>(new Set());
   React.useEffect(() => {
     const timers = removalTimersRef.current;
     return () => {
@@ -246,6 +248,9 @@ export function ActiveRunsProvider({ children }: { children: React.ReactNode }) 
 
           if (record.status === "succeeded" && !removalTimersRef.current.has(run.id)) {
             void queryClient.invalidateQueries({ queryKey: ["kits"] });
+            toast.success("Kit generated successfully!", {
+              description: `${run.roleTitle || "Interview kit"} at ${run.company || "the company"} is ready to view.`,
+            });
             // Hold the finished card on screen briefly so its own completion state is what the
             // user sees, then drop it and let the real KitCard take its place in the grid.
             removalTimersRef.current.set(
@@ -255,6 +260,13 @@ export function ActiveRunsProvider({ children }: { children: React.ReactNode }) 
                 setActiveRuns((prev) => prev.filter((r) => r.id !== run.id));
               }, SUCCESS_CARD_LINGER_MS)
             );
+          }
+
+          if (record.status === "failed" && !notifiedRunsRef.current.has(run.id)) {
+            notifiedRunsRef.current.add(run.id);
+            toast.error("Kit generation failed", {
+              description: failedStep?.error || "An error occurred during generation. You can resume it from the card.",
+            });
           }
         }
       } finally {
@@ -331,6 +343,9 @@ export function ActiveRunsProvider({ children }: { children: React.ReactNode }) 
   );
 
   const resumeActiveRun = React.useCallback(async (id: string) => {
+    toast.info("Resuming generation", {
+      description: "Continuing kit creation from the last checkpoint...",
+    });
     setActiveRuns((prev) =>
       prev.map((r) => (r.id === id ? { ...r, status: "running" as const, error: undefined } : r))
     );
@@ -350,13 +365,15 @@ export function ActiveRunsProvider({ children }: { children: React.ReactNode }) 
         )
       );
     } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to resume run";
+      toast.error("Resume failed", { description: msg });
       setActiveRuns((prev) =>
         prev.map((r) =>
           r.id === id
             ? {
                 ...r,
                 status: "failed" as const,
-                error: err instanceof Error ? err.message : "Failed to resume run",
+                error: msg,
               }
             : r
         )
@@ -366,6 +383,7 @@ export function ActiveRunsProvider({ children }: { children: React.ReactNode }) 
 
   const removeRun = React.useCallback((id: string) => {
     setActiveRuns((prev) => prev.filter((r) => r.id !== id));
+    toast.info("Card dismissed.");
   }, []);
 
   const summary = React.useMemo(() => {

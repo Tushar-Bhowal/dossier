@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { toast } from "@/components/ui/toast";
 
 export const SAMPLE_JD = `Role: Senior Backend Engineer, Infrastructure & Core Payments
 Company: Stripe
@@ -140,13 +141,19 @@ export function CreateKitSheet({ open, onOpenChange, prefillSample = false }: Cr
         days: daysNum,
       });
 
+      toast.info("Kit generation started", {
+        description: "Researching company and role in your workspace...",
+      });
+
       // Clear form and close immediately! Zero wait, no redirect.
       setJd("");
       setCompanyUrl("");
       setDays("14");
       onOpenChange(false);
     } catch (err) {
-      setSingleError(err instanceof Error ? err.message : "Couldn't start generation. Try again.");
+      const msg = err instanceof Error ? err.message : "Couldn't start generation. Try again.";
+      setSingleError(msg);
+      toast.error("Couldn't start generation", { description: msg });
     } finally {
       setIsSubmitting(false);
     }
@@ -203,11 +210,16 @@ export function CreateKitSheet({ open, onOpenChange, prefillSample = false }: Cr
     setIsBulkSubmitting(true);
     try {
       await addBulkRuns(bulkRows);
+      toast.info("Bulk generation started", {
+        description: `Queued ${bulkRows.length} interview kits for generation.`,
+      });
       setBulkRows(null);
       setFileError(null);
       onOpenChange(false);
     } catch (err) {
-      setFileError(err instanceof Error ? err.message : "Failed to queue bulk runs.");
+      const msg = err instanceof Error ? err.message : "Failed to queue bulk runs.";
+      setFileError(msg);
+      toast.error("Bulk generation failed", { description: msg });
     } finally {
       setIsBulkSubmitting(false);
     }

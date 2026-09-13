@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { login, register, ApiError } from "@/lib/api";
 import { useMe } from "@/hooks/use-me";
+import { toast } from "@/components/ui/toast";
 
 // three.js is loaded from a CDN at runtime, so it brings no types with it. This describes only the
 // surface the background actually touches — enough for real type checking without adding a ~600KB
@@ -287,14 +288,22 @@ function AuthContent() {
       if (isLogin) {
         const loggedInUser = await login(email, password);
         queryClient.setQueryData(["me"], loggedInUser);
+        toast.success("Welcome back!", {
+          description: `Signed in as ${loggedInUser.email}.`,
+        });
         router.push("/kits");
       } else {
         const registeredUser = await register(email, password);
         queryClient.setQueryData(["me"], registeredUser);
+        toast.success("Account created successfully!", {
+          description: "Welcome to Dossier.",
+        });
         router.push("/kits");
       }
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Authentication failed. Please try again.");
+      const msg = err instanceof ApiError ? err.message : "Authentication failed. Please try again.";
+      setError(msg);
+      toast.error("Authentication failed", { description: msg });
     } finally {
       setSubmitting(false);
     }

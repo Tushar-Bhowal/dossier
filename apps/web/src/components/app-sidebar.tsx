@@ -8,6 +8,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMe } from "@/hooks/use-me";
 import { logout } from "@/lib/api";
+import { toast } from "@/components/ui/toast";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { navGroups } from "@/components/app-shared";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -31,11 +33,26 @@ export function AppSidebar() {
   const queryClient = useQueryClient();
   const { data: user } = useMe();
   const { isMobile, setOpenMobile, toggleSidebar } = useSidebar();
+  const [confirmSignOutOpen, setConfirmSignOutOpen] = React.useState(false);
 
   async function handleSignOut() {
-    await logout();
-    queryClient.setQueryData(["me"], undefined);
-    router.push("/?mode=login");
+    try {
+      await logout();
+      // Cancel any in-flight queries first, then remove the "me" cache entry
+      // entirely (not set to undefined — that triggers a refetch cycle which
+      // causes the dashboard layout to flicker between loading/error states).
+      await queryClient.cancelQueries({ queryKey: ["me"] });
+      queryClient.removeQueries({ queryKey: ["me"] });
+      if (isMobile) {
+        setOpenMobile(false);
+      }
+      toast.success("Signed out successfully.");
+      // replace, not push — prevents back-button bouncing to the dashboard
+      router.replace("/?mode=login");
+    } catch (err) {
+      toast.error("Sign out failed. Please try again.");
+      throw err;
+    }
   }
 
   const userDisplayName = user?.email ? user.email.split("@")[0] : "Candidate";
@@ -143,7 +160,7 @@ export function AppSidebar() {
             </span>
           </div>
           <Button
-            onClick={handleSignOut}
+            onClick={() => setConfirmSignOutOpen(true)}
             title="Sign out"
             aria-label="Sign out"
             size="icon-sm"
@@ -154,6 +171,19 @@ export function AppSidebar() {
           </Button>
         </div>
       </SidebarFooter>
+
+      <ConfirmDialog
+        open={confirmSignOutOpen}
+        onOpenChange={setConfirmSignOutOpen}
+        title="Sign out of Dossier?"
+        description="Are you sure you want to sign out? You will need to log back in to access your interview kits and progress."
+        confirmLabel="Sign out"
+        confirmingLabel="Signing out…"
+        cancelLabel="Cancel"
+        variant="destructive"
+        icon={<LogOut className="size-4" />}
+        onConfirm={handleSignOut}
+      />
     </Sidebar>
   );
 }

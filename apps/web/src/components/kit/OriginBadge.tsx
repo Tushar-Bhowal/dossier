@@ -11,11 +11,11 @@ const VARIANT: Record<Origin, "secondary" | "outline" | "default"> = {
 export function OriginBadge({ origin, pinned }: { origin: Origin; pinned?: boolean }) {
   return (
     <div className="flex flex-wrap items-center gap-1">
-      <Badge variant={VARIANT[origin]} className="text-[0.65rem] px-1.5 py-0 h-5 font-normal rounded-md">
+      <Badge variant={VARIANT[origin]} className="text-[0.65rem] px-1.5 py-0 h-5 font-normal rounded">
         {origin}
       </Badge>
       {pinned ? (
-        <Badge variant="secondary" className="text-[0.65rem] px-1.5 py-0 h-5 font-normal rounded-md">
+        <Badge variant="secondary" className="text-[0.65rem] px-1.5 py-0 h-5 font-normal rounded">
           pinned
         </Badge>
       ) : null}
