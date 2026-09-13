@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { QuestionCard } from "./QuestionCard";
+import { AddQuestionDialog } from "./AddQuestionDialog";
 import { addQuestion } from "./kitMutations";
 import { toast } from "@/components/ui/toast";
 import type { KitEditor } from "./useKitEditor";
@@ -34,8 +35,10 @@ export function CategoryColumn({ category, label, questions, editor }: CategoryC
   const sectionKey = `questions:${category}`;
   const isRegenerating = editor.regenerating.has(sectionKey);
 
-  const handleAddQuestion = () => {
-    editor.mutateNow(`${sectionKey}.add`, addQuestion(category));
+  const [addOpen, setAddOpen] = React.useState(false);
+
+  const handleAddQuestion = (content: { prompt: string; answerOutline: string }) => {
+    editor.mutateNow(`${sectionKey}.add`, addQuestion(category, content));
     toast.success("Question added", {
       description: `New question added to ${label}.`,
     });
@@ -74,7 +77,7 @@ export function CategoryColumn({ category, label, questions, editor }: CategoryC
             type="button"
             variant="ghost"
             size="icon-sm"
-            onClick={handleAddQuestion}
+            onClick={() => setAddOpen(true)}
             title={`Add question to ${label}`}
             className="size-7 rounded text-muted-foreground hover:text-[#FB4128] hover:bg-[#FB4128]/10"
           >
@@ -103,7 +106,7 @@ export function CategoryColumn({ category, label, questions, editor }: CategoryC
                 <p className="text-[11px] text-muted-foreground">No questions in this section.</p>
                 <button
                   type="button"
-                  onClick={handleAddQuestion}
+                  onClick={() => setAddOpen(true)}
                   className="mt-1.5 text-[11px] text-[#FB4128] hover:underline font-medium"
                 >
                   + Add question
@@ -113,6 +116,13 @@ export function CategoryColumn({ category, label, questions, editor }: CategoryC
           </div>
         </SortableContext>
       </CardContent>
+
+      <AddQuestionDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        categoryLabel={label}
+        onAdd={handleAddQuestion}
+      />
     </Card>
   );
 }

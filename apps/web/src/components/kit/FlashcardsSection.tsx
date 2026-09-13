@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Layers, Plus, Repeat, Sparkles } from "lucide-react";
+import { Layers, Plus, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import { EditableField } from "./EditableField";
 import { ItemControls } from "./ItemControls";
 import { OriginBadge } from "./OriginBadge";
 import { SectionHeader } from "./SectionHeader";
+import { AddFlashcardDialog } from "./AddFlashcardDialog";
 import { addFlashcard, deleteFlashcard, editFlashcardField, toggleFlashcardPin } from "./kitMutations";
 import { toast } from "@/components/ui/toast";
 import type { KitEditor } from "./useKitEditor";
@@ -27,10 +28,12 @@ export function FlashcardsSection({ editor }: { editor: KitEditor }) {
     setFlippedCards((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const handleAddFlashcard = () => {
-    editor.mutateNow("flashcards.add", addFlashcard());
+  const [addOpen, setAddOpen] = React.useState(false);
+
+  const handleAddFlashcard = async (content: { front: string; back: string }) => {
+    await editor.mutateNow("flashcards.add", addFlashcard(content));
     toast.success("Flashcard added", {
-      description: "Added a new editable flashcard to your deck.",
+      description: "Added a new card to your deck.",
     });
   };
 
@@ -49,7 +52,7 @@ export function FlashcardsSection({ editor }: { editor: KitEditor }) {
             type="button"
             variant="outline"
             size="sm"
-            onClick={handleAddFlashcard}
+            onClick={() => setAddOpen(true)}
             className="rounded h-8 px-2.5 text-xs text-foreground font-medium gap-1.5 border-border/70 hover:bg-accent transition-colors"
           >
             <Plus className="size-3.5 text-[#FB4128]" />
@@ -173,7 +176,7 @@ export function FlashcardsSection({ editor }: { editor: KitEditor }) {
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={handleAddFlashcard}
+                onClick={() => setAddOpen(true)}
                 className="rounded text-xs gap-1 mt-1"
               >
                 <Plus className="size-3 text-[#FB4128]" />
@@ -183,6 +186,8 @@ export function FlashcardsSection({ editor }: { editor: KitEditor }) {
           )}
         </ul>
       </CardContent>
+
+      <AddFlashcardDialog open={addOpen} onOpenChange={setAddOpen} onAdd={handleAddFlashcard} />
     </Card>
   );
 }

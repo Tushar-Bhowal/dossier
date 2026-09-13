@@ -12,8 +12,13 @@ export interface KitEditor {
   status: Record<string, SaveStatus>;
   /** Applies a local edit immediately and schedules a debounced PATCH (for continuous typing). */
   editField: (key: string, mutator: (kit: Kit) => Kit) => void;
-  /** Applies a local edit immediately and PATCHes right away (for discrete actions: reorder, add, delete, pin). */
-  mutateNow: (key: string, mutator: (kit: Kit) => Kit) => void;
+  /**
+   * Applies a local edit immediately and PATCHes right away (for discrete actions: reorder, add,
+   * delete, pin). Resolves once that save has settled, so a caller that needs to show progress —
+   * an add dialog holding the user's typed input — can await it. Callers that don't care can
+   * ignore the promise; failures are reported by the editor itself either way.
+   */
+  mutateNow: (key: string, mutator: (kit: Kit) => Kit) => Promise<void>;
   regenerating: Set<string>;
   regenerateError: Record<string, string>;
   regenerate: (section: RegenerateSection, key: string) => Promise<void>;
@@ -142,14 +147,14 @@ export function useKitEditor(id: string, initial: { kit: Kit; version: number })
     scheduleFlush();
   }
 
-  function mutateNow(key: string, mutator: (kit: Kit) => Kit) {
+  function mutateNow(key: string, mutator: (kit: Kit) => Kit): Promise<void> {
     editorsRef.current.set(key, mutator);
     kitRef.current = mutator(kitRef.current);
     setKit(kitRef.current);
     pendingKeysRef.current.add(key);
     setStatus((prev) => ({ ...prev, [key]: "saving" }));
     cancelFlush();
-    void flush();
+    return flush();
   }
 
   async function regenerate(section: RegenerateSection, key: string): Promise<void> {

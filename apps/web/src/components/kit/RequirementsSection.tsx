@@ -10,6 +10,7 @@ import { EditableField } from "./EditableField";
 import { ItemControls } from "./ItemControls";
 import { OriginBadge } from "./OriginBadge";
 import { SectionHeader } from "./SectionHeader";
+import { AddRequirementDialog, type NewRequirement } from "./AddRequirementDialog";
 import {
   addRequirement,
   deleteRequirement,
@@ -39,10 +40,12 @@ export function RequirementsSection({ editor }: { editor: KitEditor }) {
   const mustCount = rawRequirements.filter((r) => r.priority === "must").length;
   const niceCount = rawRequirements.filter((r) => r.priority === "nice").length;
 
-  const handleAddRequirement = () => {
-    editor.mutateNow("requirements.add", addRequirement());
+  const [addOpen, setAddOpen] = React.useState(false);
+
+  const handleAddRequirement = async (content: NewRequirement) => {
+    await editor.mutateNow("requirements.add", addRequirement(content));
     toast.success("Requirement added", {
-      description: "Added a new editable role requirement.",
+      description: `Added as a ${content.priority === "must" ? "must-have" : "nice-to-have"}.`,
     });
   };
 
@@ -61,7 +64,7 @@ export function RequirementsSection({ editor }: { editor: KitEditor }) {
             type="button"
             variant="outline"
             size="sm"
-            onClick={handleAddRequirement}
+            onClick={() => setAddOpen(true)}
             className="rounded h-8 px-2.5 text-xs text-foreground font-medium gap-1.5 border-border/70 hover:bg-accent transition-colors"
           >
             <Plus className="size-3.5 text-[#FB4128]" />
@@ -206,7 +209,7 @@ export function RequirementsSection({ editor }: { editor: KitEditor }) {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={handleAddRequirement}
+                  onClick={() => setAddOpen(true)}
                   className="rounded text-xs gap-1 mt-1"
                 >
                   <Plus className="size-3 text-[#FB4128]" />
@@ -217,6 +220,8 @@ export function RequirementsSection({ editor }: { editor: KitEditor }) {
           )}
         </ul>
       </CardContent>
+
+      <AddRequirementDialog open={addOpen} onOpenChange={setAddOpen} onAdd={handleAddRequirement} />
     </Card>
   );
 }

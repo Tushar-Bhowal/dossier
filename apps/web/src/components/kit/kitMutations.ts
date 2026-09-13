@@ -81,15 +81,21 @@ export function deleteRequirement(id: string) {
   });
 }
 
-export function addRequirement() {
+// `text` is required by the kit contract (min length 1), so it is collected up front rather than
+// inserted blank — an empty requirement is not a valid kit and the save is rejected outright.
+export function addRequirement(content: {
+  text: string;
+  kind: Requirement["kind"];
+  priority: Requirement["priority"];
+}) {
   return (kit: Kit): Kit => {
     const mintId = createIdMinter("r", highestIdNumber(kit.role.requirements.map((r) => r.id), "r"));
     const maxOrder = kit.role.requirements.reduce((max, r) => Math.max(max, r.order), -1);
     const requirement: Requirement = {
       id: mintId(),
-      text: "",
-      kind: "technical",
-      priority: "nice",
+      text: content.text.trim(),
+      kind: content.kind,
+      priority: content.priority,
       origin: "manual",
       pinned: false,
       order: maxOrder + 1,
@@ -123,7 +129,12 @@ export function deleteQuestion(id: string) {
   });
 }
 
-export function addQuestion(category: Question["category"]) {
+// `prompt` is required by the kit contract (min length 1), so it is collected up front rather than
+// inserted blank — an empty question is not a valid kit and the save is rejected outright.
+export function addQuestion(
+  category: Question["category"],
+  content: { prompt: string; answerOutline: string; difficulty?: Question["difficulty"] },
+) {
   return (kit: Kit): Kit => {
     const mintId = createIdMinter("q", highestIdNumber(kit.questions.map((q) => q.id), "q"));
     const maxOrder = kit.questions.filter((q) => q.category === category).reduce((max, q) => Math.max(max, q.order), -1);
@@ -131,9 +142,9 @@ export function addQuestion(category: Question["category"]) {
       id: mintId(),
       requirement_ids: [],
       category,
-      prompt: "",
-      answer_outline: "",
-      difficulty: 1,
+      prompt: content.prompt.trim(),
+      answer_outline: content.answerOutline.trim(),
+      difficulty: content.difficulty ?? 1,
       origin: "manual",
       pinned: false,
       order: maxOrder + 1,
@@ -160,11 +171,21 @@ export function deleteFlashcard(id: string) {
   return (kit: Kit): Kit => ({ ...kit, flashcards: kit.flashcards.filter((f) => f.id !== id) });
 }
 
-export function addFlashcard() {
+// `front` and `back` are both required by the kit contract (min length 1), so they are collected
+// up front rather than inserted blank — an empty card is not a valid kit and the save is rejected.
+export function addFlashcard(content: { front: string; back: string }) {
   return (kit: Kit): Kit => {
     const mintId = createIdMinter("f", highestIdNumber(kit.flashcards.map((f) => f.id), "f"));
     const maxOrder = kit.flashcards.reduce((max, f) => Math.max(max, f.order), -1);
-    const flashcard: Flashcard = { id: mintId(), front: "", back: "", requirement_ids: [], origin: "manual", pinned: false, order: maxOrder + 1 };
+    const flashcard: Flashcard = {
+      id: mintId(),
+      front: content.front.trim(),
+      back: content.back.trim(),
+      requirement_ids: [],
+      origin: "manual",
+      pinned: false,
+      order: maxOrder + 1,
+    };
     return { ...kit, flashcards: [...kit.flashcards, flashcard] };
   };
 }
