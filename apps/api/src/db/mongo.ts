@@ -11,7 +11,19 @@ function getClientPromise(): Promise<MongoClient> {
     if (!uri) {
       throw new Error('MONGODB_URI is required (see .env.example)');
     }
-    clientPromise = new MongoClient(uri).connect();
+    clientPromise = new MongoClient(uri, {
+      serverSelectionTimeoutMS: 8000,
+      connectTimeoutMS: 8000,
+      socketTimeoutMS: 20000,
+    })
+      .connect()
+      // A failed connection attempt (e.g. an Atlas M0 cluster still waking from auto-pause)
+      // must not stay cached as a rejected promise — every later request would otherwise fail
+      // immediately forever. Clear it so the next call tries again.
+      .catch((err) => {
+        clientPromise = null;
+        throw err;
+      });
   }
   return clientPromise;
 }
