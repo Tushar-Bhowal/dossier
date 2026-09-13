@@ -8,6 +8,8 @@ practise against it inside the app.
 
 Built for the Trao Full-Stack Engineering Assessment (`FS-AI-INTERVIEW-01`).
 
+**Live:** https://dossier-navy.vercel.app
+
 ## Tech stack
 
 | Layer | Choice | Why |
@@ -16,7 +18,7 @@ Built for the Trao Full-Stack Engineering Assessment (`FS-AI-INTERVIEW-01`).
 | Backend | Express, mounted under Next.js in the same Vercel project | Matches the preferred stack; same-origin keeps session cookies simple (no `SameSite=None` third-party cookie issue a split-origin deploy would force) |
 | Database | MongoDB Atlas (native driver, no ODM) | The kit's structure is specified exactly by the brief (Appendix A) and validated with Zod — a second schema layer from an ODM would just be a second source of truth to keep in sync |
 | Language | TypeScript, strict | Matches the preferred stack |
-| LLM | Google Gemini (`gemini-2.5-flash`, `gemini-2.5-flash-lite` for cheaper steps) | Genuine free tier, structured output support (`responseSchema`), no card required |
+| LLM | Google Gemini (`gemini-3.6-flash`, `gemini-3.5-flash-lite` for cheaper steps), with Groq (`openai/gpt-oss-120b`/`20b`) as an optional fallback | Genuine free tier, structured output support (`responseSchema`), no card required. Groq stands behind Gemini so one provider's bad day (a quota reset, a model deprecation) doesn't fail a whole run — see "LLM provider and fallback" below |
 | Web search | Tavily, with a keyless DuckDuckGo/Reddit fallback | Used only for public interview-process discussion, not the company crawl itself (see Architecture) |
 | Scraping | Node's built-in `fetch` + `cheerio` | See "Retrieval approach" below — no scraping SDK is usable for the batch CLI's requirement, so this is hand-rolled deliberately, not by default |
 
@@ -31,7 +33,87 @@ fetcher, a search client, a persistence store). Three things consume it:
 - `tools/evaluate` — the batch CLI (`npm run evaluate`), running the exact same pipeline code the
   web app uses, not a parallel implementation.
 
-*(This section will grow with the real component/data-flow diagram as the pipeline is built.)*
+```
+JD text + company URL ──► extractRequirements (critical)
+                              │
+        ┌─────────────────────┴─────────────────────┐
+        ▼                                            ▼
+  crawlCompany ──► discoverHiringPages      searchPublicDiscussion
+        │                    │                        │
+        └─────────┬──────────┴────────────────────────┘
+                   ▼
+          generateCompanyBrief
+                   │
+                   ▼
+           generateQuestions (critical, one call per category)
+                   │
+                   ▼
+     fillCoverageGaps (up to 3 passes, template safety-net on the 3rd)
+                   │
+                   ▼
+           generateFlashcards
+                   │
+                   ▼
+             buildSchedule (critical, pure — no LLM call)
+                   │
+                   ▼
+                Kit (validated against Appendix A before it's ever written)
+```
+
+Every arrow is a step in `packages/core/src/pipeline/definition.ts`, executed by the durable
+runner (`pipeline/runner.ts`) shared by `apps/api` and `tools/evaluate` — not two implementations
+kept in sync by hand. Steps marked `critical` fail the whole run if they throw; every other step's
+failure is recorded `skipped` with a reason and the run continues (§2: a missing source is not a
+failed kit). The runner persists a `RunRecord` after every step, so a run interrupted by the wall-
+clock budget (240s) comes back as `partial` and resumes exactly where it stopped — replaying every
+already-`ok` step's output rather than redoing paid-for work — instead of restarting from scratch.
+
+### Editing, regeneration, and provenance (§6)
+
+Every requirement, question, and flashcard carries an `origin`: `generated` (the model's own
+output), `edited` (a user changed it), `manual` (a user added it from scratch), or `template` (a
+deterministic fallback question, minted only when the coverage gap-fill loop exhausts its 3 passes
+and a must-have requirement is still uncovered). Clicking Regenerate on a category replaces only
+items still `generated`/`template` and not pinned — anything `edited`, `manual`, or pinned survives
+untouched, at its original position (`packages/core/src/domain/merge.ts`). The company brief is the
+one exception: it's regenerated as a single unit (§6 lists "the company brief" as a whole section,
+not per-field), so editing a field and then regenerating replaces the whole brief — there's no
+per-field survival to preserve for something that isn't itself made of separately-orderable items.
+
+### Coverage check and the stop rule (§4)
+
+After questions are generated, `checkCoverage` takes the set difference between every requirement
+id and every id referenced by a question — must-priority and nice-priority gaps are reported
+separately, since only uncovered *musts* drive anything further. `fillCoverageGaps` runs up to 3
+targeted passes, asking the model only about the requirements still uncovered, and stops the
+moment every must is covered — nice-to-have gaps are reported honestly and never chased, since
+§4's stop condition is specifically about musts. A must still uncovered after all 3 passes gets a
+deterministic, non-LLM template question (`origin: 'template'`) rather than shipping with a hole in
+the one thing the brief calls a hard failure: *"a kit that ships with uncovered must-have
+requirements has failed at the one job it had."*
+
+### Schedule allocation (§8)
+
+`domain/schedule.ts` is a pure function, no LLM call. Time is front-loaded — day 1 gets roughly
+1.3x the average per-day budget, the last day roughly 0.7x — so harder, must-priority material
+lands earliest rather than the night before. If there are more days than content to fill them
+naturally, the extra days become review days cycling back through the same priority-ordered
+question list; this is static re-exposure, not adaptive spaced repetition, since that needs actual
+practice data (confidence ratings) the schedule itself doesn't have — adaptive spacing is what
+practice mode's Leitner system does instead, using the same deadline-clamped bound (a card can
+never be scheduled to resurface after the interview date).
+
+### LLM provider and fallback
+
+Every LLM call goes through `createLlmChain` (`packages/core/src/adapters/llm/llmChain.ts`):
+Gemini is primary, and Groq stands in if every Gemini attempt fails. `GROQ_API_KEY` is optional —
+unset, the chain collapses to Gemini alone with its normal retry ladder (up to 5 attempts,
+exponential backoff honouring `retry-delay`, capped at 30s). Set, Gemini gets exactly **one**
+attempt before handing off, rather than retrying a provider that's already failing — retrying
+first costs up to 30s of backoff per attempt against a 240s run budget, for no benefit when an
+independent provider can just answer instead. Both providers implement the same `LlmPort`
+interface (Zod-schema-constrained output, one repair attempt on a schema-validation failure), so
+no pipeline step or prompt knows or cares which one actually answered a given call.
 
 ## Retrieval approach
 
@@ -153,6 +235,8 @@ changes, `rm -rf apps/web/.next` first.
 | `GEMINI_API_KEY` | Yes | Google Gemini API key — every generation/extraction/coverage LLM call |
 | `LLM_RPM` / `LLM_TPM` | No (defaults set) | Requests/tokens-per-minute the shared rate limiter enforces in front of Gemini calls — match your key's tier |
 | `TAVILY_API_KEY` | No | Public interview-discussion search; unset falls through silently to the keyless DuckDuckGo/Reddit fallback |
+| `GROQ_API_KEY` | No | Second LLM provider, used only if every Gemini attempt fails (see "LLM provider and fallback" above); unset means a Gemini failure is a failure, same as without this feature |
+| `GROQ_RPM` / `GROQ_TPM` | No (defaults set) | Requests/tokens-per-minute for the Groq rate limiter — independent of Gemini's, since it's a different provider's own free-tier budget |
 | `MONGODB_URI` | Yes | MongoDB Atlas connection string (M0 free tier works) — needs `0.0.0.0/0` network access for serverless functions |
 | `MONGODB_DB` | No (defaults to `dossier`) | Database name |
 | `JWT_SECRET` | Yes | Signs session JWTs — any long random string; rotating it invalidates every existing session |
@@ -171,27 +255,82 @@ parallel implementation.
 ### Deploying to Vercel
 
 One Vercel project serves both `apps/web` and the Express API mounted under it (§ Architecture) —
-there is no separate backend deployment.
+there is no separate backend deployment. This is an npm-workspaces monorepo, so two settings need
+to be correct beyond the defaults, both easy to get wrong silently:
+
+- **Root Directory must be `apps/web`.** This is a *project setting*, not a `vercel.json` key —
+  `{"rootDirectory": "apps/web"}` in `vercel.json` is rejected by schema validation. Set it via the
+  dashboard, or `vercel api "/v9/projects/<name>?teamId=<id>" -X PATCH -F rootDirectory=apps/web`.
+- **Framework preset must be `nextjs`, explicitly.** Left unset/"Other," Vercel skips its Next.js
+  build integration entirely — `next build` still runs and reports success, but the deployment
+  serves the output as generic static files and 404s on every route. Fix: `vercel project update
+  --framework nextjs`.
 
 ```
 vercel login
 vercel link
-vercel env add GEMINI_API_KEY production   # repeat for MONGODB_URI, MONGODB_DB, JWT_SECRET, TAVILY_API_KEY
-vercel --prod
+vercel env add GEMINI_API_KEY production,preview   # repeat for MONGODB_URI, MONGODB_DB, JWT_SECRET,
+                                                    # TAVILY_API_KEY, GROQ_API_KEY, and the *_RPM/*_TPM vars
+vercel deploy          # preview first — verify before going live
+vercel promote <url>   # once verified, promotes with a fresh production-env build
 ```
 
 Do **not** set `ALLOW_PRIVATE_HOSTS` in the Vercel environment — its absence is what keeps §11's
 private-address rejection active in production; it's a CLI-only escape hatch the batch command uses
-to reach the local-address test fixtures, and `apps/api` never reads it regardless. After deploying,
-confirm: `/api/v1/health` responds on the same public URL as the app; a signed-out visitor is
-redirected away from a protected page or gets a 401 from a protected endpoint; and login round-trips
-the session cookie in a fresh browser profile (proving the same-origin delegation from Task 2 holds
-under Vercel's serverless runtime, not just `next dev`).
+to reach the local-address test fixtures, and `apps/api` never reads it regardless. **MongoDB
+Atlas needs `0.0.0.0/0` in Network Access** — serverless functions have no fixed IP, so without
+this every connection fails with a TLS handshake error, not a clear "access denied" message. After
+deploying, confirm: the homepage and `/api/v1/*` respond on the same public URL; a signed-out
+visitor gets a 401 from a protected endpoint; login round-trips a `httpOnly`/`Secure`/`SameSite=Lax`
+session cookie in a fresh browser profile; and no `NEXT_PUBLIC_` variable exposes a secret.
+
+One CLI quirk worth knowing: `vercel deploy` with no flags targets **Production** by default, not
+Preview, when run from the git-integration's production branch (`main`) with GitHub connected —
+despite Preview being the documented default. Deploy from a non-`main` branch for a guaranteed
+preview, or check the target with `vercel inspect` immediately after.
 
 ## Known limitations
 
-*(Filled in as real trade-offs get made — e.g. the DNS-rebinding TOCTOU gap noted in the
-architecture doc's retrieval rationale.)*
+- **DNS-rebinding TOCTOU gap.** The SSRF gate resolves a hostname once to check it against the
+  private/loopback/CGNAT blocklist, then `fetch` resolves it again to actually connect. A TTL-0
+  attacker-controlled DNS record could theoretically answer differently between the two lookups.
+  Closing this fully needs pinning the validated IP through to the socket via a custom `fetch`
+  dispatcher — not done; accepted as a low-probability risk against the actual threat model (a
+  company's own hiring pages, not an adversarial target).
+- **Free-tier LLM model IDs are not stable.** Both providers' configured models were found broken
+  during this project without warning: Gemini's `gemini-2.5-*` ids returned 404 for a newly created
+  key ("no longer available to new users"), and Groq had fully retired the two Llama models
+  originally configured. Both are fixed to currently-working ids, but a third-party free tier can
+  deprecate a model at any time — there's no way to make this permanently future-proof short of a
+  paid tier with a stability guarantee.
+- **The Groq fallback is a second free-tier budget, not a safety net for sustained load.** It
+  absorbs a single bad Gemini call or a temporary quota exhaustion, but two free-tier limits stacked
+  is still a small total budget — a real burst of concurrent kit generations can exhaust both.
+- **Bulk upload is fail-fast on the whole file**, not per-row: one invalid row rejects the entire
+  upload even if the rest are valid. This is a deliberate current choice (simpler error surface,
+  and a partially-processed file is arguably more confusing than none processed), not an oversight
+  — worth reconsidering if bulk files in practice tend to be large with occasional bad rows.
+  Malformed *individual cases* in the **batch CLI** (a different code path, `tools/evaluate`) are
+  handled per-case instead — one bad case is marked `failed` and every other case still runs.
+  Consistency between the two doesn't matter here since they solve different problems: the CLI
+  processes cases nobody has to review before they run, and bulk upload is a form a person just
+  filled in and can be asked to fix and resubmit.
+- **`apps/api` and `apps/web` have zero automated tests.** All 188 tests are in `packages/core` —
+  the pure domain logic and the pipeline steps/adapters, which is where the brief's hardest
+  correctness requirements live (anti-hallucination, coverage, provenance-aware merge, the durable
+  runner). Route handlers, auth middleware, and UI components are covered only by manual testing
+  (`.claude/plans/testing-plan.md`) and the batch CLI's end-to-end runs, not unit or integration
+  tests. Deliberately deferred rather than skipped — a decision made to spend limited time on the
+  pipeline correctness that's actually graded, not on testing thin route-handler wiring.
+- **The 5-cases-in-15-minutes batch timing (§9) is condition-dependent.** Measured at ~13.6 minutes
+  for 5 representative cases — under budget, but that run leaned on the Groq fallback because
+  Gemini's free-tier daily quota was already exhausted from earlier testing in the same session. A
+  fresh Gemini quota should be meaningfully faster; a request that fails over to Groq for every
+  call is close to the slower end of what's been measured.
+- **The company brief is regenerated as a whole unit**, not merged field-by-field like requirements/
+  questions/flashcards — see "Editing, regeneration, and provenance" above. This is a deliberate
+  reading of §6, not a bug, but it does mean an edited brief field is discarded on regeneration
+  where an edited question wouldn't be.
 
 ## Development log
 
@@ -391,6 +530,8 @@ network code. Phase 1 (the actual pipeline — LLM calls, crawling, search) star
   `GEMINI_API_KEY` and live network access to measure** — neither is available in this build
   environment, so that number has not yet been measured against the live API and is a follow-up
   before submission, per the architecture doc's own risk-table advice to measure it days early.
+  *(Update: measured later at ~13.6 minutes — see "Known limitations" and the LLM-reliability entry
+  further down for the conditions that number was measured under.)*
 - Post-Phase-1 security review fixed: batch CLI no longer force-disables SSRF protection, IPv6
   loopback/link-local literals (bracketed or DNS-resolved) are actually checked, `robots.txt`
   fetches are size-capped, hop-2 crawl links are origin-restricted, the Gemini key travels as a
@@ -423,3 +564,46 @@ network code. Phase 1 (the actual pipeline — LLM calls, crawling, search) star
   and the next agent's builder will replace. No `GEMINI_API_KEY`/`MONGODB_URI` were available in this
   environment, so the live generation path is unverified beyond code review and the auth error-path
   smoke test (a 401/500 from `/auth/*` renders correctly end to end through the delegation route).
+  *(Update: the live generation path was verified end to end in later sessions — real batch CLI
+  runs, and the deployed app itself. This entry is left as written at the time.)*
+- Builder editing, reorder, and regeneration (Tasks 27–29): inline fields debounce-save with
+  optimistic local state and per-item status, a stale `version` rebase-and-retries rather than
+  losing the in-flight edit; drag-and-drop reorder/recategorise via `dnd-kit` (kept off Framer's
+  `layout` prop on sortable items — the two fight over the same transform); add/delete/pin plus
+  per-section regenerate, which is the actual demo of Task 6's merge logic: a pinned or edited item
+  visibly survives a regeneration while the rest cross-fades to fresh content.
+- Practice mode + schedule view (Tasks 30–31): flashcard stepping with confidence capture, feeding
+  the Leitner intervals from Task 8; deadline-clamped ordering so a card is never scheduled to
+  resurface after the interview date. Full empty/loading/error states and a 360px/keyboard/
+  reduced-motion pass across the app.
+- **Single-surface kits workspace (Phase 3.5, 36a–36e).** Replaced `/kits`'s list-plus-separate-
+  `/kits/new`-page with a card grid where creating a kit opens a side sheet (room enough for a full
+  JD paste, unlike a modal) and drops a live-progress card straight into the grid rather than
+  redirecting or blocking behind a spinner. Bulk upload is a tab in the same sheet, concurrency-
+  limited to 2 with visibly distinct queued/running/failed states. Required making runs durable and
+  resumable server-side (`POST /runs` returns immediately with a queued record; the pipeline
+  executes in the background) instead of blocking the request on the whole generation — that's what
+  makes background progress tracking possible at all.
+- Toast notifications and accessible confirm dialogs replacing every native `window.confirm()`,
+  covering auth, generation, editing, and practice-mode events. Kit Builder and practice mode
+  visually redesigned (zero text truncation, priority filters, category track icons, a 5-box
+  Leitner mastery meter with color-coded ratings).
+- **LLM reliability pass.** Both Gemini's and (once added) Groq's configured free-tier model ids
+  were found broken against live keys mid-project — see "Known limitations." Added the Groq
+  fallback chain, cut Gemini to a single attempt before failover instead of retrying first (~18x
+  faster on a failing call, measured), fixed `.env` not loading in the batch CLI on a clean shell,
+  and made one malformed case in a batch file `failed` instead of crashing the whole run.
+- **Fixed `crawlCompany` crawling the wrong URL.** It fetched `new URL(companyUrl).origin` instead
+  of the given URL, so any company URL with a path — not just a bare domain — crawled zero real
+  pages and silently fell back to fabricating brief content from irrelevant search results. Caught
+  by the batch CLI fixtures, which deliberately scope both fixture companies under a path.
+- **Fixed the generating-kit cards freezing on `partial` runs.** A run that hit its time budget had
+  no UI state at all and fell through to a permanently frozen "Generating…" card. Root-caused to a
+  chain of issues in `useActiveRuns`: no handling for `partial`, a polling effect that rebuilt
+  itself every tick against stale closures, and a success-cleanup timer rescheduled on every poll
+  instead of once. `partial` now renders as its own resumable state with a Resume action.
+- **Deployed to Vercel (Task 32).** Live at https://dossier-navy.vercel.app. Two real deploy bugs
+  hit and fixed, both covered under "Deploying to Vercel" above: the Framework preset silently
+  defaulting to "Other" (every route 404s despite a successful build), and MongoDB Atlas rejecting
+  every serverless connection until `0.0.0.0/0` was added to Network Access. All four of Task 32's
+  live checks verified against the real deployment, not just code review.
