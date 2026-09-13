@@ -111,14 +111,17 @@ export function useKitEditor(id: string, initial: { kit: Kit; version: number })
         }
         return;
       }
-    } catch {
+    } catch (err) {
       for (const k of keys) pendingKeysRef.current.add(k);
       setStatus((prev) => {
         const next = { ...prev };
         for (const k of keys) next[k] = "retry";
         return next;
       });
-      toast.error("Network error while saving changes.");
+      // A real fetch/DNS failure throws something other than ApiError with no useful message;
+      // an ApiError means the request reached the server and it said something specific — showing
+      // "network error" for that instead sends the user checking their wifi for a server-side bug.
+      toast.error(err instanceof ApiError ? err.message : "Network error while saving changes.");
     } finally {
       flushInFlightRef.current = false;
       if (flushQueuedRef.current) {
