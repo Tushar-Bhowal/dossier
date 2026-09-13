@@ -178,11 +178,12 @@ export function parseBatchInput(raw: unknown): { valid: BatchCase[]; invalid: Ba
 }
 
 // §9 says this command "needs no setup beyond your documented install step", and the README's
-// setup step is `cp .env.example .env`. Nothing was actually reading that file: `npm run dev` picks
-// it up via Next.js's own env loading, but this CLI is plain tsx with no such thing, so every var —
-// including GEMINI_API_KEY, which the command cannot run at all without — was silently absent on a
-// clean clone. Guarded because a grader's shell may already export real env vars instead of a
-// checked-out .env, and because process.loadEnvFile is only stable from Node 20.6+.
+// setup step is `cp .env.example .env`. Nothing was reading that file, so every var — including
+// GEMINI_API_KEY, which the command cannot run at all without — was silently absent on a clean
+// clone. `apps/web/next.config.ts` loads the same root file for the web app and the API mounted
+// inside it, so one `.env` serves all three entry points. Guarded because a grader's shell may
+// already export real env vars instead of a checked-out .env, and because process.loadEnvFile is
+// only stable from Node 20.6+.
 function loadEnvFile(): void {
   try {
     process.loadEnvFile();

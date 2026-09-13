@@ -223,6 +223,13 @@ npm run lint
 cd apps/web && npm run dev   # http://localhost:3000 — serves both the app and /api/v1/*
 ```
 
+**There is exactly one env file: `.env` at the repo root.** Don't create one inside `apps/web` or
+`apps/api`. Next.js normally only reads `.env*` from its own directory, so `apps/web/next.config.ts`
+explicitly loads the root file — the web app, the Express API mounted inside it, and the batch CLI
+all read the same single source of truth. (A `.env.local` may appear at the root after running
+`vercel link`; that's the Vercel CLI's own file holding a short-lived OIDC token, it's gitignored,
+and nothing in this project reads it.)
+
 `apps/web` must run on webpack, not Turbopack (`next dev --webpack`, already the default in its
 `package.json`) — this monorepo's NodeNext-style relative `.js`-pointing-at-`.ts` imports are a
 confirmed Turbopack limitation. If a route 500s with a stale webpack module error after pulling new
