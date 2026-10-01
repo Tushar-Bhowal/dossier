@@ -102,7 +102,7 @@ export default function RunPage({ params }: PageProps<"/runs/[id]">) {
   const live = run.status === "queued" || run.status === "running" || run.status === "partial";
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+    <div className="flex w-full flex-col gap-6">
       <section className="relative overflow-hidden rounded-lg border border-white/[0.08] bg-[#0f0f0f] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:p-8">
         <div
           aria-hidden

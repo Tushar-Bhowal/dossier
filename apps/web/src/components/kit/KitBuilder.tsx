@@ -10,6 +10,7 @@ import {
   ArrowLeft,
   Building2,
   Calendar,
+  FileText,
   GraduationCap,
   HelpCircle,
   Layers,
@@ -97,6 +98,14 @@ export function KitBuilder({ id, initial }: { id: string; initial: { kit: Kit; v
             >
               <Trash2 className="size-4" />
               <span>Delete</span>
+            </Button>
+            <Button asChild variant="outline">
+              <Link
+                href={`/resumes?${new URLSearchParams({ tailorKit: id, role: roleTitle, company }).toString()}`}
+              >
+                <FileText className="size-4" />
+                <span>Tailor my resume</span>
+              </Link>
             </Button>
             <Button asChild size="lg">
               <Link href={`/kits/${id}/practice`}>

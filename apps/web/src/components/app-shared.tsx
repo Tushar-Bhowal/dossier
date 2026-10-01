@@ -22,6 +22,11 @@ export const navGroups: NavGroup[] = [
         path: "/kits",
         icon: <FolderKanban className="size-[18px]" />,
       },
+      {
+        title: "Resume Studio",
+        path: "/resumes",
+        icon: <FileText className="size-[18px]" />,
+      },
     ],
   },
   {
@@ -29,7 +34,6 @@ export const navGroups: NavGroup[] = [
     items: [
       { title: "Roadmaps", path: "/roadmaps", icon: <Map className="size-[18px]" />, soon: true },
       { title: "Mock interviews", path: "/interviews", icon: <Mic className="size-[18px]" />, soon: true },
-      { title: "Resume Studio", path: "/resumes", icon: <FileText className="size-[18px]" />, soon: true },
     ],
   },
 ];
