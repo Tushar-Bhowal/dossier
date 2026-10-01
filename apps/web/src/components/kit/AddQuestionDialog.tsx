@@ -21,12 +21,7 @@ interface AddQuestionDialogProps {
   onAdd: (content: { prompt: string; answerOutline: string }) => Promise<void> | void;
 }
 
-export function AddQuestionDialog({
-  open,
-  onOpenChange,
-  categoryLabel,
-  onAdd,
-}: AddQuestionDialogProps) {
+export function AddQuestionDialog({ open, onOpenChange, categoryLabel, onAdd }: AddQuestionDialogProps) {
   const [prompt, setPrompt] = React.useState("");
   const [answerOutline, setAnswerOutline] = React.useState("");
   const [showPromptError, setShowPromptError] = React.useState(false);
@@ -34,15 +29,19 @@ export function AddQuestionDialog({
 
   const promptIsEmpty = prompt.trim().length === 0;
 
-  // Reset whenever the dialog opens, so a cancelled draft never leaks into the next one.
-  React.useEffect(() => {
+  // Reset whenever the dialog opens, so a cancelled draft never leaks into the next one. Done
+  // during render rather than in an effect, which would paint the stale draft for a frame first.
+  const openKey = open;
+  const [prevOpenKey, setPrevOpenKey] = React.useState<typeof openKey | null>(null);
+  if (openKey !== prevOpenKey) {
+    setPrevOpenKey(openKey);
     if (open) {
       setPrompt("");
       setAnswerOutline("");
       setShowPromptError(false);
       setIsSaving(false);
     }
-  }, [open]);
+  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -66,14 +65,14 @@ export function AddQuestionDialog({
           <DialogHeader>
             <DialogTitle>Add a question</DialogTitle>
             <DialogDescription>
-              Added to <span className="text-foreground">{categoryLabel}</span>. It&apos;s marked as
-              your own, so regenerating this category won&apos;t replace it.
+              Added to <span className="text-foreground">{categoryLabel}</span>. It&apos;s marked as your own,
+              so regenerating this category won&apos;t replace it.
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="add-question-prompt">
-              Question <span className="text-[#FB4128]">*</span>
+              Question <span className="text-[#ff7a5c]">*</span>
             </Label>
             <Textarea
               id="add-question-prompt"

@@ -3,10 +3,9 @@
 import * as React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { BookOpen, GripVertical } from "lucide-react";
+import { BookOpen, ChevronDown, GripVertical } from "lucide-react";
 import type { Question } from "@dossier/core";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { EditableField } from "./EditableField";
 import { ItemControls } from "./ItemControls";
 import { OriginBadge } from "./OriginBadge";
@@ -30,40 +29,48 @@ export function QuestionCard({ question, editor }: QuestionCardProps) {
     transition,
   };
 
-  const [outlineOpen, setOutlineOpen] = React.useState(Boolean(question.answer_outline));
+  // Collapsed by default: the full answer guides made the board several screens tall.
+  const [outlineOpen, setOutlineOpen] = React.useState(false);
+  const hasOutline = Boolean(question.answer_outline);
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`group relative flex flex-col gap-2.5 rounded border p-3 transition-all ${
+      className={cn(
+        "group relative flex flex-col gap-3 rounded-lg border p-4 transition-[border-color,box-shadow,background-color]",
         isDragging
-          ? "z-50 opacity-80 shadow-lg ring-2 ring-primary/40 bg-card border-primary/50"
-          : "bg-card/60 hover:bg-card border-border/70 hover:border-border shadow-xs hover:shadow-sm"
-      } ${question.pinned ? "ring-1 ring-primary/20 bg-primary/5" : ""}`}
+          ? "z-50 border-primary/50 bg-[#171717] opacity-90 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.9)] ring-2 ring-primary/40"
+          : "border-white/[0.08] bg-[#141414] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:border-white/[0.14]",
+        question.pinned && "border-primary/30 bg-primary/[0.05]",
+      )}
     >
-      {/* Card Header: Drag Handle & Meta */}
-      <div className="flex items-center justify-between gap-1.5">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <Button
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2">
+          <button
             type="button"
-            variant="ghost"
-            size="icon-sm"
-            className="size-6 shrink-0 cursor-grab touch-none active:cursor-grabbing text-muted-foreground/60 hover:text-foreground hover:bg-secondary rounded"
+            className="flex size-7 shrink-0 cursor-grab touch-none items-center justify-center rounded-lg text-white/40 transition-colors hover:bg-white/5 hover:text-white active:cursor-grabbing"
             aria-label={`Reorder question: ${question.prompt || "untitled"}`}
             {...attributes}
             {...listeners}
           >
-            <GripVertical className="size-3.5" />
-          </Button>
-
+            <GripVertical className="size-4" />
+          </button>
           <span
-            className="inline-flex items-center rounded bg-muted/60 border border-border/50 px-1.5 py-0.5 text-[0.68rem] font-medium text-muted-foreground shrink-0"
+            className="flex items-center gap-1"
             title={`Difficulty: ${question.difficulty} of 3`}
+            aria-label={`Difficulty ${question.difficulty} of 3`}
           >
-            Diff {question.difficulty}/3
+            {[1, 2, 3].map((n) => (
+              <span
+                key={n}
+                className={cn(
+                  "h-1.5 w-3 rounded-full",
+                  n <= question.difficulty ? "bg-[#ff7a5c]" : "bg-white/12",
+                )}
+              />
+            ))}
           </span>
-
           <OriginBadge origin={question.origin} pinned={question.pinned} />
         </div>
 
@@ -78,50 +85,48 @@ export function QuestionCard({ question, editor }: QuestionCardProps) {
         />
       </div>
 
-      {/* Question Prompt Field */}
-      <div className="flex flex-col gap-1">
-        <label className="text-[11px] font-semibold text-foreground/80 uppercase tracking-wider">
-          Question Prompt
-        </label>
-        <EditableField
-          value={question.prompt}
-          onChange={(value) => editor.editField(`question:${question.id}.prompt`, editQuestionField(question.id, "prompt", value))}
-          status={editor.status[`question:${question.id}.prompt`]}
-          ariaLabel="Question prompt"
-          placeholder="Enter the interview question or scenario…"
-          rows={2}
-          className="text-sm font-medium leading-snug text-foreground bg-transparent border-border/40 hover:border-border focus:border-border/80"
-        />
-      </div>
+      <EditableField
+        value={question.prompt}
+        onChange={(value) =>
+          editor.editField(`question:${question.id}.prompt`, editQuestionField(question.id, "prompt", value))
+        }
+        status={editor.status[`question:${question.id}.prompt`]}
+        ariaLabel="Question prompt"
+        placeholder="Enter the interview question or scenario…"
+        rows={2}
+        className="text-[15px] font-semibold leading-relaxed text-white"
+      />
 
-      {/* Answer Outline / Evaluation Guide */}
-      <div className="mt-1 rounded border border-border/40 bg-muted/20 p-2.5 flex flex-col gap-1.5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
-            <BookOpen className="size-3 text-[#FB4128]" />
-            <span>Answer Guide & Key Criteria</span>
-          </div>
-          {!outlineOpen && (
-            <button
-              type="button"
-              onClick={() => setOutlineOpen(true)}
-              className="text-[10px] text-muted-foreground hover:text-foreground underline underline-offset-2"
-            >
-              Add notes
-            </button>
-          )}
-        </div>
-
+      <div className="rounded-lg border border-white/[0.06] bg-black/25">
+        <button
+          type="button"
+          onClick={() => setOutlineOpen((v) => !v)}
+          aria-expanded={outlineOpen}
+          className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-[13px] font-semibold text-white/70 transition-colors hover:text-white"
+        >
+          <span className="flex items-center gap-2">
+            <BookOpen className="size-3.5 text-[#ff7a5c]" />
+            {hasOutline ? "Answer guide" : "Add an answer guide"}
+          </span>
+          <ChevronDown className={cn("size-4 transition-transform", outlineOpen && "rotate-180")} />
+        </button>
         {outlineOpen && (
-          <EditableField
-            value={question.answer_outline}
-            onChange={(value) => editor.editField(`question:${question.id}.answer_outline`, editQuestionField(question.id, "answer_outline", value))}
-            status={editor.status[`question:${question.id}.answer_outline`]}
-            ariaLabel="Answer outline"
-            placeholder="Key concepts, expected answers, and evaluation checkpoints…"
-            rows={2}
-            className="text-xs leading-relaxed text-muted-foreground bg-transparent border-transparent hover:border-border/30 focus:border-border/60 p-1"
-          />
+          <div className="border-t border-white/[0.06] px-3 pb-2 pt-2">
+            <EditableField
+              value={question.answer_outline}
+              onChange={(value) =>
+                editor.editField(
+                  `question:${question.id}.answer_outline`,
+                  editQuestionField(question.id, "answer_outline", value),
+                )
+              }
+              status={editor.status[`question:${question.id}.answer_outline`]}
+              ariaLabel="Answer outline"
+              placeholder="Key concepts, expected answers, and evaluation checkpoints…"
+              rows={2}
+              className="text-sm leading-relaxed text-white/70"
+            />
+          </div>
         )}
       </div>
     </div>

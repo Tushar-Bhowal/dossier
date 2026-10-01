@@ -20,11 +20,29 @@ export const STATUS_STYLE: Record<
   RunStep["status"],
   { dot: string; label: string; text: string; border: string }
 > = {
-  pending: { dot: "bg-muted-foreground/40", label: "Pending", text: "text-muted-foreground", border: "border-border" },
+  pending: {
+    dot: "bg-muted-foreground/40",
+    label: "Waiting",
+    text: "text-white/45",
+    border: "border-white/10",
+  },
   running: { dot: "bg-sky-400", label: "Running", text: "text-sky-400", border: "border-sky-500/40" },
   ok: { dot: "bg-emerald-400", label: "Done", text: "text-emerald-400", border: "border-emerald-500/30" },
   skipped: { dot: "bg-amber-400", label: "Skipped", text: "text-amber-400", border: "border-amber-500/30" },
-  failed: { dot: "bg-destructive", label: "Failed", text: "text-destructive", border: "border-destructive/40" },
+  failed: {
+    dot: "bg-destructive",
+    label: "Failed",
+    text: "text-destructive",
+    border: "border-destructive/40",
+  },
+};
+
+const TILE_BG: Record<RunStep["status"], string> = {
+  pending: "bg-white/[0.03]",
+  running: "bg-sky-500/10",
+  ok: "bg-emerald-500/10",
+  skipped: "bg-amber-500/10",
+  failed: "bg-destructive/10",
 };
 
 const listVariants = {
@@ -57,7 +75,10 @@ function StepIcon({ status }: { status: RunStep["status"] }) {
             initial={{ opacity: 0, scale: 0.6 }}
             animate={{ opacity: 1, scale: [1, 1.35, 1] }}
             exit={{ opacity: 0, scale: 0.6 }}
-            transition={{ scale: { duration: 1.1, repeat: Infinity, ease: "easeInOut" }, opacity: { duration: 0.15 } }}
+            transition={{
+              scale: { duration: 1.1, repeat: Infinity, ease: "easeInOut" },
+              opacity: { duration: 0.15 },
+            }}
             className="size-2.5 rounded-full bg-sky-400"
           />
         )}
@@ -123,9 +144,7 @@ export function StepList({ steps, compact = false }: { steps: RunStep[]; compact
                 />
                 <span className="truncate text-foreground/90">{label}</span>
               </div>
-              <span className={`shrink-0 text-[11px] font-medium ${style.text}`}>
-                {style.label}
-              </span>
+              <span className={`shrink-0 text-xs font-medium ${style.text}`}>{style.label}</span>
             </li>
           );
         })}
@@ -134,13 +153,8 @@ export function StepList({ steps, compact = false }: { steps: RunStep[]; compact
   }
 
   return (
-    <motion.ol
-      className="flex flex-col gap-2"
-      variants={listVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      {steps.map((step) => {
+    <motion.ol className="relative flex flex-col" variants={listVariants} initial="hidden" animate="visible">
+      {steps.map((step, index) => {
         const style = STATUS_STYLE[step.status];
         const label = STEP_LABELS[step.name] ?? step.name;
         return (
@@ -149,13 +163,22 @@ export function StepList({ steps, compact = false }: { steps: RunStep[]; compact
             layout
             variants={itemVariants}
             transition={{ layout: { type: "spring", stiffness: 350, damping: 32 } }}
-            className={`flex items-start gap-3 rounded-lg border px-3 py-2.5 transition-colors duration-300 ${style.border}`}
+            className="relative flex items-start gap-4 pb-5 last:pb-0"
           >
-            <div className="mt-0.5">
+            {index < steps.length - 1 && (
+              <span aria-hidden className="absolute bottom-0 left-[17px] top-9 w-px bg-white/10" />
+            )}
+            <div
+              className={`relative flex size-9 shrink-0 items-center justify-center rounded-lg border transition-colors duration-300 ${style.border} ${TILE_BG[step.status]}`}
+            >
               <StepIcon status={step.status} />
             </div>
-            <div className="flex min-w-0 flex-1 flex-col">
-              <span className="text-sm font-medium">{label}</span>
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5 pt-1.5">
+              <span
+                className={`text-[15px] font-semibold ${step.status === "pending" ? "text-white/50" : "text-white"}`}
+              >
+                {label}
+              </span>
               <AnimatePresence initial={false}>
                 {step.status === "skipped" && step.note ? (
                   <motion.span
@@ -163,7 +186,7 @@ export function StepList({ steps, compact = false }: { steps: RunStep[]; compact
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="text-xs text-muted-foreground"
+                    className="text-sm text-white/55"
                   >
                     Skipped: {step.note}
                   </motion.span>
@@ -173,7 +196,7 @@ export function StepList({ steps, compact = false }: { steps: RunStep[]; compact
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="text-xs text-destructive/90"
+                    className="text-sm text-destructive/90"
                   >
                     {step.error}
                   </motion.span>
@@ -183,7 +206,7 @@ export function StepList({ steps, compact = false }: { steps: RunStep[]; compact
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="text-xs text-amber-400/90"
+                    className="text-sm text-amber-300/90"
                   >
                     {step.note}
                   </motion.span>
@@ -197,7 +220,7 @@ export function StepList({ steps, compact = false }: { steps: RunStep[]; compact
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 4 }}
                 transition={{ duration: 0.2 }}
-                className={`shrink-0 text-xs font-medium ${style.text}`}
+                className={`shrink-0 pt-2 text-[13px] font-semibold ${style.text}`}
               >
                 {style.label}
               </motion.span>

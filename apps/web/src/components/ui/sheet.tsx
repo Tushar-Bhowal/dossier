@@ -49,7 +49,7 @@ function SheetContent({
       <DialogPrimitive.Content
         data-slot="sheet-content"
         className={cn(
-          "fixed inset-y-0 right-0 z-50 flex h-full w-full flex-col border-l border-border bg-background p-6 shadow-2xl duration-200 ease-out",
+          "fixed inset-y-0 right-0 z-50 flex h-full w-full flex-col border-l border-white/10 bg-[#0e0e0e] bg-[radial-gradient(100%_40%_at_100%_0%,rgba(251,65,40,0.08),transparent_60%)] p-6 shadow-[-30px_0_80px_-20px_rgba(0,0,0,0.9)] duration-200 ease-out",
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
           "sm:max-w-lg overflow-y-auto",
           className
@@ -93,7 +93,7 @@ function SheetTitle({
   return (
     <DialogPrimitive.Title
       data-slot="sheet-title"
-      className={cn("text-lg font-semibold text-foreground tracking-tight", className)}
+      className={cn("text-xl font-semibold text-foreground tracking-[-0.02em]", className)}
       {...props}
     />
   );
@@ -106,7 +106,7 @@ function SheetDescription({
   return (
     <DialogPrimitive.Description
       data-slot="sheet-description"
-      className={cn("text-sm text-muted-foreground", className)}
+      className={cn("text-[15px] leading-relaxed text-white/65", className)}
       {...props}
     />
   );

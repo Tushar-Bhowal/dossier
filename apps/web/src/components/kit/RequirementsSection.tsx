@@ -3,7 +3,6 @@
 import * as React from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ClipboardList, Plus, ShieldCheck } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { EditableField } from "./EditableField";
@@ -50,77 +49,61 @@ export function RequirementsSection({ editor }: { editor: KitEditor }) {
   };
 
   return (
-    <Card className="rounded-lg border-border/80">
+    <Card>
       <SectionHeader
         icon={<ClipboardList className="size-4" />}
-        title="Role Requirements"
+        title="Role requirements"
         count={rawRequirements.length}
-        description="Core technical and behavioral criteria extracted from the job description."
+        description="What the job description asks for. Every question traces back to one of these."
         onRegenerate={() => void editor.regenerate("requirements", "requirements")}
         regenerating={editor.regenerating.has("requirements")}
         error={editor.regenerateError.requirements}
         action={
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setAddOpen(true)}
-            className="rounded h-8 px-2.5 text-xs text-foreground font-medium gap-1.5 border-border/70 hover:bg-accent transition-colors"
-          >
-            <Plus className="size-3.5 text-[#FB4128]" />
+          <Button type="button" variant="outline" onClick={() => setAddOpen(true)}>
+            <Plus className="size-4 text-[#ff7a5c]" />
             <span>Add requirement</span>
           </Button>
         }
       />
 
-      <CardContent className="pt-4 flex flex-col gap-3">
-        {/* Filter bar */}
+      <CardContent className="flex flex-col gap-4 pt-5">
         {rawRequirements.length > 0 && (
-          <div className="flex flex-wrap items-center justify-between gap-2 pb-1">
-            <div className="flex items-center gap-1.5 p-0.5 rounded bg-muted/40 border border-border/40 text-xs">
-              <button
-                type="button"
-                onClick={() => setFilter("all")}
-                className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-                  filter === "all"
-                    ? "bg-background text-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                All ({rawRequirements.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilter("must")}
-                className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-                  filter === "must"
-                    ? "bg-background text-[#FB4128] font-semibold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Must-have ({mustCount})
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilter("nice")}
-                className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-                  filter === "nice"
-                    ? "bg-background text-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Nice-to-have ({niceCount})
-              </button>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div
+              role="group"
+              aria-label="Filter requirements"
+              className="flex items-center gap-1 rounded-lg border border-white/[0.08] bg-white/[0.03] p-1"
+            >
+              {(
+                [
+                  ["all", `All (${rawRequirements.length})`],
+                  ["must", `Must-have (${mustCount})`],
+                  ["nice", `Nice-to-have (${niceCount})`],
+                ] as const
+              ).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={filter === value}
+                  onClick={() => setFilter(value)}
+                  className={`h-8 rounded-lg px-3 text-sm font-semibold transition-colors ${
+                    filter === value
+                      ? "bg-white/10 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                      : "text-white/55 hover:text-white"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
-
-            <span className="text-[11px] text-muted-foreground">
-              Tip: Click priority badge to toggle Must / Nice-to-have
+            <span className="text-[13px] text-white/45">
+              Click a priority tag to switch must / nice-to-have
             </span>
           </div>
         )}
 
         {/* Requirements list */}
-        <ul className="flex flex-col gap-2.5 list-none p-0 m-0">
+        <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
           <AnimatePresence initial={false}>
             {filtered.map((r) => {
               const isMust = r.priority === "must";
@@ -131,43 +114,47 @@ export function RequirementsSection({ editor }: { editor: KitEditor }) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.98 }}
                   transition={{ duration: 0.2 }}
-                  className={`group relative rounded border transition-all p-3 sm:p-3.5 flex flex-col gap-2 bg-card/40 hover:bg-card hover:border-border ${
-                    isMust ? "border-l-2 border-l-[#FB4128] border-border/60" : "border-border/60"
-                  } ${r.pinned ? "ring-1 ring-primary/20 bg-primary/5" : ""}`}
+                  className={`group relative flex flex-col gap-2 rounded-lg border bg-[#141414] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-colors hover:border-white/[0.14] sm:flex-row sm:items-start sm:gap-4 ${
+                    r.pinned ? "border-primary/30 bg-primary/[0.05]" : "border-white/[0.08]"
+                  }`}
                 >
-                  {/* Top line: Priority, Kind, Origin, Controls */}
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          editor.mutateNow(`requirement:${r.id}.priority`, toggleRequirementPriority(r.id));
-                          toast.success(`Marked as ${isMust ? "nice-to-have" : "must-have"}`);
-                        }}
-                        title={`Click to switch to ${isMust ? "nice-to-have" : "must-have"}`}
-                        className="transition-transform active:scale-95"
-                      >
-                        <Badge
-                          variant={isMust ? "default" : "secondary"}
-                          className={`text-[0.68rem] px-2 py-0.5 font-medium rounded cursor-pointer ${
-                            isMust
-                              ? "bg-[#FB4128] text-white hover:bg-[#e03720]"
-                              : "bg-secondary/80 text-muted-foreground hover:text-foreground hover:bg-secondary"
-                          }`}
-                        >
-                          {isMust ? "must-have" : "nice-to-have"}
-                        </Badge>
-                      </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      editor.mutateNow(`requirement:${r.id}.priority`, toggleRequirementPriority(r.id));
+                      toast.success(`Marked as ${isMust ? "nice-to-have" : "must-have"}`);
+                    }}
+                    title={`Click to switch to ${isMust ? "nice-to-have" : "must-have"}`}
+                    className={`mt-1.5 inline-flex h-7 w-fit shrink-0 items-center rounded-lg px-2.5 text-xs font-bold transition-transform active:scale-95 sm:w-28 sm:justify-center ${
+                      isMust
+                        ? "bg-[#dc3019] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] hover:bg-[#c92c16]"
+                        : "bg-white/[0.06] text-white/70 hover:bg-white/10 hover:text-white"
+                    }`}
+                  >
+                    {isMust ? "Must-have" : "Nice-to-have"}
+                  </button>
 
-                      {r.kind && (
-                        <span className="text-[10px] uppercase font-mono tracking-wider text-muted-foreground/70 px-1.5 py-0.5 rounded bg-muted/40 border border-border/40">
-                          {r.kind}
-                        </span>
-                      )}
+                  <div className="min-w-0 flex-1">
+                    <EditableField
+                      value={r.text}
+                      onChange={(value) =>
+                        editor.editField(`requirement:${r.id}.text`, editRequirementText(r.id, value))
+                      }
+                      status={editor.status[`requirement:${r.id}.text`]}
+                      ariaLabel={`Requirement text (${r.kind || "general"})`}
+                      placeholder="Describe the competency or requirement…"
+                      rows={1}
+                      className="text-[15px] font-medium leading-relaxed text-white/90"
+                    />
+                  </div>
 
-                      <OriginBadge origin={r.origin} pinned={r.pinned} />
-                    </div>
-
+                  <div className="flex shrink-0 items-center gap-2 sm:mt-1.5">
+                    {r.kind && (
+                      <span className="inline-flex h-6 items-center rounded-lg bg-white/[0.05] px-2 text-xs font-semibold capitalize text-white/60">
+                        {r.kind}
+                      </span>
+                    )}
+                    <OriginBadge origin={r.origin} pinned={r.pinned} />
                     <ItemControls
                       pinned={r.pinned}
                       onTogglePin={() => {
@@ -178,26 +165,13 @@ export function RequirementsSection({ editor }: { editor: KitEditor }) {
                       deleteLabel="Delete requirement"
                     />
                   </div>
-
-                  {/* Requirement Text */}
-                  <div className="pt-0.5">
-                    <EditableField
-                      value={r.text}
-                      onChange={(value) => editor.editField(`requirement:${r.id}.text`, editRequirementText(r.id, value))}
-                      status={editor.status[`requirement:${r.id}.text`]}
-                      ariaLabel={`Requirement text (${r.kind || "general"})`}
-                      placeholder="Describe the competency or requirement…"
-                      rows={1}
-                      className="bg-transparent border-border/40 hover:border-border focus:border-border/80 text-sm leading-relaxed text-foreground"
-                    />
-                  </div>
                 </motion.li>
               );
             })}
           </AnimatePresence>
 
           {filtered.length === 0 && (
-            <div className="rounded border border-dashed border-border/70 p-6 text-center flex flex-col items-center justify-center gap-2">
+            <div className="rounded-lg border border-dashed border-border/70 p-6 text-center flex flex-col items-center justify-center gap-2">
               <ShieldCheck className="size-8 text-muted-foreground/50" />
               <p className="text-xs text-muted-foreground">
                 {rawRequirements.length === 0
@@ -210,9 +184,9 @@ export function RequirementsSection({ editor }: { editor: KitEditor }) {
                   variant="outline"
                   size="sm"
                   onClick={() => setAddOpen(true)}
-                  className="rounded text-xs gap-1 mt-1"
+                  className="rounded-lg text-xs gap-1 mt-1"
                 >
-                  <Plus className="size-3 text-[#FB4128]" />
+                  <Plus className="size-3 text-[#ff7a5c]" />
                   <span>Add your first requirement</span>
                 </Button>
               )}

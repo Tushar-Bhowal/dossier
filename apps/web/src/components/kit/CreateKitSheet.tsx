@@ -4,13 +4,7 @@ import * as React from "react";
 import { FileText, Upload, FileCode2, AlertCircle } from "lucide-react";
 import { useActiveRuns } from "@/hooks/use-active-runs";
 import { type RunCreateInput } from "@/lib/api";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,15 +88,19 @@ export function CreateKitSheet({ open, onOpenChange, prefillSample = false }: Cr
   const [fileError, setFileError] = React.useState<string | null>(null);
   const [isBulkSubmitting, setIsBulkSubmitting] = React.useState(false);
 
-  // If prefillSample is requested, populate on open
-  React.useEffect(() => {
+  // If prefillSample is requested, populate on open — during render rather than in an effect,
+  // which would paint the empty form for a frame first.
+  const openKey = `${open}:${prefillSample}`;
+  const [prevOpenKey, setPrevOpenKey] = React.useState<typeof openKey | null>(null);
+  if (openKey !== prevOpenKey) {
+    setPrevOpenKey(openKey);
     if (open && prefillSample) {
       setJd(SAMPLE_JD);
       setCompanyUrl(SAMPLE_COMPANY_URL);
       setDays(String(SAMPLE_DAYS));
       setSingleError(null);
     }
-  }, [open, prefillSample]);
+  }
 
   const handleFillSample = () => {
     setJd(SAMPLE_JD);
@@ -227,7 +225,7 @@ export function CreateKitSheet({ open, onOpenChange, prefillSample = false }: Cr
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="flex flex-col gap-5 sm:max-w-lg overflow-y-auto">
+      <SheetContent className="flex flex-col gap-6 overflow-y-auto p-7 sm:max-w-xl">
         <SheetHeader>
           <div className="flex items-center justify-between pr-6">
             <SheetTitle>Create interview kit</SheetTitle>
@@ -236,19 +234,24 @@ export function CreateKitSheet({ open, onOpenChange, prefillSample = false }: Cr
               variant="ghost"
               size="sm"
               onClick={handleFillSample}
-              className="text-xs text-[#FB4128] hover:text-[#FB4128] hover:bg-[#FB4128]/10 gap-1.5 h-8 px-2 rounded-lg"
+              className="h-8 gap-1.5 px-2.5 text-[13px] font-semibold text-[#ff7a5c] hover:bg-primary/10 hover:text-[#ff7a5c]"
             >
               <FileText className="size-3.5" />
               Fill with sample
             </Button>
           </div>
           <SheetDescription>
-            Researching the company and role takes ~2 minutes. Runs execute live in your workspace.
+            Dossier researches the company and the role in about two minutes. You can keep working while it
+            runs.
           </SheetDescription>
         </SheetHeader>
 
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "single" | "bulk")} className="w-full">
-          <TabsList className="w-full grid grid-cols-2 mb-4">
+        <Tabs
+          value={activeTab}
+          onValueChange={(v) => setActiveTab(v as "single" | "bulk")}
+          className="w-full"
+        >
+          <TabsList className="mb-5 grid h-11 w-full grid-cols-2">
             <TabsTrigger value="single">Single kit</TabsTrigger>
             <TabsTrigger value="bulk">Bulk upload</TabsTrigger>
           </TabsList>
@@ -258,7 +261,7 @@ export function CreateKitSheet({ open, onOpenChange, prefillSample = false }: Cr
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="sheet-jd">Job description</Label>
-                  <span className="text-[11px] text-muted-foreground">Pasted text</span>
+                  <span className="text-[13px] text-white/45">Paste the full posting</span>
                 </div>
                 <Textarea
                   id="sheet-jd"
@@ -268,7 +271,7 @@ export function CreateKitSheet({ open, onOpenChange, prefillSample = false }: Cr
                   onChange={(e) => setJd(e.target.value)}
                   disabled={isSubmitting}
                   placeholder="Paste the full job description or requirements here…"
-                  className="font-mono text-xs resize-y min-h-[180px]"
+                  className="min-h-[200px] resize-y text-[15px] leading-relaxed"
                 />
               </div>
 
@@ -283,7 +286,7 @@ export function CreateKitSheet({ open, onOpenChange, prefillSample = false }: Cr
                     onChange={(e) => setCompanyUrl(e.target.value)}
                     disabled={isSubmitting}
                     placeholder="https://example.com"
-                    className="text-xs"
+                    className="text-[15px]"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
@@ -297,7 +300,7 @@ export function CreateKitSheet({ open, onOpenChange, prefillSample = false }: Cr
                     value={days}
                     onChange={(e) => setDays(e.target.value)}
                     disabled={isSubmitting}
-                    className="text-xs"
+                    className="text-[15px]"
                   />
                 </div>
               </div>
@@ -313,18 +316,13 @@ export function CreateKitSheet({ open, onOpenChange, prefillSample = false }: Cr
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
+                  size="lg"
                   onClick={() => onOpenChange(false)}
                   disabled={isSubmitting}
-                  className="rounded-lg"
                 >
                   Cancel
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="bg-[#FB4128] hover:bg-[#FB4128]/90 text-white font-medium rounded-lg"
-                >
+                <Button type="submit" size="lg" disabled={isSubmitting}>
                   {isSubmitting ? "Starting generation…" : "Generate kit"}
                 </Button>
               </div>
@@ -332,12 +330,12 @@ export function CreateKitSheet({ open, onOpenChange, prefillSample = false }: Cr
           </TabsContent>
 
           <TabsContent value="bulk" className="flex flex-col gap-4 focus-visible:outline-hidden mt-0">
-            <div className="flex flex-col gap-3 rounded-lg border border-dashed border-border/80 bg-muted/20 p-6 text-center">
-              <div className="mx-auto flex size-10 items-center justify-center rounded-lg bg-muted">
-                <Upload className="size-5 text-muted-foreground" />
+            <div className="flex flex-col gap-3 rounded-lg border-2 border-dashed border-white/10 bg-white/[0.02] p-8 text-center">
+              <div className="mx-auto flex size-11 items-center justify-center rounded-lg bg-primary/15 text-[#ff7a5c] ring-1 ring-primary/25">
+                <Upload className="size-5" />
               </div>
               <div className="flex flex-col gap-1">
-                <span className="text-sm font-medium text-foreground">Upload JSON array</span>
+                <span className="text-base font-semibold text-white">Upload a JSON array</span>
                 <span className="text-xs text-muted-foreground">
                   Array of {`{ jd, company_url, days }`} objects. Max 2 run concurrently.
                 </span>
@@ -364,10 +362,14 @@ export function CreateKitSheet({ open, onOpenChange, prefillSample = false }: Cr
               <div className="flex flex-col gap-2 rounded-lg border border-border/60 bg-card p-3">
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-1.5 font-medium text-foreground">
-                    <FileCode2 className="size-4 text-[#FB4128]" />
-                    <span>{bulkRows.length} valid row{bulkRows.length === 1 ? "" : "s"} ready</span>
+                    <FileCode2 className="size-4 text-[#ff7a5c]" />
+                    <span>
+                      {bulkRows.length} valid row{bulkRows.length === 1 ? "" : "s"} ready
+                    </span>
                   </div>
-                  <span className="text-muted-foreground text-[11px]">2 concurrent, {Math.max(0, bulkRows.length - 2)} queued</span>
+                  <span className="text-muted-foreground text-xs">
+                    2 concurrent, {Math.max(0, bulkRows.length - 2)} queued
+                  </span>
                 </div>
               </div>
             )}
@@ -376,21 +378,14 @@ export function CreateKitSheet({ open, onOpenChange, prefillSample = false }: Cr
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
+                size="lg"
                 onClick={() => onOpenChange(false)}
                 disabled={isBulkSubmitting}
-                className="rounded-lg"
               >
                 Cancel
               </Button>
-              <Button
-                onClick={handleBulkSubmit}
-                disabled={!bulkRows || isBulkSubmitting}
-                className="bg-[#FB4128] hover:bg-[#FB4128]/90 text-white font-medium rounded-lg"
-              >
-                {isBulkSubmitting
-                  ? "Queuing runs…"
-                  : `Start ${bulkRows ? bulkRows.length : 0} runs`}
+              <Button onClick={handleBulkSubmit} size="lg" disabled={!bulkRows || isBulkSubmitting}>
+                {isBulkSubmitting ? "Queuing runs…" : `Start ${bulkRows ? bulkRows.length : 0} runs`}
               </Button>
             </div>
           </TabsContent>

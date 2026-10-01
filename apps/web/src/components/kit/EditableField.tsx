@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import { SaveStatusIndicator } from "./SaveStatusIndicator";
 import type { SaveStatus } from "@/lib/optimistic";
 
@@ -15,7 +16,15 @@ interface EditableFieldProps {
   rows?: number;
 }
 
-export function EditableField({ value, onChange, status, placeholder, ariaLabel, className, rows = 2 }: EditableFieldProps) {
+export function EditableField({
+  value,
+  onChange,
+  status,
+  placeholder,
+  ariaLabel,
+  className,
+  rows = 2,
+}: EditableFieldProps) {
   // Local text state so keystrokes render instantly; `value` from the parent only ever moves this
   // forward on save/rebase, never mid-typing, since the parent already holds the optimistic edit.
   // Resetting on prop change during render (React's documented pattern for this) rather than in an
@@ -43,7 +52,7 @@ export function EditableField({ value, onChange, status, placeholder, ariaLabel,
   }, [status]);
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="-mx-3 flex flex-col gap-0.5">
       <Textarea
         value={local}
         onChange={(e) => {
@@ -53,7 +62,10 @@ export function EditableField({ value, onChange, status, placeholder, ariaLabel,
         placeholder={placeholder}
         aria-label={ariaLabel}
         rows={rows}
-        className={className}
+        className={cn(
+          "min-h-0 resize-none border-transparent bg-transparent px-3 py-2 shadow-none transition-[background-color,border-color,box-shadow] hover:border-white/[0.07] hover:bg-white/[0.03] focus-visible:bg-white/[0.03]",
+          className,
+        )}
       />
       <SaveStatusIndicator status={displayStatus} />
     </div>

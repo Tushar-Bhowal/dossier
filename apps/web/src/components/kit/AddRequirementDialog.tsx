@@ -50,7 +50,12 @@ export function AddRequirementDialog({ open, onOpenChange, onAdd }: AddRequireme
 
   const textIsEmpty = text.trim().length === 0;
 
-  React.useEffect(() => {
+  // Reset during render when the dialog opens (not in an effect, which would paint the stale
+  // draft for a frame first).
+  const openKey = open;
+  const [prevOpenKey, setPrevOpenKey] = React.useState<typeof openKey | null>(null);
+  if (openKey !== prevOpenKey) {
+    setPrevOpenKey(openKey);
     if (open) {
       setText("");
       setKind("technical");
@@ -58,7 +63,7 @@ export function AddRequirementDialog({ open, onOpenChange, onAdd }: AddRequireme
       setShowTextError(false);
       setIsSaving(false);
     }
-  }, [open]);
+  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -82,14 +87,14 @@ export function AddRequirementDialog({ open, onOpenChange, onAdd }: AddRequireme
           <DialogHeader>
             <DialogTitle>Add a requirement</DialogTitle>
             <DialogDescription>
-              Marked as your own, so regenerating requirements won&apos;t replace it. Must-haves are
-              the ones coverage checks against.
+              Marked as your own, so regenerating requirements won&apos;t replace it. Must-haves are the ones
+              coverage checks against.
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="add-requirement-text">
-              Requirement <span className="text-[#FB4128]">*</span>
+              Requirement <span className="text-[#ff7a5c]">*</span>
             </Label>
             <Textarea
               id="add-requirement-text"

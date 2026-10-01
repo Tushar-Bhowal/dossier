@@ -5,29 +5,10 @@ import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Check,
-  CheckCircle2,
-  Clock,
-  Eye,
-  GraduationCap,
-  Layers,
-  Repeat,
-  RotateCcw,
-  Sparkles,
-  Trophy,
-} from "lucide-react";
-import {
-  getPracticeSession,
-  recordPracticeReview,
-  type Confidence,
-  type PracticeCard,
-  type PracticeSession,
-} from "@/lib/api";
+import { Check, Clock, Eye, GraduationCap, Layers, Repeat, RotateCcw, Trophy } from "lucide-react";
+import { getPracticeSession, recordPracticeReview, type Confidence, type PracticeSession } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
@@ -44,7 +25,7 @@ function formatDueDate(dateOnly: string): string {
   const today = new Date().toISOString().slice(0, 10);
   if (dateOnly <= today) return "today";
   const days = Math.round(
-    (Date.parse(`${dateOnly}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000
+    (Date.parse(`${dateOnly}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000,
   );
   return days === 1 ? "tomorrow" : `in ${days} days`;
 }
@@ -63,7 +44,7 @@ export function FlashcardDeck({ kitId }: { kitId: string }) {
 
   // Normal due queue vs extra practice queue
   const due = data?.cards.filter((c) => c.due) ?? [];
-  const activeQueue = extraPractice ? data?.cards ?? [] : due;
+  const activeQueue = extraPractice ? (data?.cards ?? []) : due;
   const current = extraPractice ? activeQueue[extraIndex] : due[0];
 
   // Reset reveal state whenever the card changes
@@ -133,15 +114,15 @@ export function FlashcardDeck({ kitId }: { kitId: string }) {
     return (
       <div className="flex flex-col gap-4">
         <div className="flex justify-between items-center">
-          <Skeleton className="h-5 w-48 rounded" />
-          <Skeleton className="h-5 w-24 rounded" />
+          <Skeleton className="h-5 w-48 rounded-lg" />
+          <Skeleton className="h-5 w-24 rounded-lg" />
         </div>
-        <Skeleton className="h-2 w-full rounded" />
+        <Skeleton className="h-2 w-full rounded-lg" />
         <Skeleton className="h-72 w-full rounded-lg" />
         <div className="grid grid-cols-3 gap-3">
-          <Skeleton className="h-14 rounded" />
-          <Skeleton className="h-14 rounded" />
-          <Skeleton className="h-14 rounded" />
+          <Skeleton className="h-14 rounded-lg" />
+          <Skeleton className="h-14 rounded-lg" />
+          <Skeleton className="h-14 rounded-lg" />
         </div>
       </div>
     );
@@ -151,7 +132,7 @@ export function FlashcardDeck({ kitId }: { kitId: string }) {
     return (
       <Card className="rounded-lg border-border/80 p-8 text-center">
         <p className="text-sm text-destructive">Couldn&apos;t load the practice session.</p>
-        <Button asChild variant="outline" size="sm" className="mt-4 rounded">
+        <Button asChild variant="outline" size="sm" className="mt-4 rounded-lg">
           <Link href={`/kits/${kitId}`}>Return to Kit</Link>
         </Button>
       </Card>
@@ -160,16 +141,17 @@ export function FlashcardDeck({ kitId }: { kitId: string }) {
 
   if (data.cards.length === 0) {
     return (
-      <Card className="rounded-lg border-dashed border-border/80 p-12 text-center flex flex-col items-center gap-3">
-        <div className="flex size-12 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
+      <Card className="flex flex-col items-center gap-3 p-12 text-center">
+        <div className="flex size-12 items-center justify-center rounded-lg bg-primary/15 text-[#ff7a5c] ring-1 ring-primary/25">
           <Layers className="size-6" />
         </div>
-        <h3 className="text-base font-semibold text-foreground">No Flashcards Available</h3>
-        <p className="text-xs text-muted-foreground max-w-sm">
-          This interview kit doesn&apos;t have any flashcards yet. Generate or add flashcards in the Kit Builder to start practicing.
+        <h3 className="text-xl font-semibold text-white">No flashcards yet</h3>
+        <p className="max-w-sm text-[15px] leading-relaxed text-white/60">
+          This interview kit doesn&apos;t have any flashcards yet. Generate or add flashcards in the Kit
+          Builder to start practicing.
         </p>
-        <Button asChild size="sm" className="rounded bg-[#FB4128] hover:bg-[#FB4128]/90 text-white mt-2">
-          <Link href={`/kits/${kitId}`}>Go to Kit Builder</Link>
+        <Button asChild size="lg" className="mt-2">
+          <Link href={`/kits/${kitId}#flashcards`}>Go to flashcards</Link>
         </Button>
       </Card>
     );
@@ -194,49 +176,53 @@ export function FlashcardDeck({ kitId }: { kitId: string }) {
     return (
       <div className="flex flex-col gap-6">
         {/* Celebration Banner */}
-        <Card className="rounded-lg border-emerald-500/30 bg-emerald-500/5 p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6">
-          <div className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+        <Card className="flex flex-col items-center gap-6 border-emerald-500/30 bg-emerald-500/[0.06] p-6 ring-emerald-500/25 sm:flex-row sm:p-8">
+          <div className="flex size-16 shrink-0 items-center justify-center rounded-lg border border-emerald-500/25 bg-emerald-500/15 text-emerald-300">
             <Trophy className="size-8" />
           </div>
           <div className="flex-1 text-center sm:text-left">
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-              <h3 className="text-xl font-bold tracking-tight text-foreground">
-                All Caught Up for Today!
+              <h3 className="text-2xl font-semibold tracking-[-0.02em] text-white">
+                All caught up for today
               </h3>
-              <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-400 font-semibold rounded text-xs px-2">
-                100% Today&apos;s Goal
+              <Badge
+                variant="secondary"
+                className="bg-emerald-500/15 text-emerald-400 font-semibold rounded-lg text-xs px-2"
+              >
+                Today&apos;s goal done
               </Badge>
             </div>
-            <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed max-w-xl">
-              You&apos;ve reviewed all due flashcards. Consistent daily spaced repetition outperforms cramming.
-              {data.daysRemaining > 0 && ` You have ${data.daysRemaining} day${data.daysRemaining === 1 ? "" : "s"} left before your interview.`}
+            <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-white/65">
+              You&apos;ve reviewed all due flashcards. Consistent daily spaced repetition outperforms
+              cramming.
+              {data.daysRemaining > 0 &&
+                ` You have ${data.daysRemaining} day${data.daysRemaining === 1 ? "" : "s"} left before your interview.`}
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 shrink-0 w-full sm:w-auto">
             <Button
               type="button"
               variant="outline"
-              size="sm"
+              size="lg"
               onClick={() => {
                 setExtraPractice(true);
                 setExtraIndex(0);
               }}
-              className="rounded text-xs h-9"
             >
-              Extra Practice (All {totalCards})
+              Practise all {totalCards} again
             </Button>
-            <Button asChild size="sm" className="rounded bg-[#FB4128] hover:bg-[#FB4128]/90 text-white text-xs h-9">
-              <Link href={`/kits/${kitId}`}>Back to Kit</Link>
+            <Button asChild size="lg">
+              <Link href={`/kits/${kitId}`}>Back to kit</Link>
             </Button>
           </div>
         </Card>
 
         {/* Deck Mastery Distribution */}
-        <Card className="rounded-lg border-border/80 p-5 flex flex-col gap-4">
-          <div className="flex items-center justify-between border-b border-border/40 pb-3">
+        <Card className="flex flex-col gap-5 p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.06] pb-4">
             <div className="flex items-center gap-2">
-              <GraduationCap className="size-4 text-[#FB4128]" />
-              <h4 className="text-sm font-semibold text-foreground">Deck Mastery Breakdown</h4>
+              <GraduationCap className="size-4 text-[#ff7a5c]" />
+              <h4 className="text-lg font-semibold text-white">Deck mastery</h4>
             </div>
             <span className="text-xs text-muted-foreground">
               {masteredCount} of {totalCards} cards mastered (Boxes 4–5)
@@ -251,13 +237,13 @@ export function FlashcardDeck({ kitId }: { kitId: string }) {
               return (
                 <div
                   key={boxNum}
-                  className={`rounded border p-3 flex flex-col gap-1 text-center transition-colors ${meta.bg}`}
+                  className={`rounded-lg border p-3 flex flex-col gap-1 text-center transition-colors ${meta.bg}`}
                 >
-                  <span className={`text-[11px] font-semibold uppercase tracking-wider ${meta.color}`}>
+                  <span className={`text-xs font-semibold uppercase tracking-wider ${meta.color}`}>
                     Box {boxNum} · {meta.label}
                   </span>
-                  <span className="text-lg font-bold text-foreground">{count}</span>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-2xl font-semibold tabular-nums text-white">{count}</span>
+                  <span className="text-xs text-muted-foreground">
                     {boxNum === 1 ? "Review daily" : boxNum === 5 ? "Fully retained" : "Review spaced"}
                   </span>
                 </div>
@@ -267,24 +253,27 @@ export function FlashcardDeck({ kitId }: { kitId: string }) {
 
           {/* All Deck Cards List */}
           <div className="flex flex-col gap-2 pt-2">
-            <span className="text-xs font-semibold text-foreground/80">Scheduled Flashcards:</span>
+            <span className="text-[15px] font-semibold text-white">All cards</span>
             <ul className="flex flex-col gap-2 list-none p-0 m-0">
               {data.cards.map((c) => {
                 const boxMeta = BOX_NAMES[c.box];
                 return (
                   <li
                     key={c.id}
-                    className="rounded border border-border/50 bg-background/50 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
+                    className="flex flex-col justify-between gap-2 rounded-lg border border-white/[0.07] bg-white/[0.02] p-4 sm:flex-row sm:items-center"
                   >
                     <div className="flex items-start gap-2 min-w-0 flex-1">
-                      <Badge variant="outline" className={`text-[10px] px-1.5 py-0 h-5 font-normal rounded shrink-0 ${boxMeta.color}`}>
+                      <Badge
+                        variant="outline"
+                        className={`text-xs px-1.5 py-0 h-5 font-normal rounded-lg shrink-0 ${boxMeta.color}`}
+                      >
                         Box {c.box}
                       </Badge>
-                      <span className="font-medium text-foreground/90 break-words leading-relaxed">
+                      <span className="break-words text-[15px] font-medium leading-relaxed text-white/90">
                         {c.front}
                       </span>
                     </div>
-                    <span className="shrink-0 text-[11px] text-muted-foreground pl-6 sm:pl-0">
+                    <span className="shrink-0 text-[13px] text-white/50">
                       Next review {formatDueDate(c.dueAt)}
                     </span>
                   </li>
@@ -297,189 +286,192 @@ export function FlashcardDeck({ kitId }: { kitId: string }) {
     );
   }
 
-  // Active review card index in current queue
-  const queueIndex = extraPractice ? extraIndex : data.cards.length - due.length;
   const currentBoxMeta = BOX_NAMES[current.box] ?? BOX_NAMES[1];
+  const sessionPercent = extraPractice ? Math.round(((extraIndex + 1) / totalCards) * 100) : progressPercent;
+  const ring = 2 * Math.PI * 42;
 
   return (
-    <div className="flex flex-col gap-5">
-      {/* Session Progress Overview Header */}
-      <div className="rounded-lg border border-border/70 bg-card/40 p-4 sm:p-5 flex flex-col gap-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#FB4128]">
-              {extraPractice ? "Extra Practice Mode" : "Today's Study Session"}
-            </span>
-            <Badge variant="secondary" className="px-2 py-0 text-xs rounded">
-              {extraPractice ? `${extraIndex + 1} of ${totalCards}` : `${due.length} remaining`}
-            </Badge>
-          </div>
-
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Clock className="size-3 text-muted-foreground" />
-              {data.daysRemaining > 0 ? `${data.daysRemaining} days until interview` : "Interview day"}
-            </span>
-            <span>·</span>
-            <span>{coveredCount} of {totalCards} cards covered ({progressPercent}%)</span>
-          </div>
-        </div>
-
-        {/* Progress bar */}
-        <Progress value={extraPractice ? ((extraIndex + 1) / totalCards) * 100 : progressPercent} className="h-1.5" />
-
-        {/* Mini 5-Box Leitner distribution strip */}
-        <div className="flex items-center justify-between gap-1 pt-1 text-[11px] text-muted-foreground">
-          {[1, 2, 3, 4, 5].map((b) => (
-            <div key={b} className="flex items-center gap-1">
-              <span className={`size-2 rounded-full ${b === current.box ? "bg-[#FB4128]" : "bg-muted-foreground/40"}`} />
-              <span className="hidden sm:inline">Box {b}:</span>
-              <span className="font-mono text-foreground/80">{boxCounts[b]}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Main Flashcard Display */}
-      <div className="relative">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={current.id + (revealed ? ":back" : ":front")}
-            initial={{ opacity: 0, rotateX: revealed ? -15 : 15, scale: 0.98 }}
-            animate={{ opacity: 1, rotateX: 0, scale: 1 }}
-            exit={{ opacity: 0, rotateX: revealed ? 15 : -15, scale: 0.98 }}
-            transition={{ duration: 0.22, ease: "easeOut" }}
-            onClick={() => !revealed && setRevealed(true)}
-            className={`rounded-lg border p-6 sm:p-8 min-h-[280px] sm:min-h-[320px] flex flex-col justify-between transition-all cursor-pointer select-none shadow-md ${
-              revealed
-                ? "border-[#FB4128]/30 bg-gradient-to-b from-card to-card/90"
-                : "border-border/80 bg-card hover:border-border hover:shadow-lg"
-            }`}
-          >
-            {/* Card Header metadata */}
-            <div className="flex items-center justify-between border-b border-border/40 pb-3">
-              <div className="flex items-center gap-2">
-                <Badge
-                  variant={revealed ? "default" : "secondary"}
-                  className={`text-[10px] px-2 py-0.5 font-semibold rounded uppercase tracking-wider ${
-                    revealed ? "bg-[#FB4128] text-white" : ""
+    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="flex min-w-0 flex-col gap-4">
+        <div className="relative">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={current.id + (revealed ? ":back" : ":front")}
+              initial={{ opacity: 0, rotateX: revealed ? -12 : 12, scale: 0.98 }}
+              animate={{ opacity: 1, rotateX: 0, scale: 1 }}
+              exit={{ opacity: 0, rotateX: revealed ? 12 : -12, scale: 0.98 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+              onClick={() => !revealed && setRevealed(true)}
+              className={`relative flex min-h-[340px] cursor-pointer select-none flex-col justify-between overflow-hidden rounded-lg border p-6 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.06)] transition-colors sm:min-h-[400px] sm:p-8 ${
+                revealed
+                  ? "border-primary/35 bg-[#151010]"
+                  : "border-white/[0.09] bg-[#121212] hover:border-white/[0.16]"
+              }`}
+            >
+              <div
+                aria-hidden
+                className={`pointer-events-none absolute -top-32 left-1/2 h-64 w-[600px] -translate-x-1/2 bg-[radial-gradient(ellipse_50%_60%_at_50%_50%,rgba(255,96,48,${revealed ? "0.22" : "0.12"}),transparent_70%)]`}
+              />
+              <div className="relative flex flex-wrap items-center justify-between gap-2">
+                <span
+                  className={`inline-flex h-7 items-center rounded-lg px-2.5 text-[13px] font-semibold ${
+                    revealed ? "bg-[#dc3019] text-white" : "bg-white/[0.07] text-white/75"
                   }`}
                 >
-                  {revealed ? "Answer / Key Criteria" : "Question / Prompt"}
-                </Badge>
-                <span className="text-xs text-muted-foreground font-mono">
-                  Card #{extraPractice ? extraIndex + 1 : totalCards - due.length + 1} of {extraPractice ? totalCards : totalCards}
+                  {revealed ? "Answer" : "Question"}
+                </span>
+                <span className="text-[13px] font-medium tabular-nums text-white/50">
+                  Card {extraPractice ? extraIndex + 1 : totalCards - due.length + 1} of {totalCards}
                 </span>
               </div>
 
-              {/* Current Leitner Box Level */}
-              <div className="flex items-center gap-1.5">
-                <span className={`text-xs font-semibold px-2 py-0.5 rounded border ${currentBoxMeta.bg} ${currentBoxMeta.color}`}>
+              <p className="relative mx-auto max-w-2xl whitespace-pre-wrap break-words py-10 text-center text-xl font-semibold leading-relaxed tracking-[-0.01em] text-white sm:text-[26px]">
+                {revealed ? current.back : current.front}
+              </p>
+
+              <div className="relative flex flex-wrap items-center justify-between gap-3 text-[13px] text-white/50">
+                <span className="flex items-center gap-2">
+                  <Repeat className="size-3.5" />
+                  {!revealed ? "Click the card or press Space to reveal" : "How well did you know it?"}
+                </span>
+                <span
+                  className={`inline-flex h-7 items-center rounded-lg border px-2.5 text-xs font-semibold ${currentBoxMeta.bg} ${currentBoxMeta.color}`}
+                >
                   Box {current.box} · {currentBoxMeta.label}
                 </span>
               </div>
-            </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
-            {/* Card Content Area */}
-            <div className="py-8 sm:py-10 flex flex-col justify-center items-center text-center">
-              <p className="text-lg sm:text-2xl font-medium leading-relaxed text-foreground max-w-2xl whitespace-pre-wrap break-words">
-                {revealed ? current.back : current.front}
-              </p>
-            </div>
-
-            {/* Card Footer Hint */}
-            <div className="flex items-center justify-between border-t border-border/40 pt-3 text-[11px] text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <Repeat className="size-3 text-muted-foreground/70" />
-                <span>{!revealed ? "Click card or press Space to reveal answer" : "Review complete — grade your confidence below"}</span>
-              </div>
-              <span className="hidden sm:inline-flex items-center gap-1 font-mono text-[10px] bg-secondary/80 px-1.5 py-0.5 rounded border border-border/50">
-                {!revealed ? "Space to flip" : "Keys: 1, 2, 3"}
-              </span>
-            </div>
-          </motion.div>
-        </AnimatePresence>
+        {!revealed ? (
+          <Button type="button" size="lg" onClick={() => setRevealed(true)} className="h-12 w-full text-base">
+            <Eye className="size-4" />
+            Reveal answer
+            <kbd className="ml-1 hidden rounded-lg bg-black/20 px-1.5 py-0.5 text-xs font-semibold sm:inline-block">
+              Space
+            </kbd>
+          </Button>
+        ) : (
+          <div className="grid gap-2.5 sm:grid-cols-3">
+            {(
+              [
+                {
+                  key: "1",
+                  value: "low",
+                  icon: RotateCcw,
+                  title: "Still shaky",
+                  hint: "Back to box 1, review tomorrow",
+                  tone: "border-rose-500/30 bg-rose-500/[0.07] text-rose-300 hover:bg-rose-500/15",
+                },
+                {
+                  key: "2",
+                  value: "medium",
+                  icon: Check,
+                  title: "Getting there",
+                  hint: "Good recall, keeps its pace",
+                  tone: "border-amber-500/30 bg-amber-500/[0.07] text-amber-300 hover:bg-amber-500/15",
+                },
+                {
+                  key: "3",
+                  value: "high",
+                  icon: Trophy,
+                  title: "Nailed it",
+                  hint: `Moves up to box ${Math.min(5, current.box + 1)}`,
+                  tone: "border-emerald-500/35 bg-emerald-500/[0.08] text-emerald-300 hover:bg-emerald-500/15",
+                },
+              ] as const
+            ).map(({ key, value, icon: Icon, title, hint, tone }) => (
+              <button
+                key={value}
+                type="button"
+                disabled={review.isPending}
+                onClick={() => review.mutate(value)}
+                className={`flex flex-col items-start gap-1 rounded-lg border p-4 text-left transition-colors active:scale-[0.99] disabled:opacity-50 ${tone}`}
+              >
+                <span className="flex w-full items-center gap-2 text-[15px] font-semibold">
+                  <Icon className="size-4" />
+                  {title}
+                  <kbd className="ml-auto hidden rounded-lg border border-white/10 bg-black/30 px-1.5 text-xs text-white/60 sm:inline-block">
+                    {key}
+                  </kbd>
+                </span>
+                <span className="text-[13px] text-white/55">{hint}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Action Controls */}
-      {!revealed ? (
-        <Button
-          type="button"
-          onClick={() => setRevealed(true)}
-          className="w-full h-12 bg-secondary hover:bg-secondary/80 text-foreground font-semibold rounded border border-border/60 gap-2 text-sm shadow-xs transition-all active:scale-[0.99]"
-        >
-          <Eye className="size-4 text-[#FB4128]" />
-          <span>Reveal Answer</span>
-          <kbd className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-background/80 text-[10px] font-mono text-muted-foreground border border-border/60 ml-2">
-            Space
-          </kbd>
-        </Button>
-      ) : (
-        <div className="flex flex-col gap-2">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            {/* Low Confidence */}
-            <button
-              type="button"
-              disabled={review.isPending}
-              onClick={() => review.mutate("low")}
-              className="rounded border border-rose-500/30 bg-rose-500/5 hover:bg-rose-500/15 text-rose-400 p-3 sm:p-3.5 flex flex-col items-center justify-center gap-1 text-center transition-all active:scale-[0.98] disabled:opacity-50 group"
-            >
-              <div className="flex items-center gap-1.5">
-                <RotateCcw className="size-3.5 group-hover:-rotate-45 transition-transform" />
-                <span className="font-semibold text-xs sm:text-sm">Still Shaky</span>
-                <kbd className="hidden sm:inline-block px-1 py-0.2 rounded bg-background/80 text-[10px] font-mono text-muted-foreground border border-border/50 ml-1">
-                  1
-                </kbd>
-              </div>
-              <span className="text-[10px] text-muted-foreground/80">
-                Resets to Box 1 · Review tomorrow
+      <aside className="flex flex-col gap-4">
+        <div className="rounded-lg border border-white/[0.08] bg-[#111111] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+          <p className="text-[13px] font-semibold text-[#ff7a5c]">
+            {extraPractice ? "Extra practice" : "Today's session"}
+          </p>
+          <div className="mt-4 flex items-center gap-4">
+            <div className="relative size-24 shrink-0">
+              <svg viewBox="0 0 100 100" className="size-full -rotate-90" aria-hidden>
+                <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="8" />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="42"
+                  fill="none"
+                  stroke="#ff6a3d"
+                  strokeWidth="8"
+                  strokeLinecap="round"
+                  strokeDasharray={`${(sessionPercent / 100) * ring} ${ring}`}
+                  opacity={sessionPercent === 0 ? 0 : 1}
+                  className="transition-[stroke-dasharray] duration-500"
+                />
+              </svg>
+              <span className="absolute inset-0 flex items-center justify-center text-xl font-semibold tabular-nums text-white">
+                {sessionPercent}%
               </span>
-            </button>
-
-            {/* Medium Confidence */}
-            <button
-              type="button"
-              disabled={review.isPending}
-              onClick={() => review.mutate("medium")}
-              className="rounded border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/15 text-amber-400 p-3 sm:p-3.5 flex flex-col items-center justify-center gap-1 text-center transition-all active:scale-[0.98] disabled:opacity-50 group"
-            >
-              <div className="flex items-center gap-1.5">
-                <Check className="size-3.5" />
-                <span className="font-semibold text-xs sm:text-sm">Getting There</span>
-                <kbd className="hidden sm:inline-block px-1 py-0.2 rounded bg-background/80 text-[10px] font-mono text-muted-foreground border border-border/50 ml-1">
-                  2
-                </kbd>
-              </div>
-              <span className="text-[10px] text-muted-foreground/80">
-                Good recall · Keeps pace
-              </span>
-            </button>
-
-            {/* High Confidence */}
-            <button
-              type="button"
-              disabled={review.isPending}
-              onClick={() => review.mutate("high")}
-              className="rounded border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 p-3 sm:p-3.5 flex flex-col items-center justify-center gap-1 text-center transition-all active:scale-[0.98] disabled:opacity-50 group shadow-xs"
-            >
-              <div className="flex items-center gap-1.5">
-                <Sparkles className="size-3.5" />
-                <span className="font-semibold text-xs sm:text-sm">Nailed It</span>
-                <kbd className="hidden sm:inline-block px-1 py-0.2 rounded bg-background/80 text-[10px] font-mono text-muted-foreground border border-border/50 ml-1">
-                  3
-                </kbd>
-              </div>
-              <span className="text-[10px] text-muted-foreground/80">
-                Advances to Box {Math.min(5, current.box + 1)} · Long retention
-              </span>
-            </button>
-          </div>
-
-          <div className="text-center text-[11px] text-muted-foreground pt-1">
-            Rate honestly to train your spaced repetition curve.
+            </div>
+            <div className="text-sm">
+              <p className="font-semibold text-white">
+                {extraPractice
+                  ? `${extraIndex + 1} of ${totalCards}`
+                  : `${due.length} card${due.length === 1 ? "" : "s"} left`}
+              </p>
+              <p className="mt-1 text-white/55">
+                {coveredCount} of {totalCards} covered
+              </p>
+              <p className="mt-1 flex items-center gap-1.5 text-white/55">
+                <Clock className="size-3.5" />
+                {data.daysRemaining > 0 ? `${data.daysRemaining} days to interview` : "Interview day"}
+              </p>
+            </div>
           </div>
         </div>
-      )}
+
+        <div className="rounded-lg border border-white/[0.08] bg-[#111111] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+          <p className="text-[13px] font-semibold text-white">Leitner boxes</p>
+          <p className="mt-1 text-[13px] text-white/50">Cards move up as you recall them.</p>
+          <ul className="mt-4 flex flex-col gap-2">
+            {[1, 2, 3, 4, 5].map((b) => {
+              const meta = BOX_NAMES[b];
+              const share = totalCards ? (boxCounts[b] / totalCards) * 100 : 0;
+              return (
+                <li key={b} className="flex items-center gap-3">
+                  <span
+                    className={`w-24 shrink-0 text-[13px] font-semibold ${b === current.box ? meta.color : "text-white/60"}`}
+                  >
+                    {b}. {meta.label}
+                  </span>
+                  <span className="h-2 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+                    <span className="block h-full rounded-full bg-[#ff6a3d]" style={{ width: `${share}%` }} />
+                  </span>
+                  <span className="w-5 text-right text-[13px] font-semibold tabular-nums text-white/75">
+                    {boxCounts[b]}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </aside>
     </div>
   );
 }

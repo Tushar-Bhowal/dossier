@@ -30,14 +30,19 @@ export function AddFlashcardDialog({ open, onOpenChange, onAdd }: AddFlashcardDi
   const backIsEmpty = back.trim().length === 0;
   const isIncomplete = frontIsEmpty || backIsEmpty;
 
-  React.useEffect(() => {
+  // Reset during render when the dialog opens (not in an effect, which would paint the stale
+  // draft for a frame first).
+  const openKey = open;
+  const [prevOpenKey, setPrevOpenKey] = React.useState<typeof openKey | null>(null);
+  if (openKey !== prevOpenKey) {
+    setPrevOpenKey(openKey);
     if (open) {
       setFront("");
       setBack("");
       setShowErrors(false);
       setIsSaving(false);
     }
-  }, [open]);
+  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -61,14 +66,14 @@ export function AddFlashcardDialog({ open, onOpenChange, onAdd }: AddFlashcardDi
           <DialogHeader>
             <DialogTitle>Add a flashcard</DialogTitle>
             <DialogDescription>
-              Both sides are required — a card with a blank side can&apos;t be practised against.
-              It&apos;s marked as your own, so regenerating the deck won&apos;t replace it.
+              Both sides are required — a card with a blank side can&apos;t be practised against. It&apos;s
+              marked as your own, so regenerating the deck won&apos;t replace it.
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="add-flashcard-front">
-              Front — the prompt <span className="text-[#FB4128]">*</span>
+              Front — the prompt <span className="text-[#ff7a5c]">*</span>
             </Label>
             <Textarea
               id="add-flashcard-front"
@@ -87,7 +92,7 @@ export function AddFlashcardDialog({ open, onOpenChange, onAdd }: AddFlashcardDi
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="add-flashcard-back">
-              Back — key takeaways <span className="text-[#FB4128]">*</span>
+              Back — key takeaways <span className="text-[#ff7a5c]">*</span>
             </Label>
             <Textarea
               id="add-flashcard-back"

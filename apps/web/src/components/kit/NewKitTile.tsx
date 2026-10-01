@@ -23,21 +23,19 @@ export function NewKitTile({ onClick, className }: NewKitTileProps) {
       }}
       aria-label="Create new interview kit"
       className={cn(
-        "group relative flex min-h-[12rem] h-full flex-col items-center justify-center gap-2.5 rounded-lg border-2 border-dashed border-border/60 bg-card/30 p-6 text-center transition-all duration-200 cursor-pointer select-none",
-        "hover:border-[#FB4128]/60 hover:bg-[#FB4128]/5 hover:shadow-[0_0_20px_rgba(251,65,40,0.08)]",
-        "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-        className
+        "group relative flex h-full min-h-[15rem] cursor-pointer select-none flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed border-white/[0.12] bg-white/[0.015] p-6 text-center transition-all duration-200",
+        "hover:border-primary/50 hover:bg-primary/[0.04] hover:shadow-[0_0_40px_-10px_rgba(251,65,40,0.35)]",
+        "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        className,
       )}
     >
-      <div className="flex size-10 items-center justify-center rounded-lg bg-muted/60 transition-transform duration-200 group-hover:scale-110 group-hover:bg-[#FB4128]/15 group-hover:text-[#FB4128]">
-        <Plus className="size-5 text-muted-foreground group-hover:text-[#FB4128] transition-colors" />
+      <div className="flex size-12 items-center justify-center rounded-lg bg-[#dc3019] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_10px_30px_-10px_rgba(251,65,40,0.8)] transition-transform duration-200 group-hover:scale-110">
+        <Plus className="size-6" />
       </div>
-      <div className="flex flex-col gap-0.5">
-        <span className="text-sm font-semibold text-foreground/90 group-hover:text-foreground">
-          New kit
-        </span>
-        <span className="text-xs text-muted-foreground/70 group-hover:text-muted-foreground">
-          Paste a JD to generate prep
+      <div className="flex flex-col gap-1">
+        <span className="text-[17px] font-semibold text-white">New kit</span>
+        <span className="max-w-[16rem] text-sm leading-relaxed text-white/55">
+          Paste a job description and a company URL. Ready in a few minutes.
         </span>
       </div>
     </div>

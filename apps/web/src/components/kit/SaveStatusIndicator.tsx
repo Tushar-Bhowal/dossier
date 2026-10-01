@@ -17,7 +17,7 @@ const CLASS: Record<SaveStatus, string> = {
 
 export function SaveStatusIndicator({ status }: { status?: SaveStatus }) {
   return (
-    <div className="h-4 text-xs" aria-live="polite">
+    <div className="h-4 px-3 text-xs font-medium" aria-live="polite">
       <AnimatePresence mode="wait">
         {status ? (
           <motion.span

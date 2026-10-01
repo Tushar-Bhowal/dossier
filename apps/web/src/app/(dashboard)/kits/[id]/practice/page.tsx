@@ -5,8 +5,6 @@ import Link from "next/link";
 import { ArrowLeft, Building2, GraduationCap } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getKit } from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { FlashcardDeck } from "@/components/kit/FlashcardDeck";
 
 export default function PracticePage({ params }: PageProps<"/kits/[id]/practice">) {
@@ -22,43 +20,36 @@ export default function PracticePage({ params }: PageProps<"/kits/[id]/practice"
   const company = kit?.source.company;
 
   return (
-    <div className="flex flex-col gap-6 w-full mx-auto pb-12">
-      {/* Top Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
-        <div className="flex items-center gap-2.5">
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="rounded gap-1.5 h-8 px-3 text-muted-foreground hover:text-foreground border-border/80 hover:bg-accent transition-colors"
+    <div className="mx-auto flex w-full flex-col gap-6 pb-12">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div className="min-w-0">
+          <Link
+            href={`/kits/${id}`}
+            className="-ml-2 inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-white/60 transition-colors hover:text-white"
           >
-            <Link href={`/kits/${id}`}>
-              <ArrowLeft className="size-3.5" />
-              <span>Back to kit</span>
-            </Link>
-          </Button>
-
-          <div className="h-4 w-[1px] bg-border/60 hidden sm:block" />
-
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <ArrowLeft className="size-4" />
+            Back to kit
+          </Link>
+          <h1 className="mt-2 text-[28px] font-semibold tracking-[-0.03em] text-white sm:text-[32px]">
+            Practice
+          </h1>
+          <p className="mt-1 flex min-w-0 items-center gap-1.5 text-[15px] text-white/60">
             {company && (
-              <span className="flex items-center gap-1 font-medium text-foreground/80">
-                <Building2 className="size-3 text-[#FB4128]" />
-                {company}
-              </span>
+              <>
+                <Building2 className="size-4 shrink-0 text-[#ff7a5c]" />
+                <span className="shrink-0 font-semibold text-white/85">{company}</span>
+                <span aria-hidden>·</span>
+              </>
             )}
-            {company && <span>·</span>}
-            <span className="truncate max-w-[200px] sm:max-w-[300px]">{roleTitle}</span>
-          </div>
+            <span className="truncate">{roleTitle}</span>
+          </p>
         </div>
-
-        <Badge variant="outline" className="text-xs font-normal rounded gap-1.5 self-start sm:self-auto border-border/60">
-          <span className="size-1.5 rounded-full bg-[#FB4128]" />
-          Leitner Spaced Repetition
-        </Badge>
+        <span className="inline-flex h-8 items-center gap-2 self-start rounded-lg border border-white/10 bg-white/[0.04] px-3 text-[13px] font-semibold text-white/75 sm:self-auto">
+          <GraduationCap className="size-4 text-[#ff7a5c]" />
+          Spaced repetition
+        </span>
       </div>
 
-      {/* Main Flashcard Practice Surface */}
       <FlashcardDeck kitId={id} />
     </div>
   );

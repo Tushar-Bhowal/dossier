@@ -3,37 +3,31 @@
 import * as React from "react";
 import { usePathname } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-  useSidebar,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+
+function pageTitleFor(pathname: string): string {
+  if (pathname.startsWith("/runs/")) return "Generating kit";
+  if (pathname.endsWith("/practice")) return "Practice";
+  if (pathname.startsWith("/kits/")) return "Kit";
+  return "Interview kits";
+}
 
 function AppHeader() {
   const pathname = usePathname() ?? "";
   const { isOpen } = useSidebar();
-
-  let pageTitle = "Interview Kits";
-  if (pathname.startsWith("/kits/") && pathname.endsWith("/edit")) {
-    pageTitle = "Edit Kit";
-  } else if (pathname.startsWith("/kits/") && pathname.endsWith("/practice")) {
-    pageTitle = "Practice Mode";
-  } else if (pathname.startsWith("/kits/")) {
-    pageTitle = "Kit Details";
-  }
+  const pageTitle = pageTitleFor(pathname);
 
   return (
-    <header className="sticky top-0 z-20 flex h-(--app-header-height,3rem) shrink-0 items-center justify-between border-b border-border/50 bg-background/85 px-3 md:px-5 backdrop-blur-md transition-[width,height] ease-linear">
-      <div className="flex items-center gap-2.5">
+    <header className="sticky top-0 z-20 flex h-(--app-header-height,4rem) shrink-0 items-center justify-between border-b border-white/[0.06] bg-background/80 px-4 backdrop-blur-xl md:px-8">
+      <div className="flex items-center gap-3">
         <SidebarTrigger />
-        {!isOpen && <div className="h-4 w-[1px] bg-border/60" />}
-        <div className="flex items-center gap-2 text-xs md:text-sm">
-          <span className="hidden md:inline text-muted-foreground">Workspace</span>
-          <span className="hidden md:inline text-muted-foreground/50">/</span>
-          <span className="font-medium text-foreground">{pageTitle}</span>
-        </div>
+        {!isOpen && <div className="h-5 w-px bg-white/10" />}
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm">
+          <span className="hidden font-medium text-white/50 md:inline">Workspace</span>
+          <span className="hidden text-white/25 md:inline">/</span>
+          <span className="font-semibold text-white">{pageTitle}</span>
+        </nav>
       </div>
     </header>
   );
@@ -41,13 +35,11 @@ function AppHeader() {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <SidebarProvider
-      className={cn("[--app-wrapper-max-width:80rem]", "[--app-header-height:3rem]")}
-    >
+    <SidebarProvider className={cn("[--app-wrapper-max-width:80rem]", "[--app-header-height:4rem]")}>
       <AppSidebar />
       <SidebarInset className="bg-background min-h-screen flex flex-col">
         <AppHeader />
-        <main className="flex w-full min-w-0 flex-1 flex-col p-4 md:p-6">
+        <main className="mx-auto flex w-full min-w-0 max-w-[1320px] flex-1 flex-col px-4 py-6 md:px-8 md:py-10">
           {children}
         </main>
       </SidebarInset>

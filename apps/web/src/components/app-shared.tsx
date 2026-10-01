@@ -1,10 +1,11 @@
 import * as React from "react";
-import { FolderGit2 } from "lucide-react";
+import { FileText, FolderKanban, Map, Mic } from "lucide-react";
 
 export interface NavItem {
   title: string;
   path: string;
   icon: React.ReactNode;
+  soon?: boolean;
 }
 
 export interface NavGroup {
@@ -17,10 +18,18 @@ export const navGroups: NavGroup[] = [
     label: "Workspace",
     items: [
       {
-        title: "Interview Kits",
+        title: "Interview kits",
         path: "/kits",
-        icon: <FolderGit2 className="size-4" />,
+        icon: <FolderKanban className="size-[18px]" />,
       },
+    ],
+  },
+  {
+    label: "Coming soon",
+    items: [
+      { title: "Roadmaps", path: "/roadmaps", icon: <Map className="size-[18px]" />, soon: true },
+      { title: "Mock interviews", path: "/interviews", icon: <Mic className="size-[18px]" />, soon: true },
+      { title: "Resume Studio", path: "/resumes", icon: <FileText className="size-[18px]" />, soon: true },
     ],
   },
 ];

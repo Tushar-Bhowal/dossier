@@ -4,8 +4,20 @@ import * as React from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
-import { FileText, Plus, AlertCircle, RefreshCcw, Briefcase } from "lucide-react";
+import {
+  AlertCircle,
+  Briefcase,
+  CalendarDays,
+  FileText,
+  FolderKanban,
+  HelpCircle,
+  Layers,
+  Plus,
+  RefreshCcw,
+} from "lucide-react";
 import { listKits } from "@/lib/api";
+import { useMe } from "@/hooks/use-me";
+import { LightRays } from "@/components/ui/light-rays";
 import { useActiveRuns } from "@/hooks/use-active-runs";
 import { NewKitTile } from "@/components/kit/NewKitTile";
 import { KitCard } from "@/components/kit/KitCard";
@@ -17,10 +29,18 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 
+function greeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+}
+
 export default function KitsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { activeRuns, summary } = useActiveRuns();
+  const { data: user } = useMe();
 
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const [prefillSample, setPrefillSample] = React.useState(false);
@@ -28,7 +48,7 @@ export default function KitsPage() {
   // ?new=true auto-opens the sheet. Adjusted during render rather than in an effect, so the sheet
   // doesn't paint closed for a frame first when arriving on this URL directly.
   const newParam = searchParams?.get("new");
-  const [lastNewParam, setLastNewParam] = React.useState(newParam);
+  const [lastNewParam, setLastNewParam] = React.useState<string | null | undefined>(null);
   if (newParam !== lastNewParam) {
     setLastNewParam(newParam);
     if (newParam === "true") {
@@ -75,13 +95,13 @@ export default function KitsPage() {
         activeRuns
           .filter((r) => r.status === "succeeded")
           .map((r) => r.kitId)
-          .filter((id): id is string => Boolean(id))
+          .filter((id): id is string => Boolean(id)),
       ),
-    [activeRuns]
+    [activeRuns],
   );
   const visibleKits = React.useMemo(
     () => kits?.filter((kit) => !activeKitIds.has(kit.id)),
-    [kits, activeKitIds]
+    [kits, activeKitIds],
   );
 
   const hasActiveRuns = activeRuns.length > 0;
@@ -113,51 +133,84 @@ export default function KitsPage() {
     .join(" · ");
 
   return (
-    <div className="flex flex-col gap-6 w-full mx-auto">
-      {/* Workspace Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Interview Kits
-          </h1>
-          {kits && (
-            <Badge variant="secondary" className="px-2 py-0.5 text-xs font-semibold rounded">
-              {kits.length}
-            </Badge>
-          )}
-          {activityLabel && (
-            <Badge
-              variant="outline"
-              className={cn(
-                "gap-1.5 px-2.5 py-0.5 text-xs rounded",
-                isBusy
-                  ? "border-sky-500/30 bg-sky-500/10 text-sky-400"
-                  : "border-amber-500/30 bg-amber-500/10 text-amber-400"
-              )}
-              role="status"
-              aria-live="polite"
-            >
-              <span
+    <div className="mx-auto flex w-full flex-col gap-8">
+      <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+        <div>
+          <p className="text-[15px] font-medium text-white/55">
+            {greeting()}
+            {user?.email ? `, ${user.email.split("@")[0]}` : ""}
+          </p>
+          <div className="mt-1.5 flex flex-wrap items-center gap-3">
+            <h1 className="text-[32px] font-semibold leading-tight tracking-[-0.035em] text-white">
+              Your interview kits
+            </h1>
+            {activityLabel && (
+              <Badge
+                variant="outline"
                 className={cn(
-                  "size-1.5 rounded-full",
-                  isBusy ? "bg-sky-400 animate-pulse" : "bg-amber-400"
+                  "gap-1.5",
+                  isBusy
+                    ? "border-sky-500/30 bg-sky-500/10 text-sky-300"
+                    : "border-amber-500/30 bg-amber-500/10 text-amber-300",
                 )}
-              />
-              {activityLabel}
-            </Badge>
-          )}
+                role="status"
+                aria-live="polite"
+              >
+                <span
+                  className={cn(
+                    "size-1.5 rounded-full",
+                    isBusy ? "animate-pulse bg-sky-400" : "bg-amber-400",
+                  )}
+                />
+                {activityLabel}
+              </Badge>
+            )}
+          </div>
+          <p className="mt-2 text-base text-white/60">
+            Every kit is researched from the company&apos;s own pages and the job description.
+          </p>
         </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={() => handleOpenSheet(false)}
-            className="bg-[#FB4128] hover:bg-[#FB4128]/90 text-white font-medium gap-1.5 shadow-sm rounded-lg"
-          >
-            <Plus className="size-4" />
-            New kit
-          </Button>
-        </div>
+        <Button size="lg" onClick={() => handleOpenSheet(false)} className="shrink-0">
+          <Plus className="size-4" />
+          New kit
+        </Button>
       </div>
+
+      {hasKits && kits && (
+        <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {[
+            { icon: FolderKanban, label: "Kits", value: kits.length },
+            {
+              icon: HelpCircle,
+              label: "Questions",
+              value: kits.reduce((n, k) => n + (k.kit.questions?.length ?? 0), 0),
+            },
+            {
+              icon: Layers,
+              label: "Flashcards",
+              value: kits.reduce((n, k) => n + (k.kit.flashcards?.length ?? 0), 0),
+            },
+            {
+              icon: CalendarDays,
+              label: "Study days planned",
+              value: kits.reduce((n, k) => n + (k.kit.schedule?.days_available ?? 0), 0),
+            },
+          ].map(({ icon: Icon, label, value }) => (
+            <div
+              key={label}
+              className="flex items-center gap-4 rounded-lg border border-white/[0.08] bg-[#111111] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+            >
+              <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-[#ff7a5c] ring-1 ring-primary/25">
+                <Icon className="size-5" aria-hidden />
+              </span>
+              <div>
+                <dd className="text-2xl font-semibold tabular-nums tracking-[-0.02em] text-white">{value}</dd>
+                <dt className="text-[13px] font-medium text-white/55">{label}</dt>
+              </div>
+            </div>
+          ))}
+        </dl>
+      )}
 
       {/* Error state */}
       {isError && (
@@ -181,41 +234,41 @@ export default function KitsPage() {
 
       {/* Loading state skeleton grid */}
       {isLoading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="status" aria-label="Loading workspace">
+        <div
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
+          role="status"
+          aria-label="Loading workspace"
+        >
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="min-h-[12rem] h-48 w-full rounded-lg" />
+            <Skeleton key={i} className="h-60 w-full rounded-lg" />
           ))}
         </div>
       )}
 
-      {/* Empty state */}
       {isEmpty && (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border/70 bg-card/40 p-12 text-center my-6">
-          <div className="flex size-14 items-center justify-center rounded-lg bg-muted/60 mb-4 text-muted-foreground/60 ring-1 ring-border/50">
+        <div className="relative flex flex-col items-center justify-center overflow-hidden rounded-lg border border-white/[0.08] bg-[#0f0f0f] px-6 py-20 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+          <div aria-hidden className="pointer-events-none absolute inset-0">
+            <div className="absolute left-1/2 top-0 h-[420px] w-[820px] -translate-x-1/2 bg-[radial-gradient(ellipse_50%_60%_at_50%_0%,rgba(255,96,48,0.22),transparent_75%)]" />
+            <LightRays color="rgba(255, 96, 48, 0.2)" count={5} blur={40} speed={16} length="90%" />
+          </div>
+          <div className="relative flex size-14 items-center justify-center rounded-lg bg-[#dc3019] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_14px_40px_-12px_rgba(251,65,40,0.8)]">
             <Briefcase className="size-7" />
           </div>
-          <h2 className="text-xl font-semibold tracking-tight text-foreground mb-1.5">
-            No interview kits yet
+          <h2 className="relative mt-6 text-2xl font-semibold tracking-[-0.03em] text-white">
+            Create your first kit
           </h2>
-          <p className="text-sm text-muted-foreground max-w-md mb-6 leading-relaxed">
-            Paste a job description to generate your first tailored interview prep kit with company
-            research, targeted questions, flashcards, and a structured study plan.
+          <p className="relative mt-2 max-w-md text-base leading-relaxed text-white/60">
+            Paste a job description and the company&apos;s URL. Dossier researches the company and builds
+            questions, flashcards and a study plan around your interview date.
           </p>
-          <div className="flex flex-col sm:flex-row items-center gap-3">
-            <Button
-              onClick={() => handleOpenSheet(false)}
-              className="bg-[#FB4128] hover:bg-[#FB4128]/90 text-white gap-2 font-medium rounded-lg"
-            >
+          <div className="relative mt-8 flex flex-col items-center gap-3 sm:flex-row">
+            <Button size="lg" onClick={() => handleOpenSheet(false)}>
               <Plus className="size-4" />
-              Create your first kit
+              New kit
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleOpenSheet(true)}
-              className="gap-2 border-border/80 text-foreground hover:bg-muted rounded-lg"
-            >
-              <FileText className="size-4 text-[#FB4128]" />
-              Try with a sample JD
+            <Button size="lg" variant="outline" onClick={() => handleOpenSheet(true)}>
+              <FileText className="size-4 text-[#ff7a5c]" />
+              Try a sample job description
             </Button>
           </div>
         </div>
@@ -226,7 +279,7 @@ export default function KitsPage() {
         <div
           role="list"
           aria-label="Interview kits list"
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
         >
           {/* Cell 1: Always New Kit tile */}
           <div role="listitem">
@@ -261,11 +314,7 @@ export default function KitsPage() {
       )}
 
       {/* Create Kit Side Sheet */}
-      <CreateKitSheet
-        open={sheetOpen}
-        onOpenChange={handleSheetOpenChange}
-        prefillSample={prefillSample}
-      />
+      <CreateKitSheet open={sheetOpen} onOpenChange={handleSheetOpenChange} prefillSample={prefillSample} />
     </div>
   );
 }

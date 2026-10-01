@@ -5,7 +5,6 @@ import { AnimatePresence, motion } from "motion/react";
 import { Layers, Plus, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { EditableField } from "./EditableField";
 import { ItemControls } from "./ItemControls";
 import { OriginBadge } from "./OriginBadge";
@@ -38,31 +37,25 @@ export function FlashcardsSection({ editor }: { editor: KitEditor }) {
   };
 
   return (
-    <Card className="rounded-lg border-border/80">
+    <Card>
       <SectionHeader
         icon={<Layers className="size-4" />}
-        title="Flashcard Deck"
+        title="Flashcard deck"
         count={flashcards.length}
-        description="High-yield concept cards for quick active-recall study and Leitner spaced repetition."
+        description="Short recall cards. Practice mode brings each one back just before you would forget it."
         onRegenerate={() => void editor.regenerate("flashcards", "flashcards")}
         regenerating={editor.regenerating.has("flashcards")}
         error={editor.regenerateError.flashcards}
         action={
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setAddOpen(true)}
-            className="rounded h-8 px-2.5 text-xs text-foreground font-medium gap-1.5 border-border/70 hover:bg-accent transition-colors"
-          >
-            <Plus className="size-3.5 text-[#FB4128]" />
+          <Button type="button" variant="outline" onClick={() => setAddOpen(true)}>
+            <Plus className="size-4 text-[#ff7a5c]" />
             <span>Add flashcard</span>
           </Button>
         }
       />
 
-      <CardContent className="pt-4">
-        <ul className="grid gap-3.5 sm:grid-cols-2 list-none p-0 m-0">
+      <CardContent className="pt-5">
+        <ul className="m-0 grid list-none gap-4 p-0 md:grid-cols-2">
           <AnimatePresence initial={false}>
             {flashcards.map((f, idx) => {
               const isFlipped = Boolean(flippedCards[f.id]);
@@ -74,16 +67,16 @@ export function FlashcardsSection({ editor }: { editor: KitEditor }) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.98 }}
                   transition={{ duration: 0.2 }}
-                  className={`group relative flex flex-col justify-between rounded border p-3.5 sm:p-4 bg-card/60 hover:bg-card hover:border-border transition-all shadow-xs hover:shadow-sm ${
-                    f.pinned ? "ring-1 ring-primary/25 border-primary/40 bg-primary/5" : "border-border/70"
+                  className={`group relative flex flex-col justify-between rounded-lg border bg-[#141414] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-colors hover:border-white/[0.14] sm:p-5 ${
+                    f.pinned ? "border-primary/30 bg-primary/[0.05]" : "border-white/[0.08]"
                   }`}
                 >
                   <div className="flex flex-col gap-3">
                     {/* Top bar: Card index, Origin, Flip Preview, Pin/Delete */}
-                    <div className="flex items-center justify-between gap-1.5 border-b border-border/40 pb-2.5">
+                    <div className="flex items-center justify-between gap-1.5 border-b border-white/[0.06] pb-3">
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="text-[11px] font-mono text-muted-foreground font-medium">
-                          #{idx + 1}
+                        <span className="flex size-6 items-center justify-center rounded-lg bg-white/[0.06] text-xs font-bold tabular-nums text-white/70">
+                          {idx + 1}
                         </span>
                         <OriginBadge origin={f.origin} pinned={f.pinned} />
                       </div>
@@ -95,10 +88,10 @@ export function FlashcardsSection({ editor }: { editor: KitEditor }) {
                           size="sm"
                           onClick={() => toggleFlip(f.id)}
                           title="Toggle front / back preview"
-                          className="h-6 px-1.5 text-[10px] text-muted-foreground hover:text-foreground gap-1 rounded"
+                          className="h-8 gap-1.5 px-2.5 text-[13px] text-white/60 hover:text-white"
                         >
-                          <Repeat className="size-3" />
-                          <span>{isFlipped ? "Show Front" : "Flip Preview"}</span>
+                          <Repeat className="size-3.5" />
+                          <span>{isFlipped ? "Show front" : "Flip"}</span>
                         </Button>
 
                         <ItemControls
@@ -114,50 +107,49 @@ export function FlashcardsSection({ editor }: { editor: KitEditor }) {
                     </div>
 
                     {/* Front: Prompt / Question Face */}
-                    <div className={`flex flex-col gap-1 transition-opacity duration-200 ${isFlipped ? "opacity-40" : "opacity-100"}`}>
+                    <div
+                      className={`flex flex-col gap-1 transition-opacity duration-200 ${isFlipped ? "opacity-40" : "opacity-100"}`}
+                    >
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] uppercase font-mono tracking-wider font-semibold text-[#FB4128]">
-                          Front · Prompt
-                        </span>
-                        {isFlipped && <span className="text-[10px] text-muted-foreground italic">(Hidden during preview)</span>}
+                        <span className="text-[13px] font-semibold text-[#ff7a5c]">Front</span>
+                        {isFlipped && <span className="text-xs text-white/45">Hidden while flipped</span>}
                       </div>
                       <EditableField
                         value={f.front}
-                        onChange={(value) => editor.editField(`flashcard:${f.id}.front`, editFlashcardField(f.id, "front", value))}
+                        onChange={(value) =>
+                          editor.editField(
+                            `flashcard:${f.id}.front`,
+                            editFlashcardField(f.id, "front", value),
+                          )
+                        }
                         status={editor.status[`flashcard:${f.id}.front`]}
                         ariaLabel="Flashcard prompt"
                         placeholder="Enter the concept, term, or question…"
                         rows={2}
-                        className="text-sm font-medium leading-snug text-foreground bg-transparent border-border/40 hover:border-border focus:border-border/80"
+                        className="text-[15px] font-semibold leading-snug text-white"
                       />
                     </div>
 
                     {/* Back: Answer / Key Takeaways Face */}
                     <div
-                      className={`flex flex-col gap-1 rounded border p-2.5 transition-all ${
-                        isFlipped
-                          ? "bg-[#FB4128]/5 border-[#FB4128]/30 ring-1 ring-[#FB4128]/20"
-                          : "bg-muted/30 border-border/40"
+                      className={`flex flex-col gap-1 rounded-lg border p-3 transition-colors ${
+                        isFlipped ? "border-primary/30 bg-primary/[0.06]" : "border-white/[0.06] bg-black/25"
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] uppercase font-mono tracking-wider font-semibold text-foreground/80">
-                          Back · Answer / Key Takeaways
-                        </span>
-                        {isFlipped && (
-                          <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4 rounded bg-[#FB4128]/15 text-[#FB4128]">
-                            Active Face
-                          </Badge>
-                        )}
+                        <span className="text-[13px] font-semibold text-white/80">Back</span>
+                        {isFlipped && <span className="text-xs font-semibold text-[#ff7a5c]">Showing</span>}
                       </div>
                       <EditableField
                         value={f.back}
-                        onChange={(value) => editor.editField(`flashcard:${f.id}.back`, editFlashcardField(f.id, "back", value))}
+                        onChange={(value) =>
+                          editor.editField(`flashcard:${f.id}.back`, editFlashcardField(f.id, "back", value))
+                        }
                         status={editor.status[`flashcard:${f.id}.back`]}
                         ariaLabel="Flashcard answer"
                         placeholder="Enter the concise answer, key bullets, or code outline…"
                         rows={2}
-                        className="text-xs leading-relaxed text-muted-foreground bg-transparent border-transparent hover:border-border/40 focus:border-border/70 p-1"
+                        className="text-sm leading-relaxed text-white/70"
                       />
                     </div>
                   </div>
@@ -167,7 +159,7 @@ export function FlashcardsSection({ editor }: { editor: KitEditor }) {
           </AnimatePresence>
 
           {flashcards.length === 0 && (
-            <div className="sm:col-span-2 rounded border border-dashed border-border/70 p-8 text-center flex flex-col items-center justify-center gap-2">
+            <div className="sm:col-span-2 rounded-lg border border-dashed border-border/70 p-8 text-center flex flex-col items-center justify-center gap-2">
               <Layers className="size-8 text-muted-foreground/50" />
               <p className="text-xs text-muted-foreground">
                 No flashcards created yet. Click Add flashcard or Regenerate to populate your deck.
@@ -177,9 +169,9 @@ export function FlashcardsSection({ editor }: { editor: KitEditor }) {
                 variant="outline"
                 size="sm"
                 onClick={() => setAddOpen(true)}
-                className="rounded text-xs gap-1 mt-1"
+                className="rounded-lg text-xs gap-1 mt-1"
               >
-                <Plus className="size-3 text-[#FB4128]" />
+                <Plus className="size-3 text-[#ff7a5c]" />
                 <span>Add your first flashcard</span>
               </Button>
             </div>

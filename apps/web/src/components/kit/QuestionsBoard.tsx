@@ -33,7 +33,10 @@ const LABELS: Record<Category, string> = {
 };
 
 function groupByCategory(questions: Question[]): Record<Category, string[]> {
-  const grouped = { technical: [], behavioural: [], "system-design": [], "company-fit": [] } as Record<Category, string[]>;
+  const grouped = { technical: [], behavioural: [], "system-design": [], "company-fit": [] } as Record<
+    Category,
+    string[]
+  >;
   for (const category of CATEGORIES) {
     grouped[category] = questions
       .filter((q) => q.category === category)
@@ -104,30 +107,28 @@ export function QuestionsBoard({ editor }: { editor: KitEditor }) {
     }
 
     const touchedCategories = activeColumn === overColumn ? [activeColumn] : [activeColumn, overColumn];
-    const updates = touchedCategories.flatMap((c) => next[c].map((id, index) => ({ id, category: c, order: index })));
+    const updates = touchedCategories.flatMap((c) =>
+      next[c].map((id, index) => ({ id, category: c, order: index })),
+    );
     setColumns(next);
     editor.mutateNow(`questions.move:${active.id}`, reorderQuestions(updates));
     toast.success("Question moved");
   }
 
   return (
-    <div className="flex flex-col gap-3.5">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-0.5">
-        <div className="flex items-start gap-2.5">
-          <div className="flex size-8 shrink-0 items-center justify-center rounded bg-secondary/80 border border-border/60 text-[#FB4128] mt-0.5">
-            <HelpCircle className="size-4" />
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+        <div className="flex items-start gap-3.5">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-[#ff7a5c] ring-1 ring-primary/25">
+            <HelpCircle className="size-[18px]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-base sm:text-lg font-semibold tracking-tight text-foreground">
-                Question Bank
-              </h3>
-              <Badge variant="secondary" className="px-1.5 py-0 h-5 text-xs font-semibold rounded bg-secondary/80">
-                {kit.questions.length}
-              </Badge>
+              <h2 className="text-xl font-semibold tracking-[-0.02em] text-white">Question bank</h2>
+              <Badge variant="outline">{kit.questions.length}</Badge>
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Comprehensive role questions categorized into 4 tracks. Drag and drop cards between tracks to reorganize.
+            <p className="mt-1 text-sm text-white/60">
+              Four tracks. Drag a card to reorder it or move it to another track.
             </p>
           </div>
         </div>
@@ -140,13 +141,15 @@ export function QuestionsBoard({ editor }: { editor: KitEditor }) {
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-4">
           {CATEGORIES.map((category) => (
             <CategoryColumn
               key={category}
               category={category}
               label={LABELS[category]}
-              questions={columns[category].map((id) => questionsById.get(id)).filter((q): q is Question => Boolean(q))}
+              questions={columns[category]
+                .map((id) => questionsById.get(id))
+                .filter((q): q is Question => Boolean(q))}
               editor={editor}
             />
           ))}

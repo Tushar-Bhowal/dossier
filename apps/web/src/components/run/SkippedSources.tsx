@@ -22,7 +22,7 @@ export function SkippedSources({ sources }: { sources: SourceSkipped[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Sources skipped</CardTitle>
+        <CardTitle>Sources skipped</CardTitle>
         <CardDescription>
           These didn&apos;t come through — normal, and doesn&apos;t stop the kit.
         </CardDescription>
@@ -30,9 +30,12 @@ export function SkippedSources({ sources }: { sources: SourceSkipped[] }) {
       <CardContent>
         <ul className="flex flex-col gap-2">
           {sources.map((s, i) => (
-            <li key={`${s.url}-${i}`} className="text-sm">
-              <span className="break-all text-muted-foreground">{s.url}</span>
-              <span className="text-muted-foreground"> — {REASON_LABELS[s.reason] ?? s.reason}</span>
+            <li
+              key={`${s.url}-${i}`}
+              className="rounded-lg border border-white/[0.07] bg-white/[0.02] px-3.5 py-3 text-sm"
+            >
+              <span className="block break-all font-medium text-white/80">{s.url}</span>
+              <span className="text-white/55">{REASON_LABELS[s.reason] ?? s.reason}</span>
             </li>
           ))}
         </ul>

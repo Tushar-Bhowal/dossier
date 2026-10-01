@@ -3,10 +3,9 @@
 import * as React from "react";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowUpRight, BookOpen, Calendar, HelpCircle, Layers, Trash2 } from "lucide-react";
+import { ArrowUpRight, Calendar, HelpCircle, Layers, Trash2 } from "lucide-react";
 import type { KitSummary } from "@/lib/api";
 import { deleteKit } from "@/lib/api";
-import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
@@ -43,7 +42,6 @@ export function KitCard({ kit, className }: KitCardProps) {
   const seniority = kit.kit.role?.seniority;
   const location = kit.kit.source?.location;
 
-  const subtitleParts = [company, seniority, location].filter(Boolean);
   const questionsCount = kit.kit.questions?.length ?? 0;
   const flashcardsCount = kit.kit.flashcards?.length ?? 0;
   const days = kit.kit.schedule?.days_available;
@@ -68,65 +66,70 @@ export function KitCard({ kit, className }: KitCardProps) {
         href={`/kits/${kit.id}`}
         aria-label={`Interview kit for ${roleTitle} at ${company}`}
         className={cn(
-          "group relative flex min-h-[12rem] h-full flex-col justify-between rounded-lg border border-border/70 bg-card p-5 transition-all duration-200 select-none",
-          "hover:border-[#FB4128]/50 hover:shadow-[0_4px_24px_rgba(251,65,40,0.1)] hover:-translate-y-0.5",
-          "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-          className
+          "group relative flex h-full min-h-[15rem] select-none flex-col rounded-lg border border-white/[0.08] bg-[#111111] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-[transform,border-color,box-shadow] duration-200",
+          "bg-[radial-gradient(120%_70%_at_100%_0%,rgba(251,65,40,0.08),transparent_55%)]",
+          "hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_20px_50px_-20px_rgba(251,65,40,0.45),inset_0_1px_0_rgba(255,255,255,0.06)]",
+          "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+          className,
         )}
       >
-        {/* Delete button — visible on card hover */}
         <button
           type="button"
           onClick={handleDeleteClick}
           aria-label={`Delete kit for ${roleTitle}`}
           className={cn(
-            "absolute top-3 right-3 z-10 flex size-7 items-center justify-center rounded-lg",
-            "bg-muted/80 text-muted-foreground border border-border/60",
-            "opacity-0 scale-90 transition-all duration-150",
-            "group-hover:opacity-100 group-hover:scale-100",
-            "hover:bg-destructive/15 hover:text-destructive hover:border-destructive/30",
-            "focus-visible:opacity-100 focus-visible:scale-100 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+            "absolute right-4 top-4 z-10 flex size-8 items-center justify-center rounded-lg",
+            "border border-white/10 bg-[#161616] text-white/55",
+            "scale-90 opacity-0 transition-all duration-150",
+            "group-hover:scale-100 group-hover:opacity-100",
+            "hover:border-destructive/30 hover:bg-destructive/15 hover:text-destructive",
+            "focus-visible:scale-100 focus-visible:opacity-100 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
           )}
         >
-          <Trash2 className="size-3.5" />
+          <Trash2 className="size-4" />
         </button>
 
-        {/* Header zone */}
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-start justify-between gap-2 pr-6">
-            <h3 className="text-base font-semibold tracking-tight text-foreground line-clamp-1 group-hover:text-[#FB4128] transition-colors">
-              {roleTitle}
-            </h3>
-            <ArrowUpRight className="size-4 shrink-0 text-muted-foreground/60 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[#FB4128]" />
+        <div className="flex items-center gap-3 pr-10">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#dc3019] text-base font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]">
+            {company.charAt(0).toUpperCase()}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-[15px] font-semibold text-white">{company}</p>
+            <p className="truncate text-[13px] text-white/55">
+              {[seniority, location].filter((v) => v && !/^not specified$/i.test(v)).join(" · ") ||
+                "Interview kit"}
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground font-normal line-clamp-1">
-            {subtitleParts.join(" · ")}
-          </p>
         </div>
 
-        {/* Body zone: counts badges */}
-        <div className="flex flex-wrap items-center gap-1.5 py-3">
-          <Badge variant="secondary" className="gap-1 px-2 py-0.5 text-xs font-normal bg-secondary/70 rounded">
-            <HelpCircle className="size-3 text-muted-foreground" />
-            <span>{questionsCount} questions</span>
-          </Badge>
-          <Badge variant="secondary" className="gap-1 px-2 py-0.5 text-xs font-normal bg-secondary/70 rounded">
-            <Layers className="size-3 text-muted-foreground" />
-            <span>{flashcardsCount} flashcards</span>
-          </Badge>
-          {days ? (
-            <Badge variant="outline" className="gap-1 px-2 py-0.5 text-xs font-normal border-border/80 text-muted-foreground rounded">
-              <Calendar className="size-3 text-muted-foreground" />
-              <span>{days}d schedule</span>
-            </Badge>
-          ) : null}
-        </div>
+        <h3 className="mt-5 line-clamp-2 text-[19px] font-semibold leading-snug tracking-[-0.02em] text-white transition-colors group-hover:text-[#ff7a5c]">
+          {roleTitle}
+        </h3>
 
-        {/* Footer zone */}
-        <div className="flex items-center justify-between border-t border-border/40 pt-3 text-[11px] text-muted-foreground/80">
-          <span>Updated {formatRelativeTime(kit.updatedAt || kit.createdAt)}</span>
-          <span className="font-medium text-[#FB4128] opacity-0 transition-opacity duration-150 group-hover:opacity-100">
-            View prep kit →
+        <dl className="mt-5 grid grid-cols-3 gap-2">
+          {[
+            { icon: HelpCircle, value: questionsCount, label: "questions" },
+            { icon: Layers, value: flashcardsCount, label: "flashcards" },
+            { icon: Calendar, value: days ?? "—", label: "days" },
+          ].map(({ icon: Icon, value, label }) => (
+            <div key={label} className="rounded-lg border border-white/[0.06] bg-white/[0.03] px-3 py-2.5">
+              <dt className="sr-only">{label}</dt>
+              <dd className="flex items-center gap-1.5 text-[17px] font-semibold tabular-nums text-white">
+                <Icon className="size-3.5 text-[#ff7a5c]" aria-hidden />
+                {value}
+              </dd>
+              <p className="mt-0.5 text-xs font-medium text-white/50">{label}</p>
+            </div>
+          ))}
+        </dl>
+
+        <div className="mt-auto flex items-center justify-between pt-5 text-[13px]">
+          <span className="font-medium text-white/45">
+            Updated {formatRelativeTime(kit.updatedAt || kit.createdAt)}
+          </span>
+          <span className="inline-flex items-center gap-1 font-semibold text-white/70 transition-colors group-hover:text-[#ff7a5c]">
+            Open kit
+            <ArrowUpRight className="size-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
           </span>
         </div>
       </Link>

@@ -23,10 +23,10 @@ interface CategoryColumnProps {
 }
 
 const CATEGORY_ICONS: Record<Question["category"], React.ReactNode> = {
-  technical: <Terminal className="size-3.5 text-blue-400" />,
-  behavioural: <MessageSquare className="size-3.5 text-emerald-400" />,
-  "system-design": <Boxes className="size-3.5 text-purple-400" />,
-  "company-fit": <Building2 className="size-3.5 text-amber-400" />,
+  technical: <Terminal className="size-4 text-sky-400" />,
+  behavioural: <MessageSquare className="size-4 text-emerald-400" />,
+  "system-design": <Boxes className="size-4 text-violet-400" />,
+  "company-fit": <Building2 className="size-4 text-amber-400" />,
 };
 
 export function CategoryColumn({ category, label, questions, editor }: CategoryColumnProps) {
@@ -45,22 +45,19 @@ export function CategoryColumn({ category, label, questions, editor }: CategoryC
   };
 
   return (
-    <Card className="flex h-full min-w-0 flex-col rounded-lg border-border/70 bg-card/30 transition-colors">
-      {/* Column Header */}
-      <div className="flex items-center justify-between gap-2 p-3 sm:p-3.5 border-b border-border/40">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="flex size-6 shrink-0 items-center justify-center rounded bg-secondary/80 border border-border/50">
+    <Card className="flex h-full min-w-0 flex-col gap-0 py-0">
+      <div className="flex items-center justify-between gap-2 border-b border-white/[0.06] px-4 py-3.5">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04]">
             {CATEGORY_ICONS[category]}
           </div>
-          <span className="font-semibold text-xs text-foreground truncate">
-            {label}
-          </span>
-          <Badge variant="secondary" className="px-1.5 py-0 h-4 text-[11px] font-semibold rounded shrink-0">
+          <span className="truncate text-[15px] font-semibold text-white">{label}</span>
+          <Badge variant="outline" className="shrink-0">
             {questions.length}
           </Badge>
         </div>
 
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex shrink-0 items-center gap-1">
           <Button
             type="button"
             variant="ghost"
@@ -68,31 +65,32 @@ export function CategoryColumn({ category, label, questions, editor }: CategoryC
             onClick={() => void editor.regenerate(`questions:${category}`, sectionKey)}
             disabled={isRegenerating}
             title={`Regenerate ${label} questions`}
-            className="size-7 rounded text-muted-foreground hover:text-foreground"
+            aria-label={`Regenerate ${label} questions`}
+            className="text-white/55 hover:text-white"
           >
-            <RefreshCw className={`size-3.5 ${isRegenerating ? "animate-spin text-[#FB4128]" : ""}`} />
+            <RefreshCw className={`size-4 ${isRegenerating ? "animate-spin text-[#ff7a5c]" : ""}`} />
           </Button>
-
           <Button
             type="button"
             variant="ghost"
             size="icon-sm"
             onClick={() => setAddOpen(true)}
             title={`Add question to ${label}`}
-            className="size-7 rounded text-muted-foreground hover:text-[#FB4128] hover:bg-[#FB4128]/10"
+            aria-label={`Add question to ${label}`}
+            className="text-white/55 hover:bg-primary/10 hover:text-[#ff7a5c]"
           >
-            <Plus className="size-3.5" />
+            <Plus className="size-4" />
           </Button>
         </div>
       </div>
 
       {/* Column Droppable Area */}
-      <CardContent className="flex flex-1 flex-col p-2 sm:p-2.5">
+      <CardContent className="flex flex-1 flex-col p-3">
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>
           <div
             ref={setNodeRef}
-            className={`flex min-h-[140px] flex-1 flex-col gap-2.5 rounded p-1.5 transition-all ${
-              isOver ? "bg-[#FB4128]/5 border border-dashed border-[#FB4128]/40" : "bg-transparent"
+            className={`flex min-h-[140px] flex-1 flex-col gap-3 rounded-lg border border-dashed p-1 transition-colors ${
+              isOver ? "border-primary/40 bg-primary/[0.04]" : "border-transparent"
             }`}
           >
             <AnimatePresence initial={false}>
@@ -102,12 +100,12 @@ export function CategoryColumn({ category, label, questions, editor }: CategoryC
             </AnimatePresence>
 
             {questions.length === 0 && (
-              <div className="flex flex-1 flex-col items-center justify-center rounded border border-dashed border-border/50 p-4 text-center">
-                <p className="text-[11px] text-muted-foreground">No questions in this section.</p>
+              <div className="flex flex-1 flex-col items-center justify-center rounded-lg border border-dashed border-white/10 p-6 text-center">
+                <p className="text-sm text-white/55">No questions in this track yet.</p>
                 <button
                   type="button"
                   onClick={() => setAddOpen(true)}
-                  className="mt-1.5 text-[11px] text-[#FB4128] hover:underline font-medium"
+                  className="mt-2 text-sm font-semibold text-[#ff7a5c] hover:underline"
                 >
                   + Add question
                 </button>

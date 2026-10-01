@@ -18,9 +18,8 @@ import {
   Trash2,
 } from "lucide-react";
 import { deleteKit } from "@/lib/api";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "@/components/ui/toast";
 import { CompanyBriefCard } from "./CompanyBriefCard";
@@ -31,6 +30,9 @@ import { QuestionsBoard } from "./QuestionsBoard";
 import { FlashcardsSection } from "./FlashcardsSection";
 import { ScheduleView } from "./ScheduleView";
 import { useKitEditor } from "./useKitEditor";
+
+const TABS = ["overview", "questions", "flashcards", "schedule"] as const;
+type TabValue = (typeof TABS)[number];
 
 export function KitBuilder({ id, initial }: { id: string; initial: { kit: Kit; version: number } }) {
   const editor = useKitEditor(id, initial);
@@ -51,172 +53,167 @@ export function KitBuilder({ id, initial }: { id: string; initial: { kit: Kit; v
     router.push("/kits");
   };
 
-  const scrollToSection = (sectionId: string) => {
-    const el = document.getElementById(sectionId);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+  const [tab, setTab] = React.useState<TabValue>(() => {
+    const hash = typeof window === "undefined" ? "" : window.location.hash.slice(1);
+    return (TABS as readonly string[]).includes(hash) ? (hash as TabValue) : "overview";
+  });
+  const handleTabChange = (value: string) => {
+    setTab(value as TabValue);
+    window.history.replaceState(null, "", `#${value}`);
   };
 
+  const location =
+    kit.source.location && !/^not specified$/i.test(kit.source.location) ? kit.source.location : null;
+  const uncovered = kit.coverage.uncovered_requirement_ids.length;
+
+  const stats = [
+    { icon: ListChecks, label: "Requirements", value: kit.role.requirements.length },
+    { icon: HelpCircle, label: "Questions", value: kit.questions.length },
+    { icon: Layers, label: "Flashcards", value: kit.flashcards.length },
+    { icon: Calendar, label: "Study days", value: kit.schedule.days_available },
+  ];
+
   return (
-    <div className="flex flex-col gap-6 w-full mx-auto pb-12">
-      {/* Top action bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-border/40">
-        <Button
-          asChild
-          variant="outline"
-          size="sm"
-          className="rounded gap-1.5 h-8 px-3 text-muted-foreground hover:text-foreground border-border/80 hover:bg-accent transition-colors self-start sm:self-auto"
-        >
-          <Link href="/kits">
-            <ArrowLeft className="size-3.5" />
-            <span>Back to kits</span>
-          </Link>
-        </Button>
-
-        <div className="flex items-center gap-2 self-end sm:self-auto">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setConfirmOpen(true)}
-            className="rounded gap-1.5 h-8 px-2.5 text-muted-foreground hover:text-destructive hover:border-destructive/40 hover:bg-destructive/10 border-border/80 transition-colors text-xs"
-          >
-            <Trash2 className="size-3.5" />
-            <span>Delete</span>
-          </Button>
-
-          <Button
-            asChild
-            size="sm"
-            className="rounded bg-[#FB4128] hover:bg-[#e03720] text-white shadow-sm hover:shadow font-medium px-3.5 h-8 gap-1.5 text-xs transition-colors"
-          >
-            <Link href={`/kits/${id}/practice`}>
-              <GraduationCap className="size-3.5" />
-              <span>Practice Mode</span>
-            </Link>
-          </Button>
-        </div>
-      </div>
-
-      {/* Role title and metadata banner */}
-      <div className="flex flex-col gap-2 rounded-lg border border-border/70 bg-card/40 p-4 sm:p-5">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1 font-medium text-foreground/80">
-            <Building2 className="size-3.5 text-[#FB4128]" />
-            {kit.source.company}
-          </span>
-          {kit.source.location && (
-            <>
-              <span>·</span>
-              <span className="flex items-center gap-1">
-                <MapPin className="size-3 text-muted-foreground" />
-                {kit.source.location}
-              </span>
-            </>
-          )}
-          {kit.role.seniority && (
-            <>
-              <span>·</span>
-              <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-normal rounded border-border/60">
-                {kit.role.seniority}
-              </Badge>
-            </>
-          )}
-        </div>
-
-        <EditableField
-          value={kit.role.title}
-          onChange={(value) => editor.editField("role.title", editRoleTitle(value))}
-          status={editor.status["role.title"]}
-          ariaLabel="Role title"
-          placeholder="Untitled role"
-          rows={1}
-          className="border-transparent bg-transparent px-0 text-2xl font-bold tracking-tight md:text-3xl text-foreground focus:border-border/60"
+    <div className="mx-auto flex w-full flex-col gap-6 pb-16">
+      <section className="relative overflow-hidden rounded-lg border border-white/[0.08] bg-[#0f0f0f] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:p-8">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-40 left-1/2 h-80 w-[900px] -translate-x-1/2 bg-[radial-gradient(ellipse_50%_60%_at_50%_50%,rgba(255,96,48,0.16),transparent_70%)]"
         />
 
-        {/* Quick jump navigation pills */}
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border/40 mt-1">
-          <span className="text-[11px] font-medium text-muted-foreground mr-1 hidden sm:inline">
-            Jump to:
-          </span>
-          <button
-            type="button"
-            onClick={() => scrollToSection("section-brief")}
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 border border-border/50 transition-colors"
+        <div className="relative flex flex-wrap items-center justify-between gap-3">
+          <Link
+            href="/kits"
+            className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-white/60 transition-colors hover:text-white"
           >
-            <Building2 className="size-3 text-[#FB4128]" />
-            Brief
-          </button>
-          <button
-            type="button"
-            onClick={() => scrollToSection("section-requirements")}
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 border border-border/50 transition-colors"
-          >
-            <ListChecks className="size-3 text-[#FB4128]" />
-            Requirements ({kit.role.requirements.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => scrollToSection("section-questions")}
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 border border-border/50 transition-colors"
-          >
-            <HelpCircle className="size-3 text-[#FB4128]" />
-            Questions ({kit.questions.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => scrollToSection("section-flashcards")}
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 border border-border/50 transition-colors"
-          >
-            <Layers className="size-3 text-[#FB4128]" />
-            Flashcards ({kit.flashcards.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => scrollToSection("section-schedule")}
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 border border-border/50 transition-colors"
-          >
-            <Calendar className="size-3 text-[#FB4128]" />
-            Schedule ({kit.schedule.days_available}d)
-          </button>
+            <ArrowLeft className="size-4" />
+            All kits
+          </Link>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setConfirmOpen(true)}
+              className="text-white/70 hover:border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
+            >
+              <Trash2 className="size-4" />
+              <span>Delete</span>
+            </Button>
+            <Button asChild size="lg">
+              <Link href={`/kits/${id}/practice`}>
+                <GraduationCap className="size-4" />
+                <span>Practice flashcards</span>
+              </Link>
+            </Button>
+          </div>
         </div>
-      </div>
 
-      {/* Coverage Gaps Notice */}
-      {kit.coverage.uncovered_requirement_ids.length > 0 && (
-        <Card className="border-amber-500/30 bg-amber-500/5 rounded-lg">
-          <CardContent className="flex items-center gap-3 p-4 text-xs text-amber-400">
-            <AlertTriangle className="size-4 shrink-0" />
-            <div className="flex-1">
-              <span className="font-semibold">Coverage gap detected:</span>{" "}
-              <span>
-                {kit.coverage.uncovered_requirement_ids.length} requirement(s) do not yet have corresponding interview questions. Use the Regenerate action on Questions or add questions manually.
+        <div className="relative mt-6 flex items-center gap-3.5">
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-[#dc3019] text-lg font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_10px_30px_-10px_rgba(251,65,40,0.7)]">
+            {company.charAt(0).toUpperCase()}
+          </span>
+          <div className="min-w-0">
+            <p className="flex items-center gap-1.5 text-base font-semibold text-white">
+              <Building2 className="size-4 text-[#ff7a5c]" />
+              {kit.source.company}
+            </p>
+            <p className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-white/55">
+              {kit.role.seniority && <span>{kit.role.seniority}</span>}
+              {kit.role.seniority && location && <span aria-hidden>·</span>}
+              {location && (
+                <span className="flex items-center gap-1">
+                  <MapPin className="size-3.5" />
+                  {location}
+                </span>
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className="relative mt-4">
+          <EditableField
+            value={kit.role.title}
+            onChange={(value) => editor.editField("role.title", editRoleTitle(value))}
+            status={editor.status["role.title"]}
+            ariaLabel="Role title"
+            placeholder="Untitled role"
+            rows={1}
+            className="text-[28px] font-semibold leading-tight tracking-[-0.035em] text-white md:text-[36px]"
+          />
+        </div>
+
+        <dl className="relative mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {stats.map(({ icon: Icon, label, value }) => (
+            <div
+              key={label}
+              className="flex items-center gap-3 rounded-lg border border-white/[0.07] bg-white/[0.03] p-4"
+            >
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-[#ff7a5c] ring-1 ring-primary/25">
+                <Icon className="size-[18px]" aria-hidden />
               </span>
+              <div>
+                <dd className="text-xl font-semibold tabular-nums tracking-[-0.02em] text-white">{value}</dd>
+                <dt className="text-[13px] font-medium text-white/55">{label}</dt>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          ))}
+        </dl>
+      </section>
+
+      {uncovered > 0 && (
+        <div
+          className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/[0.07] p-4"
+          role="status"
+        >
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/15 text-amber-300">
+            <AlertTriangle className="size-4" />
+          </span>
+          <p className="text-[15px] leading-relaxed text-amber-100/90">
+            <span className="font-semibold text-amber-200">
+              {uncovered} requirement{uncovered === 1 ? " has" : "s have"} no matching question yet.
+            </span>{" "}
+            Regenerate a question track or add one by hand on the Questions tab.
+          </p>
+        </div>
       )}
 
-      {/* Main Sections with Scroll Targets */}
-      <div id="section-brief" className="scroll-mt-16">
-        <CompanyBriefCard editor={editor} />
-      </div>
+      <Tabs value={tab} onValueChange={handleTabChange} className="gap-6">
+        <div className="sticky top-(--app-header-height,4rem) z-10 -mx-4 bg-background/85 px-4 py-3 backdrop-blur-xl md:-mx-8 md:px-8">
+          <TabsList className="grid w-full grid-cols-2 gap-1 group-data-horizontal/tabs:h-auto sm:inline-flex sm:w-fit sm:group-data-horizontal/tabs:h-11">
+            {[
+              { value: "overview", label: "Overview", icon: Building2, count: kit.role.requirements.length },
+              { value: "questions", label: "Questions", icon: HelpCircle, count: kit.questions.length },
+              { value: "flashcards", label: "Flashcards", icon: Layers, count: kit.flashcards.length },
+              { value: "schedule", label: "Schedule", icon: Calendar, count: kit.schedule.days_available },
+            ].map(({ value, label, icon: Icon, count }) => (
+              <TabsTrigger key={value} value={value} className="h-9 gap-2 px-4 text-[15px]">
+                <Icon className="size-4" />
+                {label}
+                <span className="rounded-lg bg-white/[0.07] px-1.5 text-xs tabular-nums text-white/65">
+                  {count}
+                </span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
 
-      <div id="section-requirements" className="scroll-mt-16">
-        <RequirementsSection editor={editor} />
-      </div>
-
-      <div id="section-questions" className="scroll-mt-16">
-        <QuestionsBoard editor={editor} />
-      </div>
-
-      <div id="section-flashcards" className="scroll-mt-16">
-        <FlashcardsSection editor={editor} />
-      </div>
-
-      <div id="section-schedule" className="scroll-mt-16">
-        <ScheduleView kit={kit} />
-      </div>
+        <TabsContent value="overview" className="flex flex-col gap-6">
+          <div id="section-brief">
+            <CompanyBriefCard editor={editor} />
+          </div>
+          <div id="section-requirements">
+            <RequirementsSection editor={editor} />
+          </div>
+        </TabsContent>
+        <TabsContent value="questions" id="section-questions">
+          <QuestionsBoard editor={editor} />
+        </TabsContent>
+        <TabsContent value="flashcards" id="section-flashcards">
+          <FlashcardsSection editor={editor} />
+        </TabsContent>
+        <TabsContent value="schedule" id="section-schedule">
+          <ScheduleView kit={kit} />
+        </TabsContent>
+      </Tabs>
 
       <ConfirmDialog
         open={confirmOpen}
