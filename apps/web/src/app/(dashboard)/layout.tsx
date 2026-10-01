@@ -11,7 +11,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (isError) {
-      router.replace("/?mode=login");
+      router.replace("/login");
     }
   }, [isError, router]);
 

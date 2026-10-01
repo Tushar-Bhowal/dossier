@@ -25,8 +25,9 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      { source: '/login', destination: '/?mode=login', permanent: false },
-      { source: '/register', destination: '/?mode=register', permanent: false },
+      { source: '/register', destination: '/login?mode=register', permanent: false },
+      { source: '/', has: [{ type: 'query', key: 'mode', value: 'login' }], destination: '/login', permanent: false },
+      { source: '/', has: [{ type: 'query', key: 'mode', value: 'register' }], destination: '/login?mode=register', permanent: false },
       { source: '/kits/new', destination: '/kits?new=true', permanent: false },
     ];
   },
