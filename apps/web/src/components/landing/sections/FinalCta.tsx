@@ -27,7 +27,7 @@ export function FinalCta() {
               Start with a company kit today. Roadmaps, mock interviews and Resume Studio arrive next.
             </p>
             <div className="mt-10 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row">
-              <PrimaryButton href="/register" className="w-full sm:w-auto">
+              <PrimaryButton href="/login?mode=register" className="w-full sm:w-auto">
                 Start free <ArrowUpRight className="size-[18px]" aria-hidden />
               </PrimaryButton>
               <SecondaryButton href="/login" className="w-full sm:w-auto">

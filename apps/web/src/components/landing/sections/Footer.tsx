@@ -23,7 +23,7 @@ const COLUMNS = [
     heading: "Account",
     links: [
       { href: "/login", label: "Sign in" },
-      { href: "/register", label: "Create account" },
+      { href: "/login?mode=register", label: "Create account" },
     ],
   },
 ];

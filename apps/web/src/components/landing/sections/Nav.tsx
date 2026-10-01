@@ -73,7 +73,7 @@ export function Nav() {
             >
               Sign in
             </Link>
-            <PrimaryButton href="/register" size="sm">
+            <PrimaryButton href="/login?mode=register" size="sm">
               Start free <ArrowUpRight className="size-4" aria-hidden />
             </PrimaryButton>
             <button

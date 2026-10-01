@@ -98,7 +98,7 @@ export function Hero() {
           transition={{ duration: 0.8, ease: EASE_OUT, delay: 0.45 }}
           className="mt-10 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row"
         >
-          <PrimaryButton href="/register" className="w-full sm:w-auto">
+          <PrimaryButton href="/login?mode=register" className="w-full sm:w-auto">
             Start free <ArrowUpRight className="size-[18px]" aria-hidden />
           </PrimaryButton>
           <SecondaryButton href="#how" className="w-full sm:w-auto">
