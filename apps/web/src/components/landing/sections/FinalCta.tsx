@@ -24,7 +24,7 @@ export function FinalCta() {
               Your next interview is already <Accent>on the calendar</Accent>.
             </h2>
             <p className="mt-6 max-w-lg text-[17px] leading-relaxed text-white/70 sm:text-xl">
-              Start with a company kit today. Roadmaps, mock interviews and Resume Studio arrive next.
+              Start with a company kit today. Resume Studio arrives next, then roadmaps and mock interviews.
             </p>
             <div className="mt-10 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row">
               <PrimaryButton href="/login?mode=register" className="w-full sm:w-auto">

@@ -56,17 +56,17 @@ export function Hero() {
 
       <Container className="relative flex flex-col items-center text-center">
         <motion.a
-          href="#product"
+          href="#resume-studio"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: EASE_OUT }}
           className="group mb-8 inline-flex items-center gap-2.5 rounded-lg border border-white/10 bg-white/[0.04] py-1.5 pl-1.5 pr-3.5 text-sm font-medium shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur transition-colors hover:border-white/20"
         >
           <span className="rounded-lg bg-primary/15 px-2 py-0.5 text-[13px] font-semibold text-[#ff7a5c]">
-            New
+            Next
           </span>
           <AnimatedShinyText className="mx-0 text-white/75 dark:text-white/75" shimmerWidth={80}>
-            Roadmaps for any field, coming soon
+            Resume Studio, in any language
           </AnimatedShinyText>
           <ArrowRight
             className="size-3.5 text-white/60 transition-transform group-hover:translate-x-0.5"

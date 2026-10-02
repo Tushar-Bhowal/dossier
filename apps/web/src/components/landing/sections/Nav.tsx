@@ -11,6 +11,7 @@ import { PrimaryButton } from "../Buttons";
 
 const LINKS = [
   { href: "#product", label: "Product" },
+  { href: "#resume-studio", label: "Resume Studio" },
   { href: "#how", label: "How it works" },
   { href: "#features", label: "Features" },
   { href: "#faq", label: "FAQ" },
@@ -53,7 +54,7 @@ export function Nav() {
             <span className="text-[17px] font-bold tracking-[-0.02em]">Dossier</span>
           </Link>
 
-          <ul className="hidden items-center gap-1 md:flex">
+          <ul className="hidden items-center gap-1 lg:flex">
             {LINKS.map((l) => (
               <li key={l.href}>
                 <a
@@ -78,7 +79,7 @@ export function Nav() {
             </PrimaryButton>
             <button
               type="button"
-              className="flex size-10 items-center justify-center rounded-lg text-white/80 hover:bg-white/5 md:hidden"
+              className="flex size-10 items-center justify-center rounded-lg text-white/80 hover:bg-white/5 lg:hidden"
               aria-expanded={open}
               aria-controls="mobile-menu"
               aria-label={open ? "Close menu" : "Open menu"}
@@ -97,7 +98,7 @@ export function Nav() {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3, ease: EASE_OUT }}
-              className="overflow-hidden md:hidden"
+              className="overflow-hidden lg:hidden"
             >
               <ul className="flex flex-col gap-1 border-t border-white/[0.06] p-2">
                 {[...LINKS, { href: "/login", label: "Sign in" }].map((l) => (

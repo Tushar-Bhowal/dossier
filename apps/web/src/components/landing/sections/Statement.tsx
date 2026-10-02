@@ -6,6 +6,7 @@ import {
   Ban,
   Download,
   Globe,
+  Languages,
   Link2,
   MessageSquareQuote,
   ScanSearch,
@@ -43,6 +44,7 @@ const TOKENS: (string | LucideIcon)[] = [
 
 const CHIPS = [
   { icon: Globe, label: "Any field, not just tech" },
+  { icon: Languages, label: "Write in any language" },
   { icon: Link2, label: "Every claim sourced" },
   { icon: ScanSearch, label: "No fake ATS scores" },
   { icon: Ban, label: "No live-interview cheating" },

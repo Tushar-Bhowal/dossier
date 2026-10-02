@@ -2,6 +2,7 @@ import { Nav } from "@/components/landing/sections/Nav";
 import { Hero } from "@/components/landing/sections/Hero";
 import { Statement } from "@/components/landing/sections/Statement";
 import { Pillars } from "@/components/landing/sections/Pillars";
+import { ResumeStudio } from "@/components/landing/sections/ResumeStudio";
 import { HowItWorks } from "@/components/landing/sections/HowItWorks";
 import { DeepDives } from "@/components/landing/sections/DeepDives";
 import { Loop } from "@/components/landing/sections/Loop";
@@ -18,6 +19,7 @@ export default function LandingPage() {
         <Hero />
         <Statement />
         <Pillars />
+        <ResumeStudio />
         <HowItWorks />
         <DeepDives />
         <Loop />

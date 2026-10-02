@@ -1,10 +1,9 @@
-import { Check, FileText, Map, Mic, LayoutGrid, type LucideIcon } from "lucide-react";
+import { Check, Map, Mic, LayoutGrid, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Accent, Container, Eyebrow, Section, SectionHeading } from "../SectionHeading";
 import { Reveal } from "../motion/Reveal";
 import { TopicMock } from "../mocks/TopicMock";
 import { InterviewMock } from "../mocks/InterviewMock";
-import { ResumeMock } from "../mocks/ResumeMock";
 
 const ROWS = [
   {
@@ -38,22 +37,6 @@ const ROWS = [
       "Filler words and pace, straight from the transcript",
     ],
     mock: <InterviewMock />,
-  },
-  {
-    icon: FileText as LucideIcon,
-    eyebrow: "Resume Studio",
-    title: (
-      <>
-        LaTeX quality, <Accent>without</Accent> the LaTeX.
-      </>
-    ),
-    body: "Tell it about your work in plain words. It writes the LaTeX, compiles it in your browser, and shows you exactly which job requirements your resume proves.",
-    points: [
-      "Chat or dictate, then edit the source by hand",
-      "Upload an old resume to start from",
-      "Tailor to a job with a diff you approve",
-    ],
-    mock: <ResumeMock />,
   },
 ];
 

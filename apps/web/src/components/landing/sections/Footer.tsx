@@ -7,6 +7,7 @@ const COLUMNS = [
     heading: "Product",
     links: [
       { href: "#product", label: "Platform" },
+      { href: "#resume-studio", label: "Resume Studio" },
       { href: "#how", label: "How it works" },
       { href: "#features", label: "Features" },
       { href: "#loop", label: "The loop" },

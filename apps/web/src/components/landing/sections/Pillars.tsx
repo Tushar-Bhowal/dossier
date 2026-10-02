@@ -11,7 +11,7 @@ import { SpotlightCard } from "../SpotlightCard";
 type Pillar = {
   icon: LucideIcon;
   name: string;
-  status: "Live" | "Soon";
+  status: "Live" | "Next" | "Soon";
   body: string;
   visual: React.ReactNode;
   wide?: boolean;
@@ -19,12 +19,19 @@ type Pillar = {
 
 const PILLARS: Pillar[] = [
   {
-    icon: Map,
-    name: "Roadmaps",
-    status: "Soon",
-    body: "Pick any skill or role. Get a staged path from first concepts to scenario questions, built from how companies actually interview.",
-    visual: <StagesVisual />,
+    icon: Route,
+    name: "Company kits",
+    status: "Live",
+    body: "Paste a job description and a company URL. Get a researched prep kit, with a source behind every item.",
+    visual: <KitVisual />,
     wide: true,
+  },
+  {
+    icon: FileText,
+    name: "Resume Studio",
+    status: "Next",
+    body: "Describe your work in any language. Get a clean English resume where every line is something you said.",
+    visual: <ResumeVisual />,
   },
   {
     icon: Mic,
@@ -34,18 +41,11 @@ const PILLARS: Pillar[] = [
     visual: <WaveVisual />,
   },
   {
-    icon: FileText,
-    name: "Resume Studio",
+    icon: Map,
+    name: "Roadmaps",
     status: "Soon",
-    body: "Talk through your experience. Edit the LaTeX on the left, watch the PDF on the right.",
-    visual: <ResumeVisual />,
-  },
-  {
-    icon: Route,
-    name: "Company kits",
-    status: "Live",
-    body: "Paste a job description and a company URL. Get a researched prep kit, with a source behind every item.",
-    visual: <KitVisual />,
+    body: "Pick any skill or role. Get a staged path from first concepts to scenario questions, built from how companies actually interview.",
+    visual: <StagesVisual />,
     wide: true,
   },
 ];
@@ -97,10 +97,14 @@ export function Pillars() {
                       <span
                         className={cn(
                           "shrink-0 rounded-lg px-2.5 py-1 text-[13px] font-semibold",
-                          live ? "bg-white text-[#b9260f]" : "bg-white/[0.06] text-white/70",
+                          live
+                            ? "bg-white text-[#b9260f]"
+                            : p.status === "Next"
+                              ? "bg-primary/15 text-[#ff7a5c]"
+                              : "bg-white/[0.06] text-white/70",
                         )}
                       >
-                        {live ? "Live now" : "Coming soon"}
+                        {live ? "Live now" : p.status === "Next" ? "Launching next" : "Coming soon"}
                       </span>
                     </div>
                     <p
@@ -188,30 +192,21 @@ function WaveVisual() {
 
 function ResumeVisual() {
   return (
-    <div className="absolute inset-0 grid grid-cols-2 gap-3 p-5" aria-hidden>
-      <div className="space-y-1.5 rounded-lg border border-white/[0.06] bg-black/50 p-3 font-mono text-[12px] leading-relaxed">
-        <p className="text-primary/90">\section{"{Experience}"}</p>
-        <p className="text-white/65">\resumeItem{"{"}</p>
-        <p className="pl-2 text-white/65">Cut close time</p>
-        <p className="pl-2 text-white/65">by 40% across</p>
-        <p className="pl-2 text-white/65">3 entities{"}"}</p>
-        <p className="text-[#ff8a00]/80">
-          \skills{"{"}Excel, SQL{"}"}
-        </p>
+    <div className="absolute inset-0 flex flex-col justify-center gap-3 px-5 sm:px-6" aria-hidden>
+      <div className="ml-auto max-w-[88%] rounded-lg bg-white/[0.07] px-3.5 py-2.5 text-[14px] font-medium leading-snug text-white/85">
+        <span className="mr-2 rounded-md bg-primary/20 px-1.5 py-0.5 text-[12px] font-semibold text-[#ff7a5c]">
+          বাংলা
+        </span>
+        Maths আর Science পড়াই, class 6 থেকে 8
       </div>
-      <div className="rounded-lg bg-[#f4f1ec] p-3">
-        <div className="mx-auto h-1.5 w-1/2 rounded-full bg-neutral-800" />
-        <div className="mx-auto mt-1.5 h-1 w-1/3 rounded-full bg-neutral-400" />
-        <div className="mt-3 h-1 w-1/3 rounded-full bg-neutral-700" />
-        <div className="mt-1.5 h-px w-full bg-neutral-300" />
-        {[90, 75, 82, 60].map((w, i) => (
-          <div key={i} className="mt-1.5 h-1 rounded-full bg-neutral-400" style={{ width: `${w}%` }} />
-        ))}
-        <div className="mt-3 h-1 w-1/4 rounded-full bg-neutral-700" />
-        <div className="mt-1.5 h-px w-full bg-neutral-300" />
-        {[70, 85].map((w, i) => (
-          <div key={i} className="mt-1.5 h-1 rounded-full bg-neutral-400" style={{ width: `${w}%` }} />
-        ))}
+      <div className="rounded-lg bg-[#f6f3ee] px-4 py-3 text-neutral-900">
+        <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-neutral-700">Experience</p>
+        <p className="mt-1.5 rounded-md bg-[#ffd9cf] px-1.5 py-0.5 text-[14px] font-semibold leading-snug">
+          Teaches Mathematics and Science to classes 6 to 8
+        </p>
+        <p className="mt-1.5 flex items-center gap-1.5 text-[12px] font-semibold text-neutral-600">
+          <Check className="size-3.5 text-[#dc3019]" /> From what you wrote
+        </p>
       </div>
     </div>
   );

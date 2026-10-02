@@ -6,7 +6,7 @@ import { Reveal } from "../motion/Reveal";
 const FAQS = [
   {
     q: "Is Dossier free?",
-    a: "Yes, it's free to start and needs no card. Resume Studio's PDF export will always be free, with no paywall at the download button.",
+    a: "Yes, it's free to start and needs no card. Resume Studio's PDF and Word downloads will always be free, with no paywall at the download button and no watermark.",
   },
   {
     q: "Which fields does it cover?",
@@ -18,7 +18,15 @@ const FAQS = [
   },
   {
     q: "What's available today?",
-    a: "Company kits are live now: paste a job description and a company URL and get a researched prep kit. Roadmaps, the mock interviewer and Resume Studio are being built and will roll out in that order.",
+    a: "Company kits are live now: paste a job description and a company URL and get a researched prep kit. Resume Studio launches next, then Roadmaps and the mock interviewer.",
+  },
+  {
+    q: "I'm not confident writing in English. Can I still make a resume?",
+    a: "Yes. Type or speak in Hindi, Bengali, Hinglish, English or a mix. Resume Studio asks a few short questions you can answer with a tap, then writes the resume in clear English.",
+  },
+  {
+    q: "Will the AI add things I didn't do?",
+    a: "No. Every line has to trace back to something you wrote, answered or ticked, and that rule is checked by code, not just requested from the AI. You see the full list and can fix or remove anything before it goes on the page.",
   },
   {
     q: "Is the mock interview a real conversation?",
@@ -30,7 +38,7 @@ const FAQS = [
   },
   {
     q: "What happens to my data?",
-    a: "Everything you create is private to your account, and you can delete any of it at any time.",
+    a: "Everything you create is private to your account, and you can delete any of it at any time. In Resume Studio, your name, phone, email and photo are never sent to the AI, and an old resume you attach is read in your browser, not uploaded.",
   },
 ];
 

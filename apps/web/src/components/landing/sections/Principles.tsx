@@ -6,8 +6,8 @@ import { SpotlightCard } from "../SpotlightCard";
 const PRINCIPLES = [
   {
     icon: Download,
-    title: "Free PDF export. Always.",
-    body: "No 45 minutes of work followed by a paywall on the download button.",
+    title: "Free PDF and Word. Always.",
+    body: "No 45 minutes of work followed by a paywall on the download button, and no watermark.",
   },
   {
     icon: ScanSearch,
@@ -16,8 +16,8 @@ const PRINCIPLES = [
   },
   {
     icon: Link2,
-    title: "Nothing unsourced",
-    body: "Research links back to where it came from. When evidence is thin, we say so.",
+    title: "Nothing made up",
+    body: "Research links back to where it came from. Every resume line traces back to something you told us.",
   },
   {
     icon: Ban,
