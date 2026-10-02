@@ -67,6 +67,7 @@ export function MarketTerms({
 
   const [choices, setChoices] = React.useState<Record<string, { choice: ChoiceKind; where: string }>>({});
   const [proposals, setProposals] = React.useState<Proposal[]>([]);
+  const [openTerm, setOpenTerm] = React.useState<string | null>(null);
 
   const picked = Object.entries(choices);
   const incomplete = picked.some(([, c]) => (c.choice === "used" || c.choice === "practised") && c.where.trim().length < 3);
@@ -124,88 +125,151 @@ export function MarketTerms({
               Based on {data.postingCount} postings · updated{" "}
               {new Date(data.fetchedAt).toLocaleDateString(undefined, { day: "numeric", month: "short" })}
             </p>
-            <ul className="mt-3 flex flex-col gap-2">
-              {data.terms.map((t) => {
-                const onResume = termMatches(resumeText, t.term);
-                const current = choices[t.term];
-                return (
-                  <li key={t.term} className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <span className="text-[15px] font-semibold text-white">{t.term}</span>
-                      <span className="text-sm font-medium text-white/55">
-                        in {t.count} of {data.postingCount} postings
-                      </span>
-                      <span className="h-1.5 w-24 overflow-hidden rounded-full bg-white/10" aria-hidden>
-                        <span className="block h-full rounded-full bg-[#ff7a5c]" style={{ width: `${(t.count / data.postingCount) * 100}%` }} />
-                      </span>
-                      {onResume && (
-                        <span className="ml-auto flex items-center gap-1.5 text-sm font-semibold text-emerald-300">
-                          <CheckCircle2 className="size-4" aria-hidden />
-                          On your resume
-                        </span>
-                      )}
+            {(() => {
+              const covered = data.terms.filter((t) => termMatches(resumeText, t.term));
+              const missing = data.terms.filter((t) => !termMatches(resumeText, t.term));
+              const nextOpen = (after: string) => {
+                const i = missing.findIndex((t) => t.term === after);
+                const next = [...missing.slice(i + 1), ...missing.slice(0, i)].find((t) => !choices[t.term] && t.term !== after);
+                setOpenTerm(next?.term ?? null);
+              };
+              return (
+                <>
+                  {covered.length > 0 && (
+                    <div className="mt-3 rounded-lg border border-emerald-500/20 bg-emerald-500/[0.05] p-4">
+                      <p className="flex items-center gap-1.5 text-sm font-semibold text-emerald-300">
+                        <CheckCircle2 className="size-4" aria-hidden />
+                        Already on your resume ({covered.length})
+                      </p>
+                      <ul className="mt-2.5 flex flex-wrap gap-2">
+                        {covered.map((t) => (
+                          <li key={t.term} className="rounded-lg bg-white/[0.05] px-2.5 py-1 text-sm font-semibold text-white/85">
+                            {t.term} <span className="font-medium text-white/55">· {t.count}/{data.postingCount}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
+                  )}
 
-                    {!onResume && (
-                      <div className="mt-3 flex flex-col gap-2">
-                        <p className="text-sm font-medium text-white/70">Have you used {t.term}?</p>
-                        <div className="flex flex-wrap gap-2" role="group" aria-label={`Your answer for ${t.term}`}>
-                          {CHOICES.map((c) => (
-                            <button
-                              key={c.value}
-                              type="button"
-                              aria-pressed={current?.choice === c.value}
-                              onClick={() =>
-                                setChoices((all) => {
-                                  if (all[t.term]?.choice === c.value) {
-                                    const next = { ...all };
-                                    delete next[t.term];
-                                    return next;
-                                  }
-                                  return { ...all, [t.term]: { choice: c.value, where: all[t.term]?.where ?? "" } };
-                                })
-                              }
-                              className={cn(
-                                "h-9 rounded-lg border px-3 text-sm font-semibold transition-colors",
-                                current?.choice === c.value
-                                  ? "border-primary/50 bg-primary/15 text-white"
-                                  : c.value === "add-anyway"
-                                    ? "border-white/[0.06] text-white/50 hover:text-white/80"
-                                    : "border-white/10 bg-white/[0.03] text-white/75 hover:text-white",
+                  {missing.length > 0 && (
+                    <>
+                      <p className="mt-5 text-sm font-semibold text-white/80">
+                        Not on your resume yet ({missing.length}) — answer only the ones you know
+                      </p>
+                      <ul className="mt-2.5 flex flex-col divide-y divide-white/[0.06] rounded-lg border border-white/[0.08]">
+                        {missing.map((t) => {
+                          const current = choices[t.term];
+                          const open = openTerm === t.term;
+                          const answered = CHOICES.find((c) => c.value === current?.choice)?.label;
+                          return (
+                            <li key={t.term}>
+                              <button
+                                type="button"
+                                aria-expanded={open}
+                                onClick={() => setOpenTerm(open ? null : t.term)}
+                                className="flex w-full flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-3 text-left hover:bg-white/[0.02]"
+                              >
+                                <span className="text-[15px] font-semibold text-white">{t.term}</span>
+                                <span className="flex items-center gap-2 text-sm font-medium text-white/55">
+                                  {t.count} of {data.postingCount}
+                                  <span className="h-1.5 w-16 overflow-hidden rounded-full bg-white/10" aria-hidden>
+                                    <span
+                                      className="block h-full rounded-full bg-[#ff7a5c]"
+                                      style={{ width: `${(t.count / data.postingCount) * 100}%` }}
+                                    />
+                                  </span>
+                                </span>
+                                <span
+                                  className={cn(
+                                    "ml-auto text-sm font-semibold",
+                                    answered ? "text-[#ff7a5c]" : "text-white/60",
+                                  )}
+                                >
+                                  {answered ?? (open ? "" : "Answer")}
+                                </span>
+                              </button>
+                              {open && (
+                                <div className="flex flex-col gap-2.5 px-4 pb-4">
+                                  <p className="text-sm font-medium text-white/70">Have you used {t.term}?</p>
+                                  <div className="flex flex-wrap gap-2" role="group" aria-label={`Your answer for ${t.term}`}>
+                                    {CHOICES.map((c) => (
+                                      <button
+                                        key={c.value}
+                                        type="button"
+                                        aria-pressed={current?.choice === c.value}
+                                        onClick={() => {
+                                          const same = choices[t.term]?.choice === c.value;
+                                          setChoices((all) => {
+                                            if (same) {
+                                              const next = { ...all };
+                                              delete next[t.term];
+                                              return next;
+                                            }
+                                            return { ...all, [t.term]: { choice: c.value, where: all[t.term]?.where ?? "" } };
+                                          });
+                                          // "Add anyway" stays open so its warning is read.
+                                          if (!same && c.value === "learn") nextOpen(t.term);
+                                        }}
+                                        className={cn(
+                                          "h-9 rounded-lg border px-3 text-sm font-semibold transition-colors",
+                                          current?.choice === c.value
+                                            ? "border-primary/50 bg-primary/15 text-white"
+                                            : c.value === "add-anyway"
+                                              ? "border-white/[0.06] text-white/55 hover:text-white/80"
+                                              : "border-white/10 bg-white/[0.03] text-white/75 hover:text-white",
+                                        )}
+                                      >
+                                        {c.label}
+                                      </button>
+                                    ))}
+                                  </div>
+                                  {(current?.choice === "used" || current?.choice === "practised") && (
+                                    <div className="flex gap-2">
+                                      <Input
+                                        value={current.where}
+                                        autoFocus
+                                        onChange={(e) =>
+                                          setChoices((all) => ({ ...all, [t.term]: { choice: current.choice, where: e.target.value } }))
+                                        }
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Enter" && current.where.trim().length >= 3) nextOpen(t.term);
+                                        }}
+                                        placeholder={
+                                          current.choice === "used"
+                                            ? `Where? e.g. "Used ${t.term} to … at …"`
+                                            : `How? e.g. "Built a practice project with ${t.term}"`
+                                        }
+                                        maxLength={300}
+                                        aria-label={`Where you used ${t.term}`}
+                                        className="h-10"
+                                      />
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        disabled={current.where.trim().length < 3}
+                                        onClick={() => nextOpen(t.term)}
+                                      >
+                                        Next
+                                      </Button>
+                                    </div>
+                                  )}
+                                  {current?.choice === "add-anyway" && (
+                                    <p className="text-[13px] font-medium leading-relaxed text-amber-200/90">
+                                      It goes in your Skills list only, marked as added by you — we won&apos;t write experience
+                                      lines about it. Interviewers often ask about every skill listed, so be ready to discuss it.
+                                    </p>
+                                  )}
+                                </div>
                               )}
-                            >
-                              {c.label}
-                            </button>
-                          ))}
-                        </div>
-                        {(current?.choice === "used" || current?.choice === "practised") && (
-                          <Input
-                            value={current.where}
-                            onChange={(e) =>
-                              setChoices((all) => ({ ...all, [t.term]: { choice: current.choice, where: e.target.value } }))
-                            }
-                            placeholder={
-                              current.choice === "used"
-                                ? `Where? e.g. "Used ${t.term} to … at …"`
-                                : `How? e.g. "Built a practice project with ${t.term}"`
-                            }
-                            maxLength={300}
-                            aria-label={`Where you used ${t.term}`}
-                            className="h-10"
-                          />
-                        )}
-                        {current?.choice === "add-anyway" && (
-                          <p className="text-[13px] font-medium leading-relaxed text-amber-200/90">
-                            It goes in your Skills list only, marked as added by you — we won&apos;t write experience lines
-                            about it. Interviewers often ask about every skill listed, so be ready to discuss it.
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </>
+                  )}
+                </>
+              );
+            })()}
 
             {mutation.error && <AiErrorNotice className="mt-4" error={mutation.error} onRetry={() => mutation.mutate()} />}
 

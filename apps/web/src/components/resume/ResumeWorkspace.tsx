@@ -8,6 +8,8 @@ import { ArrowLeft, Crosshair, FileText, Trash2 } from "lucide-react";
 import { lintResume, renderDataText, toRenderData, type CareerProfile, type LintHint, type Resume } from "@dossier/core/resume";
 import { ApiError } from "@/lib/api";
 import { deleteResume, getProfile, getResume, resumeKeys, saveProfile, saveResume } from "@/lib/resume/api";
+import { usePageCount, useResumePdf } from "@/lib/resume/typst/compiler";
+import { useScenario } from "@/lib/resume/demo/scenario";
 import type { SaveStatus } from "@/lib/optimistic";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -22,12 +24,14 @@ import { ResumePreview } from "./ResumePreview";
 import { ResumeEditor } from "./editor/ResumeEditor";
 import { CheckPanel } from "./editor/CheckPanel";
 import { HistoryPanel } from "./editor/HistoryPanel";
+import { LayoutPanel, PageCount } from "./editor/LayoutPanel";
+import { DownloadMenu } from "./DownloadMenu";
 import { MarketTerms } from "./editor/MarketTerms";
 
 const AUTOSAVE_MS = 800;
 const RETRY_MS = 3000;
 
-type Tab = "edit" | "check" | "terms" | "history" | "preview";
+type Tab = "edit" | "layout" | "check" | "terms" | "history" | "preview";
 
 // Empty lines are allowed while typing but never saved — the contract requires text on every bullet.
 function withoutEmptyBullets(resume: Resume): Resume {
@@ -107,6 +111,16 @@ function Workspace({ initial, profile: initialProfile }: { initial: Resume; prof
     setEdits((n) => n + 1);
   }, []);
 
+  // Deletes are instant, so each one offers a way back for a few seconds.
+  const undoable = React.useCallback(
+    (label: string, fn: (r: Resume) => Resume) => {
+      const before = draftRef.current;
+      edit(fn);
+      toast.success(label, { duration: 6000, action: { label: "Undo", onClick: () => edit(() => before) } });
+    },
+    [edit],
+  );
+
   const saveProfileNow = async (next: CareerProfile) => {
     try {
       const saved = await saveProfile(next);
@@ -156,6 +170,9 @@ function Workspace({ initial, profile: initialProfile }: { initial: Resume; prof
 
   const renderData = React.useMemo(() => toRenderData(profile, draft), [profile, draft]);
   const resumeText = React.useMemo(() => renderDataText(renderData), [renderData]);
+  const scenario = useScenario();
+  const pdfState = useResumePdf(renderData, { simulateFailure: scenario.fail === "typst" });
+  const pages = usePageCount(pdfState.status === "error" ? null : pdfState.pdf);
   const hintList = React.useMemo(() => lintResume(draft), [draft]);
   const hints = React.useMemo(() => {
     const map = new Map<string, LintHint[]>();
@@ -165,6 +182,7 @@ function Workspace({ initial, profile: initialProfile }: { initial: Resume; prof
 
   const tabs: { value: Tab; label: string; mobileOnly?: boolean }[] = [
     { value: "edit", label: "Edit" },
+    { value: "layout", label: "Layout" },
     { value: "preview", label: "Preview", mobileOnly: true },
     { value: "check", label: hintList.length ? `Check (${hintList.length})` : "Check" },
     { value: "terms", label: "Recruiter terms" },
@@ -172,7 +190,7 @@ function Workspace({ initial, profile: initialProfile }: { initial: Resume; prof
   ];
 
   return (
-    <div className="flex flex-col gap-6 pb-16">
+    <div className="flex flex-col gap-6 pb-4 lg:pb-16">
       <section className="flex flex-col gap-4 rounded-lg border border-white/[0.08] bg-[#0f0f0f] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link
@@ -229,7 +247,7 @@ function Workspace({ initial, profile: initialProfile }: { initial: Resume; prof
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
         <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="min-w-0">
-          <TabsList className="h-auto w-full flex-wrap justify-start">
+          <TabsList className="w-full justify-start overflow-x-auto [scrollbar-width:none]">
             {tabs.map((t) => (
               <TabsTrigger key={t.value} value={t.value} className={t.mobileOnly ? "lg:hidden" : undefined}>
                 {t.label}
@@ -237,10 +255,13 @@ function Workspace({ initial, profile: initialProfile }: { initial: Resume; prof
             ))}
           </TabsList>
           <TabsContent value="edit" className="mt-4">
-            <ResumeEditor resume={draft} profile={profile} edit={edit} onProfileSave={saveProfileNow} hints={hints} />
+            <ResumeEditor resume={draft} profile={profile} edit={edit} undoable={undoable} onProfileSave={saveProfileNow} hints={hints} />
+          </TabsContent>
+          <TabsContent value="layout" className="mt-4">
+            <LayoutPanel resume={draft} edit={edit} pages={pdfState.status === "error" ? null : pages} />
           </TabsContent>
           <TabsContent value="preview" className="mt-4 lg:hidden">
-            {tab === "preview" && <ResumePreview data={renderData} />}
+            {tab === "preview" && <ResumePreview data={renderData} pdfState={pdfState} pages={pages} />}
           </TabsContent>
           <TabsContent value="check" className="mt-4">
             {tab === "check" && <CheckPanel data={renderData} hints={hintList} onJump={jumpTo} />}
@@ -262,10 +283,21 @@ function Workspace({ initial, profile: initialProfile }: { initial: Resume; prof
 
         <aside className="hidden min-w-0 lg:block">
           <div className="sticky top-24">
-            <ResumePreview data={renderData} />
+            <ResumePreview data={renderData} pdfState={pdfState} pages={pages} />
           </div>
         </aside>
       </div>
+
+      {tab !== "preview" && (
+        <div className="sticky bottom-0 z-20 -mx-4 flex items-center gap-3 border-t border-white/[0.08] bg-background/95 px-4 py-3 backdrop-blur md:-mx-8 md:px-8 lg:hidden">
+          <DownloadMenu data={renderData} pdf={pdfState.pdf} pdfFailed={pdfState.status === "error"} />
+          {pages !== null && pdfState.status !== "error" && (
+            <span className="ml-auto">
+              <PageCount pages={pages} />
+            </span>
+          )}
+        </div>
+      )}
 
       <ConfirmDialog
         open={conflict}

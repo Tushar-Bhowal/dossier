@@ -9,6 +9,10 @@ export const SECTION_TITLES: Record<SectionKind, string> = {
   certifications: 'Certifications',
   volunteer: 'Volunteer Experience',
   languages: 'Languages',
+  achievements: 'Achievements',
+  custom: 'Additional Information',
+  personal: 'Personal Details',
+  declaration: 'Declaration',
 };
 
 const EXPERIENCED_ORDER: SectionKind[] = [
@@ -18,8 +22,12 @@ const EXPERIENCED_ORDER: SectionKind[] = [
   'skills',
   'education',
   'certifications',
+  'achievements',
   'volunteer',
   'languages',
+  'custom',
+  'personal',
+  'declaration',
 ];
 
 const FRESHER_ORDER: SectionKind[] = [
@@ -29,8 +37,12 @@ const FRESHER_ORDER: SectionKind[] = [
   'skills',
   'experience',
   'certifications',
+  'achievements',
   'volunteer',
   'languages',
+  'custom',
+  'personal',
+  'declaration',
 ];
 
 export function isFresher(profile: Pick<CareerProfile, 'entries'>): boolean {

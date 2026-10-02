@@ -6,7 +6,11 @@ import { CheckCircle2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+const LONG_MESSAGE = 600;
+
 export function UserMessage({ text, fileName }: { text: string; fileName?: string }) {
+  const [expanded, setExpanded] = React.useState(false);
+  const long = text.length > LONG_MESSAGE || text.split("\n").length > 8;
   return (
     <div className="flex justify-end">
       <div className="flex max-w-[88%] flex-col items-end gap-2">
@@ -17,7 +21,26 @@ export function UserMessage({ text, fileName }: { text: string; fileName?: strin
           </span>
         )}
         {text && (
-          <p className="whitespace-pre-wrap rounded-lg bg-white/[0.07] px-4 py-3 text-[15px] leading-relaxed text-white">{text}</p>
+          <div className="rounded-lg bg-white/[0.07] px-4 py-3">
+            <p
+              className={cn(
+                "whitespace-pre-wrap text-[15px] leading-relaxed text-white",
+                long && !expanded && "line-clamp-6",
+              )}
+            >
+              {text}
+            </p>
+            {long && (
+              <button
+                type="button"
+                onClick={() => setExpanded((v) => !v)}
+                aria-expanded={expanded}
+                className="mt-2 text-sm font-semibold text-[#ff7a5c] hover:text-white"
+              >
+                {expanded ? "Show less" : "Show all"}
+              </button>
+            )}
+          </div>
         )}
       </div>
     </div>
@@ -63,14 +86,22 @@ export function CardTitle({ title, note }: { title: string; note?: React.ReactNo
 }
 
 // A finished step collapses to one line so the thread stays short.
-export function DoneSummary({ children, onChange }: { children: React.ReactNode; onChange?: () => void }) {
+export function DoneSummary({
+  children,
+  onChange,
+  actionLabel = "Change",
+}: {
+  children: React.ReactNode;
+  onChange?: () => void;
+  actionLabel?: string;
+}) {
   return (
     <div className="flex items-center gap-3 rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-3">
       <CheckCircle2 className="size-[18px] shrink-0 text-emerald-400" aria-hidden />
       <p className="min-w-0 flex-1 truncate text-sm font-medium text-white/75">{children}</p>
       {onChange && (
         <Button type="button" variant="ghost" size="sm" onClick={onChange} className="text-white/70">
-          Change
+          {actionLabel}
         </Button>
       )}
     </div>

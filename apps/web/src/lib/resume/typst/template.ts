@@ -4,27 +4,38 @@ export const RESUME_TEMPLATE = String.raw`
 #let d = json("/data.json")
 #let c = d.contact
 
-#let margin-x = 1.7cm
-#let margin-y = 1.5cm
-#let body-width = 210mm - 2 * margin-x
-#let body-height = 297mm - 2 * margin-y
-
-#set document(title: c.name, author: c.name)
-#set page(paper: "a4", margin: (x: margin-x, y: margin-y))
-#set text(font: "Carlito", lang: "en", hyphenate: false)
-#set par(justify: false)
-#set list(indent: 2pt, body-indent: 6pt, marker: [•])
+#let L = d.layout
+#let margin = (
+  top: L.margins.top * 1mm,
+  bottom: L.margins.bottom * 1mm,
+  left: L.margins.left * 1mm,
+  right: L.margins.right * 1mm,
+)
+#let body-width = 210mm - margin.left - margin.right
+#let body-height = 297mm - margin.top - margin.bottom
 
 #let muted = luma(70)
 
-#let contact-parts = {
-  let parts = ()
-  if "email" in c { parts.push(c.email) }
-  if "phone" in c { parts.push(c.phone) }
-  if "location" in c { parts.push(c.location) }
-  for l in c.links { parts.push(l.url) }
-  parts
-}
+#set document(title: c.name, author: c.name)
+// From page 2 on, a small running line so a loose page still says whose it is.
+#set page(
+  paper: "a4",
+  margin: margin,
+  header: context {
+    let n = counter(page).get().first()
+    if n > 1 {
+      set text(size: 8.5pt, fill: muted)
+      grid(columns: (1fr, auto), c.name, [Page #n])
+    }
+  },
+)
+#set text(font: "Carlito", lang: "en", hyphenate: false)
+#set par(justify: false)
+#set list(indent: 2pt, body-indent: 6pt, marker: [•])
+// Dark blue, like the Word file: visibly a link on screen, still reads as text when printed.
+#show link: set text(fill: rgb("#1a4fa3"))
+
+#let linked(part) = if "href" in part { link(part.href, part.text) } else { part.text }
 
 // fs scales type, sp scales the gaps. Both grow together so a short resume fills the page with
 // slightly larger text and more air, instead of stopping halfway down.
@@ -35,8 +46,8 @@ export const RESUME_TEMPLATE = String.raw`
 
   let header = {
     block(below: 5pt * sp, text(size: 20pt * fs, weight: "bold", c.name))
-    if contact-parts.len() > 0 {
-      block(text(size: 9.5pt * fs, fill: muted, contact-parts.join("   |   ")))
+    if d.contactLine.len() > 0 {
+      block(text(size: 9.5pt * fs, fill: muted, d.contactLine.map(linked).join("   |   ")))
     }
   }
 
@@ -53,7 +64,7 @@ export const RESUME_TEMPLATE = String.raw`
   }
 
   for s in d.sections {
-    v(8pt * sp)
+    v(8pt * sp * L.sectionGap + s.spaceBefore * 1pt)
     block(below: 3pt * sp, text(size: 11pt * fs, weight: "bold", upper(s.title)))
     line(length: 100%, stroke: 0.6pt + luma(140))
     v(2pt * sp)
@@ -61,8 +72,26 @@ export const RESUME_TEMPLATE = String.raw`
     if "text" in s {
       par(s.text)
     }
-    if "list" in s {
+    if "groups" in s {
+      for g in s.groups {
+        par([#text(weight: "bold", g.title + ":") #g.items.join(", ")])
+      }
+    } else if "list" in s {
       par(s.list.join(", "))
+    }
+    if "pairs" in s {
+      for p in s.pairs {
+        par([#text(weight: "bold", p.label + ":") #p.value])
+      }
+    }
+    if "signature" in s {
+      v(10pt * sp)
+      grid(
+        columns: (1fr, auto),
+        align: (left, right),
+        if "place" in s.signature { text(fill: muted, "Place: " + s.signature.place) } else { [] },
+        text(weight: "bold", "(" + s.signature.name + ")"),
+      )
     }
     if "items" in s {
       for it in s.items {
@@ -78,6 +107,14 @@ export const RESUME_TEMPLATE = String.raw`
             },
             text(fill: muted, it.dates),
           )
+          let details = ()
+          if "grade" in it { details.push("Grade: " + it.grade) }
+          if "credentialId" in it { details.push("ID: " + it.credentialId) }
+          if "link" in it { details.push(link(it.link.href, it.link.text)) }
+          if details.len() > 0 {
+            v(1pt * sp)
+            text(fill: muted, details.join("   |   "))
+          }
           if it.bullets.len() > 0 {
             v(1pt * sp)
             list(..it.bullets)
@@ -88,17 +125,29 @@ export const RESUME_TEMPLATE = String.raw`
   }
 }
 
-// Largest first. The first size that fits one page wins; the last two shrink slightly so a resume
-// that just spills over stays on one page. Anything longer flows onto a second page at normal size.
-#let sizes = (
+// (text scale, spacing scale), largest first. The first that fits one page wins; the last two shrink
+// slightly so a resume that just spills over stays on one page. Anything longer flows onto a second
+// page at normal size. With a chosen spacing, only the text size moves.
+#let auto-sizes = (
   (1.14, 2.4), (1.14, 2.0), (1.12, 1.75), (1.1, 1.55), (1.08, 1.4), (1.06, 1.28),
   (1.04, 1.16), (1.02, 1.08), (1.0, 1.0), (0.97, 0.9), (0.94, 0.82),
 )
+#let density = ("auto": 1.0, compact: 0.8, balanced: 1.0, spacious: 1.3)
+#let sp = density.at(L.spacing)
+#let sizes = if L.spacing == "auto" {
+  auto-sizes
+} else {
+  (1.14, 1.12, 1.1, 1.08, 1.06, 1.04, 1.02, 1.0, 0.97, 0.94).map(fs => (fs, sp))
+}
 
 #context {
-  let fits(size) = measure(block(width: body-width, resume(..size))).height <= body-height - 6pt
-  let chosen = sizes.find(fits)
-  if chosen == none { chosen = (1.0, 1.0) }
-  resume(..chosen)
+  if L.fit {
+    let fits(size) = measure(block(width: body-width, resume(..size))).height <= body-height - 6pt
+    let chosen = sizes.find(fits)
+    if chosen == none { chosen = (1.0, sp) }
+    resume(..chosen)
+  } else {
+    resume(1.0, sp)
+  }
 }
 `;

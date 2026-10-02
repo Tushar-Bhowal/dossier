@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion, useReducedMotion } from "motion/react";
 import { Code, FileUp, GraduationCap, LoaderCircle, ShieldCheck, Sprout, type LucideIcon } from "lucide-react";
 import {
+  entriesForPrompt,
   redact,
   type AnswersResult,
   type CareerProfile,
@@ -22,9 +23,10 @@ import {
   saveProfile,
   submitAnswers,
 } from "@/lib/resume/api";
-import { guessName, withLink } from "@/lib/resume/contact";
+import { contactFromText, looksLikeResume, withLink } from "@/lib/resume/contact";
 import { mergeIntoProfile, profileFromParse } from "@/lib/resume/profile";
 import { extractPdfText } from "@/lib/resume/pdfText";
+import { extractDocxText } from "@/lib/resume/docxText";
 import { DEMO_UI, setScenario, useScenario, type Persona } from "@/lib/resume/demo/scenario";
 import { fixtureFor } from "@/lib/resume/demo/store";
 import { Accent } from "@/components/landing/SectionHeading";
@@ -45,12 +47,18 @@ interface Note {
   text: string;
   status: "pending" | "added" | "error";
   result?: AnswersResult;
+  // Contact fields the note changed; they were kept out of the AI call.
+  contactUpdated?: string[];
   error?: unknown;
 }
 
-const MAX_PDF_BYTES = 5 * 1024 * 1024;
-const MIN_PDF_TEXT = 50;
+const MAX_FILE_BYTES = 5 * 1024 * 1024;
+const MIN_FILE_TEXT = 50;
 const MIN_DESCRIBE = 10;
+const DOCX_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+const TOKEN = /\[(?:EMAIL|PHONE|LINK)_\d+\]/g;
+// A job that already has this many lines doesn't need the duty checklist.
+const COVERED_FACTS = 3;
 
 const STARTERS: { label: string; icon: LucideIcon; starter?: string; persona?: Persona; attach?: true }[] = [
   {
@@ -106,12 +114,19 @@ export function ResumeChat() {
   const dragDepth = React.useRef(0);
   const filePicker = React.useRef<HTMLInputElement>(null);
 
-  const [opening, setOpening] = React.useState<{ text: string; fileName?: string; hidden?: number } | null>(null);
+  const [opening, setOpening] = React.useState<{
+    text: string;
+    fileName?: string;
+    hidden?: number;
+    asResume?: boolean;
+  } | null>(null);
   const [thread, setThread] = React.useState<ThreadKey[]>([]);
   const [parse, setParse] = React.useState<ParseResult | null>(null);
   const [contact, setContact] = React.useState<Contact>({ name: "", links: [] });
   const [link, setLink] = React.useState("");
   const [contactDone, setContactDone] = React.useState(false);
+  const [contactFound, setContactFound] = React.useState<"text" | "profile" | null>(null);
+  const [showAllDuties, setShowAllDuties] = React.useState(false);
   const [answers, setAnswers] = React.useState<Record<string, string>>({});
   const [questionsDone, setQuestionsDone] = React.useState(false);
   const [ticked, setTicked] = React.useState<Set<string>>(new Set());
@@ -123,32 +138,32 @@ export function ResumeChat() {
 
   const push = (...keys: ThreadKey[]) => setThread((t) => [...t, ...keys.filter((k) => !t.includes(k))]);
 
-  const prefillContact = (imported?: ImportedText) => {
-    if (existing) {
-      setContact(existing.contact);
-      setLink(existing.contact.links[0]?.url ?? "");
-      return;
-    }
-    if (!imported) return;
-    const find = (kind: "email" | "phone" | "link") => imported.redaction.items.find((i) => i.kind === kind)?.value;
-    setContact({
-      name: guessName(imported.original),
-      links: [],
-      ...(find("email") ? { email: find("email") } : {}),
-      ...(find("phone") ? { phone: find("phone") } : {}),
-    });
-    setLink(find("link") ?? "");
+  // Whatever the user already gave us is filled in, so they confirm it instead of typing it again.
+  // What they just sent is newer than their saved profile, so it wins field by field.
+  const prefillContact = (imported: ImportedText, result: ParseResult) => {
+    const found = contactFromText(imported.original, imported.redaction);
+    const fromText: Partial<Contact> = {
+      ...(found.contact.name ? { name: found.contact.name } : {}),
+      ...(found.contact.email ? { email: found.contact.email } : {}),
+      ...(found.contact.phone ? { phone: found.contact.phone } : {}),
+      ...(result.location ? { location: result.location } : {}),
+    };
+    const inText = Boolean(found.contact.name && (found.contact.email || found.contact.phone));
+    setContact({ ...(existing?.contact ?? { name: "", links: [] }), ...fromText });
+    setLink(found.link || existing?.contact.links[0]?.url || "");
+    setContactFound(inText ? "text" : existing ? "profile" : null);
   };
 
-  const afterParse = (result: ParseResult, imported?: ImportedText) => {
+  const afterParse = (result: ParseResult, imported: ImportedText) => {
     setParse(result);
-    prefillContact(imported);
+    prefillContact(imported, result);
     push("intro", "contact");
   };
 
+  // Typed text is redacted exactly like an uploaded file: phone, email and links never reach the AI.
   const parseMutation = useMutation({
-    mutationFn: (text: string) => parseDescription({ text, region }),
-    onSuccess: (result) => afterParse(result),
+    mutationFn: (imported: ImportedText) => parseDescription({ text: imported.redaction.text, region }),
+    onSuccess: (result, imported) => afterParse(result, imported),
   });
 
   const importMutation = useMutation({
@@ -175,10 +190,16 @@ export function ResumeChat() {
       submitAnswers({
         answers: Object.entries(answers)
           .filter(([, v]) => v.trim())
-          .map(([questionId, v]) => ({ questionId, text: v.trim() })),
+          .map(([questionId, v]) => ({ questionId, text: redact(v.trim()).text })),
         tickedDuties: (parse?.suggestedDuties ?? []).filter((d) => ticked.has(d.text)),
       }),
     onSuccess: (result) => createDraft(result),
+  });
+
+  // Duties ticked after the draft exists (the checklist was skipped, then reopened) merge into it.
+  const extraDutiesMutation = useMutation({
+    mutationFn: (tickedDuties: { text: string; entryId: string }[]) => submitAnswers({ answers: [], tickedDuties }),
+    onSuccess: (result) => setDraft((d) => (d ? mergeIntoProfile(d, result) : d)),
   });
 
   const composeMutation = useMutation({
@@ -200,29 +221,61 @@ export function ResumeChat() {
     else createDraft(null);
   };
 
+  const coveredEntries = new Set(
+    (parse?.entries ?? [])
+      .filter((e) => (parse?.facts ?? []).filter((f) => f.entryId === e.id).length >= COVERED_FACTS)
+      .map((e) => e.id),
+  );
+  const dutiesToAsk = (parse?.suggestedDuties ?? []).filter((d) => showAllDuties || !coveredEntries.has(d.entryId));
+  const dutiesSkipped = Boolean(parse?.suggestedDuties.length) && dutiesToAsk.length === 0;
+
+  const toDuties = () => {
+    if (!parse?.suggestedDuties.length) return runAnswers();
+    push("duties");
+    if (dutiesSkipped) {
+      setDutiesDone(true);
+      runAnswers();
+    }
+  };
+
   const attach = async (file: File) => {
-    if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
-      setAttachment({ status: "unreadable", name: file.name, reason: "That isn't a PDF. Save your resume as a PDF and try again." });
+    const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+    const isDocx = file.type === DOCX_TYPE || /\.docx$/i.test(file.name);
+    if (!isPdf && !isDocx) {
+      setAttachment({
+        status: "unreadable",
+        name: file.name,
+        reason: /\.doc$/i.test(file.name)
+          ? "Old .doc files can't be read here. Open it in Word, save it as .docx or PDF, and try again."
+          : "That isn't a PDF or Word file. Save your resume as one of those and try again.",
+      });
       return;
     }
-    if (file.size > MAX_PDF_BYTES) {
-      setAttachment({ status: "unreadable", name: file.name, reason: "That file is over 5 MB — a resume PDF is usually much smaller." });
+    if (file.size > MAX_FILE_BYTES) {
+      setAttachment({ status: "unreadable", name: file.name, reason: "That file is over 5 MB — a resume is usually much smaller." });
       return;
     }
     setAttachment({ status: "reading", name: file.name });
     try {
-      const text = await extractPdfText(new Uint8Array(await file.arrayBuffer()));
-      if (scenario.fail === "scanned_pdf" || text.trim().length < MIN_PDF_TEXT) {
+      const bytes = await file.arrayBuffer();
+      const text = isPdf ? await extractPdfText(new Uint8Array(bytes)) : await extractDocxText(bytes);
+      if (scenario.fail === "scanned_pdf" || text.trim().length < MIN_FILE_TEXT) {
         setAttachment({
           status: "unreadable",
           name: file.name,
-          reason: "No text in this PDF — it's probably a scan or a photo. Tell me about yourself instead.",
+          reason: isPdf
+            ? "No text in this PDF — it's probably a scan or a photo. Tell me about yourself instead."
+            : "There's almost no text in this Word file. Tell me about yourself instead.",
         });
         return;
       }
       setAttachment({ status: "ready", name: file.name, imported: { original: text, redaction: redact(text) } });
     } catch {
-      setAttachment({ status: "unreadable", name: file.name, reason: "This PDF couldn't be opened. It may be damaged or password-protected." });
+      setAttachment({
+        status: "unreadable",
+        name: file.name,
+        reason: `This ${isPdf ? "PDF" : "Word file"} couldn't be opened. It may be damaged or password-protected.`,
+      });
     }
   };
 
@@ -238,38 +291,65 @@ export function ResumeChat() {
       setOpening({ text, fileName: ready.name, hidden: imported.redaction.items.length });
       importMutation.mutate(imported);
     } else {
-      setOpening({ text });
-      parseMutation.mutate(text);
+      const imported = { original: text, redaction: redact(text) };
+      const hidden = imported.redaction.items.length;
+      if (looksLikeResume(text)) {
+        setOpening({ text, hidden, asResume: true });
+        importMutation.mutate(imported);
+      } else {
+        setOpening({ text, hidden });
+        parseMutation.mutate(imported);
+      }
     }
     push("opening");
     setDraftText("");
     setAttachment(null);
   };
 
-  const sendNote = async (text: string) => {
-    const id = crypto.randomUUID().slice(0, 8);
+  // Contact details in a note update the contact card and stay out of the AI call; a note that is
+  // only contact details doesn't call the AI at all.
+  const runNote = async (id: string, text: string) => {
     setNotes((n) => ({ ...n, [id]: { text, status: "pending" } }));
-    push(`note:${id}`);
+    const redaction = redact(text);
+    const found = contactFromText("", redaction);
+    const patch = {
+      ...(found.contact.email ? { email: found.contact.email } : {}),
+      ...(found.contact.phone ? { phone: found.contact.phone } : {}),
+    };
+    const contactUpdated = [...Object.keys(patch), ...(found.link ? ["link"] : [])];
+    if (contactUpdated.length) {
+      setContact((c) => ({ ...c, ...patch }));
+      if (found.link) setLink(found.link);
+      setDraft((d) =>
+        d ? { ...d, contact: { ...d.contact, ...patch, ...(found.link ? { links: withLink(d.contact, found.link).links } : {}) } } : d,
+      );
+    }
+    const rest = redaction.text.replace(TOKEN, "").trim();
+    if (contactUpdated.length && rest.split(/\s+/).filter(Boolean).length < 5) {
+      setNotes((n) => ({ ...n, [id]: { text, status: "added", contactUpdated } }));
+      return;
+    }
     try {
-      const result = await addNote({ text, entries: draft?.entries ?? parse?.entries ?? [] });
-      setNotes((n) => ({ ...n, [id]: { text, status: "added", result } }));
+      const result = await addNote({
+        text: redaction.text,
+        entries: entriesForPrompt(draft?.entries ?? parse?.entries ?? []),
+      });
+      setNotes((n) => ({ ...n, [id]: { text, status: "added", result, contactUpdated } }));
       setDraft((d) => (d ? mergeIntoProfile(d, result) : d));
     } catch (error) {
       setNotes((n) => ({ ...n, [id]: { text, status: "error", error } }));
     }
   };
 
-  const retryNote = async (id: string) => {
+  const sendNote = (text: string) => {
+    const id = crypto.randomUUID().slice(0, 8);
+    push(`note:${id}`);
+    void runNote(id, text);
+  };
+
+  const retryNote = (id: string) => {
     const note = notes[id];
-    if (!note) return;
-    setNotes((n) => ({ ...n, [id]: { text: note.text, status: "pending" } }));
-    try {
-      const result = await addNote({ text: note.text, entries: draft?.entries ?? parse?.entries ?? [] });
-      setNotes((n) => ({ ...n, [id]: { text: note.text, status: "added", result } }));
-      setDraft((d) => (d ? mergeIntoProfile(d, result) : d));
-    } catch (error) {
-      setNotes((n) => ({ ...n, [id]: { text: note.text, status: "error", error } }));
-    }
+    if (note) void runNote(id, note.text);
   };
 
   const applyStarter = (s: (typeof STARTERS)[number]) => {
@@ -286,7 +366,12 @@ export function ResumeChat() {
     setDraftText(s.starter ?? "");
   };
 
-  const pending = parseMutation.isPending || importMutation.isPending || answersMutation.isPending || composeMutation.isPending;
+  const pending =
+    parseMutation.isPending ||
+    importMutation.isPending ||
+    answersMutation.isPending ||
+    extraDutiesMutation.isPending ||
+    composeMutation.isPending;
 
   React.useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -326,7 +411,7 @@ export function ResumeChat() {
     <input
       ref={filePicker}
       type="file"
-      accept="application/pdf,.pdf"
+      accept={`application/pdf,.pdf,${DOCX_TYPE},.docx`}
       className="sr-only"
       tabIndex={-1}
       onChange={(e) => {
@@ -348,7 +433,7 @@ export function ResumeChat() {
           Your resume, from a few <Accent>sentences</Accent>
         </h1>
         <p className="relative mt-4 max-w-xl text-center text-base leading-relaxed text-white/65 sm:text-[17px]">
-          Tell me about your work and studies in any language — or drop your old resume. I&apos;ll ask a few quick
+          Tell me about your work and studies in any language — or paste or drop your old resume. I&apos;ll ask a few quick
           questions and build a clean resume in English that any company can read.
         </p>
 
@@ -370,7 +455,7 @@ export function ResumeChat() {
           />
           <p className="mt-3 flex items-center justify-center gap-1.5 px-1 text-center text-[13px] font-medium text-white/55">
             <ShieldCheck className="size-4 shrink-0 text-emerald-400/80" aria-hidden />
-            Your phone and email never go to the AI. PDFs are read in your browser, never uploaded.
+            Your phone and email never go to the AI. Files are read in your browser, never uploaded.
           </p>
           <div className="mt-6 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center">
             {STARTERS.map((s) => (
@@ -392,7 +477,7 @@ export function ResumeChat() {
           <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6 backdrop-blur-sm">
             <div className="flex flex-col items-center gap-3 rounded-lg border-2 border-dashed border-[#ff7a5c]/70 bg-[#141414] px-12 py-10 text-center">
               <FileUp className="size-8 text-[#ff7a5c]" aria-hidden />
-              <p className="text-lg font-semibold text-white">Drop your resume PDF</p>
+              <p className="text-lg font-semibold text-white">Drop your resume (PDF or Word)</p>
               <p className="text-sm font-medium text-white/60">It&apos;s read in your browser, never uploaded.</p>
             </div>
           </div>
@@ -404,16 +489,23 @@ export function ResumeChat() {
   const intro = (() => {
     if (!parse) return null;
     const role = parse.canonicalRole ? ` You're a ${parse.canonicalRole.toLowerCase()} — ` : " ";
+    const hidden = opening.hidden ?? 0;
+    const hiddenNote = hidden ? ` I hid ${hidden} contact detail${hidden === 1 ? "" : "s"} before anything went to the AI.` : "";
     const read = opening.fileName
-      ? `I read ${opening.fileName} in your browser and hid ${opening.hidden ?? 0} contact detail${opening.hidden === 1 ? "" : "s"} before anything went to the AI.`
-      : `Thanks — I understood your ${parse.detectedLanguage} message.`;
+      ? `I read ${opening.fileName} in your browser and hid ${hidden} contact detail${hidden === 1 ? "" : "s"} before anything went to the AI.`
+      : opening.asResume
+        ? `This looks like your resume, so I read it as one.${hiddenNote}`
+        : `Thanks — I understood your ${parse.detectedLanguage} message.${hiddenNote}`;
     return `${read}${role}let's get a few things right. You can also type anything I miss in the box below, any time.`;
   })();
 
-  const mainError = parseMutation.error ?? importMutation.error ?? answersMutation.error ?? composeMutation.error;
-  const retryMain = parseMutation.error
-    ? () => parseMutation.mutate(parseMutation.variables ?? opening.text)
-    : importMutation.error && importMutation.variables
+  const mainError =
+    parseMutation.error ?? importMutation.error ?? answersMutation.error ?? extraDutiesMutation.error ?? composeMutation.error;
+  const retryMain = parseMutation.error && parseMutation.variables
+    ? () => parseMutation.mutate(parseMutation.variables!)
+    : extraDutiesMutation.error && extraDutiesMutation.variables
+      ? () => extraDutiesMutation.mutate(extraDutiesMutation.variables!)
+      : importMutation.error && importMutation.variables
       ? () => importMutation.mutate(importMutation.variables!)
       : answersMutation.error
         ? () => answersMutation.mutate()
@@ -425,7 +517,7 @@ export function ResumeChat() {
     ? PROGRESS.parse
     : importMutation.isPending
       ? PROGRESS.import
-      : answersMutation.isPending
+      : answersMutation.isPending || extraDutiesMutation.isPending
         ? PROGRESS.answers
         : PROGRESS.compose;
 
@@ -438,6 +530,9 @@ export function ResumeChat() {
       const note = notes[id];
       if (!note) return null;
       const added = note.result?.facts.map((f) => f.text) ?? [];
+      const updated = note.contactUpdated?.length
+        ? `Updated your ${note.contactUpdated.join(" and ")} in your details — that never goes to the AI. `
+        : "";
       return (
         <React.Fragment key={key}>
           <UserMessage text={note.text} />
@@ -450,12 +545,15 @@ export function ResumeChat() {
             )}
             {note.status === "added" && (
               <AssistantText>
-                {added.length
-                  ? `Added: “${added.join("”, “")}”. ${draft ? "It's in the list above — check it before building." : "You'll see it in the summary before I build anything."}`
-                  : "I couldn't find anything new to add from that."}
+                {updated +
+                  (added.length
+                    ? `Added: “${added.join("”, “")}”. ${draft ? "It's in the list above — check it before building." : "You'll see it in the summary before I build anything."}`
+                    : updated
+                      ? ""
+                      : "I couldn't find anything new to add from that.")}
               </AssistantText>
             )}
-            {note.status === "error" && <AiErrorNotice error={note.error} onRetry={() => void retryNote(id)} />}
+            {note.status === "error" && <AiErrorNotice error={note.error} onRetry={() => retryNote(id)} />}
           </AssistantMessage>
         </React.Fragment>
       );
@@ -478,6 +576,7 @@ export function ResumeChat() {
               onLinkChange={setLink}
               done={contactDone}
               example={DEMO_UI ? fixture.contact : undefined}
+              found={contactFound}
               onEdit={() => setContactDone(false)}
               onSubmit={() => {
                 setContactDone(true);
@@ -487,8 +586,7 @@ export function ResumeChat() {
                 }
                 if (thread.includes("questions") || thread.includes("duties")) return;
                 if (parse.questions.length) push("questions");
-                else if (parse.suggestedDuties.length) push("duties");
-                else createDraft(null);
+                else toDuties();
               }}
             />
           </AssistantMessage>
@@ -505,8 +603,7 @@ export function ResumeChat() {
               done={questionsDone}
               onSubmit={() => {
                 setQuestionsDone(true);
-                if (parse.suggestedDuties.length) push("duties");
-                else runAnswers();
+                toDuties();
               }}
             />
           </AssistantMessage>
@@ -515,7 +612,13 @@ export function ResumeChat() {
         return (
           <AssistantMessage key={key} avatar={avatar}>
             <DutiesCard
-              duties={parse.suggestedDuties}
+              duties={dutiesToAsk}
+              skipped={dutiesSkipped}
+              onReopen={() => {
+                if (pending) return;
+                setShowAllDuties(true);
+                setDutiesDone(false);
+              }}
               entryLabel={entryLabel}
               ticked={ticked}
               onToggle={(t) =>
@@ -529,7 +632,9 @@ export function ResumeChat() {
               done={dutiesDone}
               onSubmit={() => {
                 setDutiesDone(true);
-                runAnswers();
+                if (!draft) return runAnswers();
+                const extra = parse.suggestedDuties.filter((d) => ticked.has(d.text));
+                if (extra.length) extraDutiesMutation.mutate(extra);
               }}
             />
           </AssistantMessage>

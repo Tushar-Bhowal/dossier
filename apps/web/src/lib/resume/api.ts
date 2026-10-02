@@ -5,6 +5,8 @@ import type {
   ComposeRequest,
   ComposeResult,
   ImportRequest,
+  ImproveLineRequest,
+  ImproveLineResult,
   NoteRequest,
   MarketAnswersRequest,
   MarketAnswersResult,
@@ -37,6 +39,8 @@ export const listResumes = (): Promise<ResumeListItem[]> => mockApi.listResumes(
 export const getResume = (id: string): Promise<Resume> => mockApi.getResume(id);
 export const saveResume = (resume: Resume): Promise<Resume> => mockApi.saveResume(resume);
 export const deleteResume = (id: string): Promise<void> => mockApi.deleteResume(id);
+export const copyResume = (id: string): Promise<Resume> => mockApi.copyResume(id);
+export const improveLine = (req: ImproveLineRequest): Promise<ImproveLineResult> => mockApi.improveLine(req);
 export const getResumeHistory = (id: string): Promise<ResumeSnapshot[]> => mockApi.getResumeHistory(id);
 
 export const startTailoring = (req: StartTailoringRequest): Promise<TailoringState> => mockApi.startTailoring(req);

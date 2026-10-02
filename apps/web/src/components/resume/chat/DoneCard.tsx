@@ -3,16 +3,16 @@
 import * as React from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Camera, FileDown, LoaderCircle, PenLine } from "lucide-react";
+import { Camera, LoaderCircle, PenLine } from "lucide-react";
 import { toRenderData, type CareerProfile } from "@dossier/core/resume";
 import { getResume, resumeKeys, saveProfile, saveResume } from "@/lib/resume/api";
 import { useResumePdf } from "@/lib/resume/typst/compiler";
-import { downloadBlob, resumeFileName } from "@/lib/resume/docx";
 import { resizePhoto } from "@/lib/resume/photo";
 import { useScenario } from "@/lib/resume/demo/scenario";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PdfPages } from "../PdfPages";
+import { DownloadMenu } from "../DownloadMenu";
 import { cardClass } from "./Thread";
 
 export function DoneCard({
@@ -63,7 +63,7 @@ export function DoneCard({
               <PdfPages pdf={pdf} label="Your new resume" />
             </div>
           ) : status === "error" ? (
-            <p className="p-3 text-[13px] font-medium text-white/60">Preview unavailable — open the editor to download as Word.</p>
+            <p className="p-3 text-[13px] font-medium text-white/60">Preview unavailable — you can still download it as Word.</p>
           ) : (
             <Skeleton className="aspect-[1/1.414] w-full rounded-[3px]" />
           )}
@@ -81,21 +81,7 @@ export function DoneCard({
                 Open and edit
               </Link>
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              disabled={!pdf || status === "error"}
-              onClick={() =>
-                pdf &&
-                downloadBlob(
-                  new Blob([pdf.slice().buffer as ArrayBuffer], { type: "application/pdf" }),
-                  resumeFileName(current.contact.name, "pdf"),
-                )
-              }
-            >
-              {status === "rendering" && !pdf ? <LoaderCircle className="size-4 animate-spin" /> : <FileDown className="size-4" />}
-              Download PDF
-            </Button>
+            {data && <DownloadMenu data={data} pdf={pdf} pdfFailed={status === "error"} variant="outline" size="lg" />}
           </div>
         </div>
       </div>

@@ -1,3 +1,5 @@
+import type { Entry } from '../../contracts/resume.js';
+
 export type RedactedKind = 'email' | 'phone' | 'link';
 
 export interface RedactedItem {
@@ -46,4 +48,9 @@ export function redact(input: string): Redaction {
 
 export function restore(text: string, items: RedactedItem[]): string {
   return items.reduce((out, item) => out.split(item.token).join(item.value), text);
+}
+
+// Entries sent with a prompt lose the fields that identify a person or point at their accounts.
+export function entriesForPrompt(entries: Entry[]): Entry[] {
+  return entries.map(({ link: _link, credentialId: _id, ...rest }) => rest);
 }

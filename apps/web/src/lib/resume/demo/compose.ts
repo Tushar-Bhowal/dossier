@@ -17,6 +17,8 @@ const SECTION_FOR_ENTRY: Record<EntryKind, EntrySectionKind> = {
   project: "projects",
   certification: "certifications",
   volunteer: "volunteer",
+  achievement: "achievements",
+  other: "custom",
 };
 
 // Only experience, projects and volunteer entries carry bullets; education and certifications are
@@ -57,7 +59,7 @@ export function composeFromProfile(
 
   const fallbackIds: string[] = [];
 
-  for (const kind of ["experience", "projects", "education", "certifications", "volunteer"] as const) {
+  for (const kind of ["experience", "projects", "education", "certifications", "achievements", "volunteer", "custom"] as const) {
     const entries = profile.entries.filter((e) => SECTION_FOR_ENTRY[e.kind] === kind);
     if (!entries.length) continue;
     sections.push({

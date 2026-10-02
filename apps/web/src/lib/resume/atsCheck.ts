@@ -29,10 +29,29 @@ export function normaliseForMatch(text: string): string {
     .toLowerCase();
 }
 
-const STANDARD_TITLES = new Set(Object.values(SECTION_TITLES).map((t) => t.toLowerCase()));
+const STANDARD_TITLES = new Set(
+  [
+    ...Object.values(SECTION_TITLES),
+    "Awards",
+    "Publications",
+    "Extracurricular Activities",
+    "Hobbies",
+    "Interests",
+    "Training",
+    "Internships",
+  ].map((t) => t.toLowerCase()),
+);
 
 export function checkAtsText(data: RenderData, extracted: string): AtsCheckResult {
-  const text = normaliseForMatch(extracted);
+  // Page 2 onwards carries a running "Name … Page N" line; drop it so a line split across a page
+  // break still reads as one.
+  const running = new RegExp(`^\\s*${data.contact.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*Page \\d+\\s*$`, "i");
+  const text = normaliseForMatch(
+    extracted
+      .split("\n")
+      .filter((l) => !running.test(l))
+      .join("\n"),
+  );
   const firstLine = normaliseForMatch(extracted.split("\n").find((l) => l.trim()) ?? "");
   const checks: AtsCheckItem[] = [];
 

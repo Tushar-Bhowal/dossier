@@ -21,6 +21,8 @@ const KIND_LABEL: Record<Entry["kind"], string> = {
   project: "Project",
   certification: "Certification",
   volunteer: "Volunteering",
+  achievement: "Achievement",
+  other: "Other",
 };
 
 function FactRow({ fact, onChange, onDelete }: { fact: Fact; onChange: (text: string) => void; onDelete: () => void }) {

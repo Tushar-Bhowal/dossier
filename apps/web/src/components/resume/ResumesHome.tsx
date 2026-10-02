@@ -4,9 +4,9 @@ import * as React from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowUpRight, Crosshair, FileText, GraduationCap, Plus, Trash2 } from "lucide-react";
+import { ArrowUpRight, Copy, Crosshair, FileText, GraduationCap, Plus, Trash2 } from "lucide-react";
 import type { ResumeListItem } from "@dossier/core/resume";
-import { deleteResume, getProfile, listResumes, resumeKeys } from "@/lib/resume/api";
+import { copyResume, deleteResume, getProfile, listResumes, resumeKeys } from "@/lib/resume/api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,7 +28,21 @@ function relative(iso: string): string {
 function ResumeCard({ item, tailorHref }: { item: ResumeListItem; tailorHref: string | null }) {
   const queryClient = useQueryClient();
   const [confirm, setConfirm] = React.useState(false);
+  const [copying, setCopying] = React.useState(false);
   const href = tailorHref ?? `/resumes/${item.id}`;
+
+  const duplicate = async () => {
+    setCopying(true);
+    try {
+      const copy = await copyResume(item.id);
+      await queryClient.invalidateQueries({ queryKey: resumeKeys.list });
+      toast.success(`Made "${copy.title}"`, { description: "Change it freely — the original stays as it is." });
+    } catch {
+      toast.error("Couldn't duplicate that resume", { description: "Please try again." });
+    } finally {
+      setCopying(false);
+    }
+  };
 
   return (
     <>
@@ -41,23 +55,41 @@ function ResumeCard({ item, tailorHref }: { item: ResumeListItem; tailorHref: st
         )}
       >
         {!tailorHref && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setConfirm(true);
-            }}
-            aria-label={`Delete ${item.title}`}
-            className="absolute right-4 top-4 flex size-8 items-center justify-center rounded-lg border border-white/10 bg-[#161616] text-white/55 opacity-0 transition-opacity group-hover:opacity-100 hover:border-destructive/30 hover:text-destructive focus-visible:opacity-100"
-          >
-            <Trash2 className="size-4" />
-          </button>
+          // Always visible on phones (no hover there); revealed on hover with a mouse.
+          <div className="absolute right-4 top-4 flex gap-1.5 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                void duplicate();
+              }}
+              disabled={copying}
+              aria-label={`Duplicate ${item.title}`}
+              title="Duplicate"
+              className="flex size-8 items-center justify-center rounded-lg border border-white/10 bg-[#161616] text-white/60 hover:border-white/20 hover:text-white disabled:opacity-50"
+            >
+              <Copy className="size-4" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setConfirm(true);
+              }}
+              aria-label={`Delete ${item.title}`}
+              title="Delete"
+              className="flex size-8 items-center justify-center rounded-lg border border-white/10 bg-[#161616] text-white/60 hover:border-destructive/30 hover:text-destructive"
+            >
+              <Trash2 className="size-4" />
+            </button>
+          </div>
         )}
         <span className="flex size-10 items-center justify-center rounded-lg bg-[#dc3019] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]">
           <FileText className="size-5" aria-hidden />
         </span>
-        <h3 className="mt-4 line-clamp-2 pr-8 text-[19px] font-semibold leading-snug tracking-[-0.02em] text-white group-hover:text-[#ff7a5c]">
+        <h3 className="mt-4 line-clamp-2 pr-16 text-[19px] font-semibold leading-snug tracking-[-0.02em] text-white group-hover:text-[#ff7a5c]">
           {item.title}
         </h3>
         {item.targetRole || item.targetCompany ? (

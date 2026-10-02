@@ -14,6 +14,16 @@ export function loadPdfJs(): Promise<PdfJs> {
   return pdfjsPromise;
 }
 
+export async function countPdfPages(data: Uint8Array): Promise<number> {
+  const pdfjs = await loadPdfJs();
+  const task = pdfjs.getDocument({ data: data.slice() });
+  try {
+    return (await task.promise).numPages;
+  } finally {
+    await task.destroy();
+  }
+}
+
 interface PositionedItem {
   str: string;
   x: number;

@@ -88,7 +88,7 @@ export function lintResume(resume: Resume): LintHint[] {
       hints.push(...textHints(section.id, section.text));
       continue;
     }
-    if (section.kind === 'skills' || section.kind === 'languages') continue;
+    if (!('items' in section)) continue;
 
     for (const block of section.items) {
       for (const bullet of block.bullets) hints.push(...lintBullet(bullet.id, bullet.text));

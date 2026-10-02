@@ -9,7 +9,7 @@ const YearMonth = z.string().regex(/^\d{4}(-(0[1-9]|1[0-2]))?$/); // "2024" or "
 export const Region = z.enum(['IN', 'abroad']);
 export type Region = z.infer<typeof Region>;
 
-export const EntryKind = z.enum(['job', 'education', 'project', 'certification', 'volunteer']);
+export const EntryKind = z.enum(['job', 'education', 'project', 'certification', 'volunteer', 'achievement', 'other']);
 export type EntryKind = z.infer<typeof EntryKind>;
 
 export const FactSource = z.enum(['describe', 'answer', 'duty', 'upload', 'manual']);
@@ -36,6 +36,12 @@ export const Entry = z.object({
   start: YearMonth.optional(),
   end: YearMonth.optional(),
   current: z.boolean(),
+  // As the user writes it: "8.6 CGPA", "87%", "First class".
+  grade: z.string().max(30).optional(),
+  // Certificate, project repo, publication — printed and clickable.
+  link: z.url().optional(),
+  // Credential, licence or registration number. Identifying, so never put in a prompt.
+  credentialId: z.string().max(60).optional(),
 });
 export type Entry = z.infer<typeof Entry>;
 
@@ -61,11 +67,22 @@ export const Photo = z.object({
 });
 export type Photo = z.infer<typeof Photo>;
 
+// The Indian "Personal details" block some schools and government jobs expect. Never put in a prompt.
+export const PersonalDetails = z.object({
+  dateOfBirth: z.iso.date().optional(),
+  gender: z.string().max(30).optional(),
+  nationality: z.string().max(40).optional(),
+  maritalStatus: z.string().max(30).optional(),
+  fatherName: z.string().max(120).optional(),
+});
+export type PersonalDetails = z.infer<typeof PersonalDetails>;
+
 export const CareerProfile = z.object({
   region: Region,
   canonicalRole: z.string().max(80).optional(),
   contact: Contact,
   photo: Photo.optional(),
+  personal: PersonalDetails.optional(),
   entries: z.array(Entry),
   facts: z.array(Fact),
   skills: z.array(Skill),
@@ -91,16 +108,43 @@ export type Bullet = z.infer<typeof Bullet>;
 export const EntryBlock = z.object({ entryId: Id, bullets: z.array(Bullet) });
 export type EntryBlock = z.infer<typeof EntryBlock>;
 
-export const EntrySectionKind = z.enum(['experience', 'education', 'projects', 'certifications', 'volunteer']);
+export const EntrySectionKind = z.enum([
+  'experience',
+  'education',
+  'projects',
+  'certifications',
+  'volunteer',
+  'achievements',
+  'custom',
+]);
 export type EntrySectionKind = z.infer<typeof EntrySectionKind>;
 
-const sectionBase = { id: Id, title: z.string().min(1).max(40), hidden: z.boolean() };
+// spaceBefore: extra points above the section heading, on top of the layout's section gap.
+const sectionBase = {
+  id: Id,
+  title: z.string().min(1).max(40),
+  hidden: z.boolean(),
+  spaceBefore: z.int().min(0).max(24).optional(),
+};
 
+export const SkillGroup = z.object({ title: z.string().min(1).max(40), skills: z.array(z.string().max(60)) });
+export type SkillGroup = z.infer<typeof SkillGroup>;
+
+// 'personal' prints CareerProfile.personal; 'declaration' is the closing statement Indian resumes use.
+// Several 'custom' sections can exist, each with its own title.
 export const Section = z.discriminatedUnion('kind', [
   z.object({ ...sectionBase, kind: z.literal('summary'), text: z.string().max(600), factIds: z.array(Id) }),
   z.object({ ...sectionBase, kind: EntrySectionKind, items: z.array(EntryBlock) }),
-  z.object({ ...sectionBase, kind: z.literal('skills'), skills: z.array(z.string().max(60)) }),
+  z.object({
+    ...sectionBase,
+    kind: z.literal('skills'),
+    // Ungrouped skills; with groups present they print under "Other".
+    skills: z.array(z.string().max(60)),
+    groups: z.array(SkillGroup).max(8).optional(),
+  }),
   z.object({ ...sectionBase, kind: z.literal('languages'), languages: z.array(z.string().max(40)) }),
+  z.object({ ...sectionBase, kind: z.literal('personal') }),
+  z.object({ ...sectionBase, kind: z.literal('declaration'), text: z.string().max(400) }),
 ]);
 export type Section = z.infer<typeof Section>;
 export type SectionKind = Section['kind'];
@@ -113,11 +157,37 @@ export const TailorTarget = z.object({
 });
 export type TailorTarget = z.infer<typeof TailorTarget>;
 
+const Millimetres = z.int().min(10).max(25);
+
+// fit: pick the text size (and, with spacing 'auto', the spacing too) that fills exactly one page.
+export const ResumeLayout = z.object({
+  fit: z.boolean(),
+  spacing: z.enum(['auto', 'compact', 'balanced', 'spacious']),
+  margins: z.object({ top: Millimetres, bottom: Millimetres, left: Millimetres, right: Millimetres }),
+  sectionGap: z.number().min(0.5).max(2),
+});
+export type ResumeLayout = z.infer<typeof ResumeLayout>;
+
+export const MARGIN_PRESETS = {
+  narrow: { top: 12, bottom: 12, left: 12, right: 12 },
+  normal: { top: 15, bottom: 15, left: 17, right: 17 },
+  wide: { top: 20, bottom: 20, left: 22, right: 22 },
+} as const satisfies Record<string, ResumeLayout['margins']>;
+
+export const DEFAULT_LAYOUT: ResumeLayout = {
+  fit: true,
+  spacing: 'auto',
+  margins: MARGIN_PRESETS.normal,
+  sectionGap: 1,
+};
+
 export const Resume = z.object({
   id: Id,
   title: z.string().min(1).max(80),
   template: z.literal('universal'),
   showPhoto: z.boolean(),
+  // Absent on resumes saved before layout existed — read it through DEFAULT_LAYOUT.
+  layout: ResumeLayout.optional(),
   // Array order is render order.
   sections: z.array(Section),
   target: TailorTarget.optional(),
@@ -174,9 +244,12 @@ export const ImportRequest = z.object({ redactedText: z.string().min(50).max(20_
 export type ImportRequest = z.infer<typeof ImportRequest>;
 
 // Returned by both /parse and /import. A null rolePack means generic questions, no duty picker.
+// location: the city, if the text names one — it isn't redacted, so the model can read it. On /import
+// the questions cover only what the resume is missing (numbers, results, dates), never what it says.
 export const ParseResult = z.object({
   detectedLanguage: z.string().max(60),
   canonicalRole: z.string().max(80).nullable(),
+  location: z.string().max(120).optional(),
   entries: z.array(Entry),
   facts: z.array(Fact),
   skills: z.array(Skill),
@@ -206,6 +279,18 @@ export const NoteRequest = z.object({ text: z.string().min(2).max(1000), entries
 export type NoteRequest = z.infer<typeof NoteRequest>;
 
 export const ComposeRequest = z.object({ title: z.string().max(80).optional() });
+
+// "Make this line stronger" in the editor. `facts` are the texts of the line's cited facts (redacted);
+// the grounding gate checks the rewrite against them and the original line, like any AI bullet.
+export const ImproveLineRequest = z.object({
+  text: z.string().min(1).max(300),
+  facts: z.array(z.string().max(400)).max(10),
+  role: z.string().max(80).optional(),
+});
+export type ImproveLineRequest = z.infer<typeof ImproveLineRequest>;
+
+export const ImproveLineResult = z.object({ text: z.string().min(1).max(300), unchanged: z.boolean() });
+export type ImproveLineResult = z.infer<typeof ImproveLineResult>;
 export type ComposeRequest = z.infer<typeof ComposeRequest>;
 
 export const ComposeResult = z.object({ resume: Resume, fallbackBulletIds: z.array(Id) });

@@ -1,19 +1,13 @@
 "use client";
 
 import * as React from "react";
+import { DropdownMenu } from "radix-ui";
+import { ArrowDown, ArrowUp, Eye, EyeOff, Pencil, Plus, Trash2 } from "lucide-react";
 import {
-  ArrowDown,
-  ArrowUp,
-  Eye,
-  EyeOff,
-  Lightbulb,
-  Pencil,
-  Plus,
-  Trash2,
-  X,
-} from "lucide-react";
-import {
+  SECTION_TITLES,
+  defaultSectionOrder,
   formatDateRange,
+  displayUrl,
   type Bullet,
   type CareerProfile,
   type Entry,
@@ -22,16 +16,22 @@ import {
   type LintHint,
   type Resume,
   type Section,
+  type SectionKind,
 } from "@dossier/core/resume";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { PhotoControl } from "./PhotoControl";
 import { DetailsCard } from "./DetailsCard";
+import { EntryForm } from "./EntryForm";
+import { BulletRow, Hints } from "./BulletRow";
+import { ChipEditor, SkillsEditor } from "./SkillsEditor";
+import { PersonalForm } from "./PersonalForm";
 
 type Edit = (fn: (r: Resume) => Resume) => void;
+// Applies a change and offers an Undo toast for it.
+type Undoable = (label: string, fn: (r: Resume) => Resume) => void;
 
 const ENTRY_KIND_FOR: Record<EntrySectionKind, EntryKind> = {
   experience: "job",
@@ -39,6 +39,8 @@ const ENTRY_KIND_FOR: Record<EntrySectionKind, EntryKind> = {
   projects: "project",
   certifications: "certification",
   volunteer: "volunteer",
+  achievements: "achievement",
+  custom: "other",
 };
 
 const ADD_LABEL: Record<EntrySectionKind, string> = {
@@ -47,9 +49,30 @@ const ADD_LABEL: Record<EntrySectionKind, string> = {
   projects: "Add a project",
   certifications: "Add a certification",
   volunteer: "Add volunteering",
+  achievements: "Add an achievement",
+  custom: "Add an item",
 };
 
-const YEAR_MONTH = /^\d{4}(-(0[1-9]|1[0-2]))?$/;
+// Where a confirmed fact reads naturally as a line; under a degree or a certificate it would repeat the title.
+const LINED: SectionKind[] = ["experience", "projects", "volunteer", "custom"];
+
+const DECLARATION =
+  "I hereby declare that the information given above is true and correct to the best of my knowledge and belief.";
+
+// Sections offered in "Add a section" when the resume doesn't have one yet. Custom can repeat.
+const ADDABLE: { kind: SectionKind; hint: string }[] = [
+  { kind: "summary", hint: "Two or three lines about you" },
+  { kind: "experience", hint: "Jobs and internships" },
+  { kind: "education", hint: "Degrees, Class X and XII" },
+  { kind: "projects", hint: "Things you built or led" },
+  { kind: "certifications", hint: "Certificates, licences, registrations" },
+  { kind: "achievements", hint: "Awards, ranks, recognition" },
+  { kind: "volunteer", hint: "NSS, NGOs, community work" },
+  { kind: "skills", hint: "Tools and abilities" },
+  { kind: "languages", hint: "Languages you speak" },
+  { kind: "personal", hint: "Date of birth and more — common for Indian schools and government jobs" },
+  { kind: "declaration", hint: "The closing statement many Indian employers expect" },
+];
 
 function updateSection(resume: Resume, id: string, fn: (s: Section) => Section): Resume {
   return { ...resume, sections: resume.sections.map((s) => (s.id === id ? fn(s) : s)) };
@@ -69,159 +92,44 @@ function move<T>(list: T[], index: number, delta: number): T[] {
   return next;
 }
 
-function Hints({ hints }: { hints: LintHint[] | undefined }) {
-  if (!hints?.length) return null;
-  return (
-    <ul className="mt-1.5 flex flex-col gap-1">
-      {hints.map((h) => (
-        <li key={h.rule} className="flex items-start gap-1.5 text-[13px] font-medium leading-snug text-amber-200/90">
-          <Lightbulb className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-          {h.message}
-        </li>
-      ))}
-    </ul>
-  );
+// Newest first, the order recruiters expect. "2024" sorts after "2023-06" as plain strings.
+const dateKey = (e: Entry | undefined) => (!e ? "" : e.current ? "9999" : (e.end ?? e.start ?? ""));
+
+function insertByDate<T extends { entryId: string }>(items: T[], item: T, entries: Map<string, Entry>): T[] {
+  const key = dateKey(entries.get(item.entryId));
+  const at = items.findIndex((i) => dateKey(entries.get(i.entryId)) < key);
+  return at === -1 ? [...items, item] : [...items.slice(0, at), item, ...items.slice(at)];
 }
 
-function BulletRow({
-  bullet,
-  index,
-  count,
-  hints,
-  onChange,
-  onMove,
-  onDelete,
-}: {
-  bullet: Bullet;
-  index: number;
-  count: number;
-  hints: LintHint[] | undefined;
-  onChange: (text: string) => void;
-  onMove: (delta: number) => void;
-  onDelete: () => void;
-}) {
-  return (
-    <li id={`bullet-${bullet.id}`} className="group/bullet scroll-mt-24">
-      <div className="flex items-start gap-2">
-        <span className="mt-3 size-1.5 shrink-0 rounded-full bg-white/40" aria-hidden />
-        <Textarea
-          value={bullet.text}
-          onChange={(e) => onChange(e.target.value)}
-          onBlur={() => {
-            if (!bullet.text.trim()) onDelete();
-          }}
-          aria-label={`Line ${index + 1}`}
-          autoFocus={bullet.origin === "user" && bullet.text === ""}
-          maxLength={300}
-          rows={1}
-          className="min-h-10 resize-none py-2 text-[15px] leading-relaxed md:text-[15px]"
-        />
-        <div className="flex shrink-0 flex-col gap-0.5 sm:flex-row">
-          <Button type="button" variant="ghost" size="icon-sm" onClick={() => onMove(-1)} disabled={index === 0} aria-label="Move line up">
-            <ArrowUp className="size-4" />
-          </Button>
-          <Button type="button" variant="ghost" size="icon-sm" onClick={() => onMove(1)} disabled={index === count - 1} aria-label="Move line down">
-            <ArrowDown className="size-4" />
-          </Button>
-          <Button type="button" variant="ghost" size="icon-sm" onClick={onDelete} aria-label="Delete line">
-            <Trash2 className="size-4 text-white/60" />
-          </Button>
-        </div>
-      </div>
-      <div className="pl-3.5">
-        {bullet.origin === "fallback" && (
-          <Badge variant="outline" className="mt-1.5 border-sky-500/30 bg-sky-500/10 text-sky-200">
-            Kept in your words
-          </Badge>
-        )}
-        <Hints hints={hints} />
-      </div>
-    </li>
-  );
+function newSection(kind: SectionKind, resumeId: string): Section {
+  const base = { id: `${resumeId}-${kind}-${crypto.randomUUID().slice(0, 6)}`, title: SECTION_TITLES[kind], hidden: false };
+  switch (kind) {
+    case "summary":
+      return { ...base, kind, text: "", factIds: [] };
+    case "skills":
+      return { ...base, kind, skills: [], groups: [] };
+    case "languages":
+      return { ...base, kind, languages: [] };
+    case "personal":
+      return { ...base, kind };
+    case "declaration":
+      return { ...base, kind, text: DECLARATION };
+    case "custom":
+      return { ...base, kind, title: "New section", items: [] };
+    default:
+      return { ...base, kind, items: [] };
+  }
 }
 
-function EntryForm({
-  initial,
-  submitLabel,
-  onSubmit,
-  onCancel,
-}: {
-  initial: Partial<Entry>;
-  submitLabel: string;
-  onSubmit: (patch: Pick<Entry, "title" | "current"> & Partial<Entry>) => void;
-  onCancel: () => void;
-}) {
-  const [title, setTitle] = React.useState(initial.title ?? "");
-  const [org, setOrg] = React.useState(initial.org ?? "");
-  const [place, setPlace] = React.useState(initial.place ?? "");
-  const [start, setStart] = React.useState(initial.start ?? "");
-  const [end, setEnd] = React.useState(initial.end ?? "");
-  const [current, setCurrent] = React.useState(initial.current ?? false);
-  const [touched, setTouched] = React.useState(false);
-
-  const errors = {
-    title: !title.trim() ? "Add a title." : null,
-    start: start && !YEAR_MONTH.test(start) ? "Use YYYY or YYYY-MM, e.g. 2023-06." : null,
-    end: !current && end && !YEAR_MONTH.test(end) ? "Use YYYY or YYYY-MM." : null,
+// Slots a new section in where it would normally go, without reshuffling the user's own order.
+function insertSection(sections: Section[], section: Section, profile: CareerProfile): Section[] {
+  const order = defaultSectionOrder(profile);
+  const rank = (k: SectionKind) => {
+    const i = order.indexOf(k);
+    return i === -1 ? order.length : i;
   };
-  const valid = !errors.title && !errors.start && !errors.end;
-
-  return (
-    <div className="mt-3 grid gap-3 rounded-lg border border-white/[0.08] bg-white/[0.02] p-4 sm:grid-cols-2">
-      {(
-        [
-          ["Title", title, setTitle, errors.title, "e.g. Mathematics Teacher"],
-          ["Organisation", org, setOrg, null, "e.g. St. Mary's School"],
-          ["Place", place, setPlace, null, "City"],
-        ] as const
-      ).map(([label, value, set, error, placeholder]) => (
-        <label key={label} className="flex flex-col gap-1.5 text-sm font-semibold text-white/80">
-          {label}
-          <Input value={value} onChange={(e) => set(e.target.value)} placeholder={placeholder} className="h-10" aria-invalid={touched && Boolean(error)} />
-          {touched && error && <span className="text-[13px] font-medium text-amber-300">{error}</span>}
-        </label>
-      ))}
-      <div className="grid grid-cols-2 gap-2">
-        <label className="flex flex-col gap-1.5 text-sm font-semibold text-white/80">
-          From
-          <Input value={start} onChange={(e) => setStart(e.target.value)} placeholder="2023-06" className="h-10" aria-invalid={touched && Boolean(errors.start)} />
-        </label>
-        <label className="flex flex-col gap-1.5 text-sm font-semibold text-white/80">
-          To
-          <Input value={current ? "" : end} onChange={(e) => setEnd(e.target.value)} placeholder={current ? "Present" : "2024"} disabled={current} className="h-10" aria-invalid={touched && Boolean(errors.end)} />
-        </label>
-        {touched && (errors.start || errors.end) && (
-          <span className="col-span-2 text-[13px] font-medium text-amber-300">{errors.start ?? errors.end}</span>
-        )}
-      </div>
-      <label className="flex items-center gap-2.5 text-sm font-medium text-white/80 sm:col-span-2">
-        <input type="checkbox" checked={current} onChange={(e) => setCurrent(e.target.checked)} className="size-4 accent-[#dc3019]" />
-        I&apos;m still here
-      </label>
-      <div className="flex gap-2 sm:col-span-2">
-        <Button
-          type="button"
-          onClick={() => {
-            setTouched(true);
-            if (!valid) return;
-            onSubmit({
-              title: title.trim(),
-              current,
-              org: org.trim() || undefined,
-              place: place.trim() || undefined,
-              start: start || undefined,
-              end: current ? undefined : end || undefined,
-            });
-          }}
-        >
-          {submitLabel}
-        </Button>
-        <Button type="button" variant="ghost" onClick={onCancel}>
-          Cancel
-        </Button>
-      </div>
-    </div>
-  );
+  const at = sections.findIndex((s) => rank(s.kind) > rank(section.kind));
+  return at === -1 ? [...sections, section] : [...sections.slice(0, at), section, ...sections.slice(at)];
 }
 
 function SectionCard({
@@ -229,19 +137,22 @@ function SectionCard({
   index,
   count,
   edit,
+  undoable,
   children,
 }: {
   section: Section;
   index: number;
   count: number;
   edit: Edit;
+  undoable: Undoable;
   children: React.ReactNode;
 }) {
   const setTitle = (title: string) => edit((r) => updateSection(r, section.id, (s) => ({ ...s, title })));
   return (
     <section
+      id={`section-${section.id}`}
       className={cn(
-        "rounded-lg border border-white/[0.08] bg-[#111111] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
+        "scroll-mt-24 rounded-lg border border-white/[0.08] bg-[#111111] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
         section.hidden && "opacity-60",
       )}
     >
@@ -250,7 +161,7 @@ function SectionCard({
           value={section.title}
           onChange={(e) => setTitle(e.target.value)}
           onBlur={() => {
-            if (!section.title.trim()) setTitle("Section");
+            if (!section.title.trim()) setTitle(SECTION_TITLES[section.kind]);
           }}
           maxLength={40}
           aria-label="Section heading"
@@ -273,6 +184,18 @@ function SectionCard({
             {section.hidden ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             {section.hidden ? "Hidden" : "Shown"}
           </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label={`Remove the ${section.title} section`}
+            title="Remove section (your profile keeps everything)"
+            onClick={() =>
+              undoable(`Removed "${section.title}"`, (r) => ({ ...r, sections: r.sections.filter((s) => s.id !== section.id) }))
+            }
+          >
+            <Trash2 className="size-4 text-white/60" />
+          </Button>
         </div>
       </div>
       {section.hidden && <p className="mt-1 px-2 text-[13px] font-medium text-white/55">Hidden from your resume.</p>}
@@ -281,77 +204,56 @@ function SectionCard({
   );
 }
 
-function ChipEditor({
-  items,
-  marked,
-  onChange,
-  label,
-}: {
-  items: string[];
-  marked?: Set<string>;
-  onChange: (items: string[]) => void;
-  label: string;
-}) {
-  const [draft, setDraft] = React.useState("");
-  const add = () => {
-    const v = draft.trim();
-    if (v && !items.some((i) => i.toLowerCase() === v.toLowerCase())) onChange([...items, v]);
-    setDraft("");
-  };
+function EntryDetails({ entry }: { entry: Entry }) {
+  const parts = [
+    entry.grade && `Grade: ${entry.grade}`,
+    entry.credentialId && `ID: ${entry.credentialId}`,
+  ].filter(Boolean);
+  if (!parts.length && !entry.link) return null;
   return (
-    <div>
-      <ul className="flex flex-wrap gap-2">
-        {items.map((item) => {
-          const isMarked = marked?.has(item.toLowerCase());
-          return (
-            <li key={item}>
-              <span
-                className={cn(
-                  "inline-flex h-9 items-center gap-1.5 rounded-lg border pl-3 pr-1.5 text-sm font-semibold",
-                  isMarked ? "border-amber-500/35 bg-amber-500/10 text-amber-100" : "border-white/10 bg-white/[0.04] text-white/85",
-                )}
-                title={isMarked ? "Added by you — be ready to discuss it" : undefined}
-              >
-                {item}
-                {isMarked && <span className="sr-only">(added by you — be ready to discuss it)</span>}
-                <button
-                  type="button"
-                  onClick={() => onChange(items.filter((i) => i !== item))}
-                  aria-label={`Remove ${item}`}
-                  className="flex size-6 items-center justify-center rounded-md text-white/50 hover:bg-white/10 hover:text-white"
-                >
-                  <X className="size-3.5" />
-                </button>
-              </span>
-            </li>
-          );
-        })}
-      </ul>
-      {marked && items.some((i) => marked.has(i.toLowerCase())) && (
-        <p className="mt-2 text-[13px] font-medium text-amber-200/90">
-          Highlighted skills were added by you without an example. Be ready to discuss them in an interview.
-        </p>
+    <p className="mt-0.5 flex flex-wrap gap-x-3 text-sm font-medium text-white/60">
+      {parts.map((p) => (
+        <span key={p as string}>{p}</span>
+      ))}
+      {entry.link && (
+        <a href={entry.link} target="_blank" rel="noreferrer noopener" className="text-[#7aa7ff] hover:underline">
+          {displayUrl(entry.link)}
+        </a>
       )}
-      <div className="mt-3 flex gap-2">
-        <Input
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              add();
-            }
-          }}
-          placeholder={`Add ${label}`}
-          aria-label={`Add ${label}`}
-          maxLength={60}
-          className="h-10"
-        />
-        <Button type="button" variant="outline" onClick={add}>
-          Add
+    </p>
+  );
+}
+
+function AddSectionMenu({ resume, onAdd }: { resume: Resume; onAdd: (kind: SectionKind) => void }) {
+  const present = new Set(resume.sections.map((s) => s.kind));
+  const options = [...ADDABLE.filter((o) => !present.has(o.kind)), { kind: "custom" as const, hint: "Your own heading, e.g. Publications" }];
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <Button type="button" variant="outline" size="lg" className="self-start">
+          <Plus className="size-4" />
+          Add a section
         </Button>
-      </div>
-    </div>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          align="start"
+          sideOffset={6}
+          className="z-50 max-h-[min(460px,70vh)] w-[320px] max-w-[calc(100vw-32px)] overflow-y-auto rounded-lg border border-white/10 bg-[#141414] p-1.5 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.9)] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
+        >
+          {options.map((o) => (
+            <DropdownMenu.Item
+              key={o.kind}
+              onSelect={() => onAdd(o.kind)}
+              className="flex cursor-pointer flex-col gap-0.5 rounded-md px-3 py-2.5 outline-none data-[highlighted]:bg-white/[0.07]"
+            >
+              <span className="text-[14px] font-semibold text-white">{o.kind === "custom" ? "Custom section" : SECTION_TITLES[o.kind]}</span>
+              <span className="text-[13px] font-medium leading-snug text-white/60">{o.hint}</span>
+            </DropdownMenu.Item>
+          ))}
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
   );
 }
 
@@ -359,19 +261,33 @@ export function ResumeEditor({
   resume,
   profile,
   edit,
+  undoable,
   onProfileSave,
   hints,
 }: {
   resume: Resume;
   profile: CareerProfile;
   edit: Edit;
+  undoable: Undoable;
   onProfileSave: (profile: CareerProfile) => Promise<void>;
   hints: Map<string, LintHint[]>;
 }) {
   const entries = new Map(profile.entries.map((e) => [e.id, e]));
+  const factText = new Map(profile.facts.map((f) => [f.id, f.text]));
   const [editingEntry, setEditingEntry] = React.useState<string | null>(null);
   const [addingTo, setAddingTo] = React.useState<string | null>(null);
   const selfDeclared = new Set(profile.skills.filter((s) => s.source === "self-declared").map((s) => s.name.toLowerCase()));
+  const used = new Set(resume.sections.flatMap((s) => ("items" in s ? s.items.map((i) => i.entryId) : [])));
+  const role = profile.canonicalRole ?? undefined;
+
+  const addSection = (kind: SectionKind) => {
+    const section = newSection(kind, resume.id);
+    edit((r) => ({ ...r, sections: insertSection(r.sections, section, profile) }));
+    if ("items" in section) setAddingTo(section.id);
+    window.setTimeout(() => {
+      document.getElementById(`section-${section.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 60);
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -384,7 +300,7 @@ export function ResumeEditor({
       />
 
       {resume.sections.map((section, index) => (
-        <SectionCard key={section.id} section={section} index={index} count={resume.sections.length} edit={edit}>
+        <SectionCard key={section.id} section={section} index={index} count={resume.sections.length} edit={edit} undoable={undoable}>
           {section.kind === "summary" && (
             <>
               <Textarea
@@ -399,12 +315,29 @@ export function ResumeEditor({
             </>
           )}
 
+          {section.kind === "declaration" && (
+            <>
+              <Textarea
+                value={section.text}
+                onChange={(e) => edit((r) => updateSection(r, section.id, (s) => ({ ...s, text: e.target.value })))}
+                maxLength={400}
+                aria-label="Declaration"
+                className="min-h-20 text-[15px] leading-relaxed md:text-[15px]"
+              />
+              <p className="mt-2 text-sm text-white/60">
+                Printed with your name{profile.contact.location ? ` and "Place: ${profile.contact.location}"` : ""} underneath.
+              </p>
+            </>
+          )}
+
+          {section.kind === "personal" && <PersonalForm profile={profile} onSave={onProfileSave} />}
+
           {section.kind === "skills" && (
-            <ChipEditor
-              label="a skill"
-              items={section.skills}
+            <SkillsEditor
+              skills={section.skills}
+              groups={section.groups ?? []}
               marked={selfDeclared}
-              onChange={(skills) => edit((r) => updateSection(r, section.id, (s) => ({ ...s, skills })))}
+              onChange={({ skills, groups }) => edit((r) => updateSection(r, section.id, (s) => ({ ...s, skills, groups })))}
             />
           )}
 
@@ -418,10 +351,9 @@ export function ResumeEditor({
 
           {"items" in section && (
             <div className="flex flex-col gap-5">
-              {section.items.map((block) => {
+              {section.items.map((block, entryIndex) => {
                 const entry = entries.get(block.entryId);
                 if (!entry) return null;
-                const bulleted = section.kind === "experience" || section.kind === "projects" || section.kind === "volunteer";
                 return (
                   <div key={block.entryId} className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4">
                     <div className="flex flex-wrap items-start justify-between gap-2">
@@ -433,8 +365,9 @@ export function ResumeEditor({
                         <p className="text-sm font-medium text-white/50">
                           {[entry.place, formatDateRange(entry)].filter(Boolean).join(" · ")}
                         </p>
+                        <EntryDetails entry={entry} />
                       </div>
-                      <div className="flex gap-1">
+                      <div className="flex items-center gap-0.5">
                         <Button type="button" variant="ghost" size="sm" onClick={() => setEditingEntry(editingEntry === entry.id ? null : entry.id)}>
                           <Pencil className="size-3.5" />
                           Edit details
@@ -443,10 +376,30 @@ export function ResumeEditor({
                           type="button"
                           variant="ghost"
                           size="icon-sm"
+                          disabled={entryIndex === 0}
+                          aria-label={`Move ${entry.title} up`}
+                          onClick={() => edit((r) => updateSection(r, section.id, (s) => ("items" in s ? { ...s, items: move(s.items, entryIndex, -1) } : s)))}
+                        >
+                          <ArrowUp className="size-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          disabled={entryIndex === section.items.length - 1}
+                          aria-label={`Move ${entry.title} down`}
+                          onClick={() => edit((r) => updateSection(r, section.id, (s) => ("items" in s ? { ...s, items: move(s.items, entryIndex, 1) } : s)))}
+                        >
+                          <ArrowDown className="size-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
                           aria-label={`Remove ${entry.title} from this resume`}
                           title="Remove from this resume (it stays in your profile)"
                           onClick={() =>
-                            edit((r) =>
+                            undoable(`Removed "${entry.title}" from this resume`, (r) =>
                               updateSection(r, section.id, (s) =>
                                 "items" in s ? { ...s, items: s.items.filter((i) => i.entryId !== block.entryId) } : s,
                               ),
@@ -460,6 +413,7 @@ export function ResumeEditor({
 
                     {editingEntry === entry.id && (
                       <EntryForm
+                        kind={entry.kind}
                         initial={entry}
                         submitLabel="Save details"
                         onCancel={() => setEditingEntry(null)}
@@ -473,64 +427,115 @@ export function ResumeEditor({
                       />
                     )}
 
-                    {bulleted && (
-                      <>
-                        <ul className="mt-3 flex flex-col gap-2.5">
-                          {block.bullets.map((bullet, i) => (
-                            <BulletRow
-                              key={bullet.id}
-                              bullet={bullet}
-                              index={i}
-                              count={block.bullets.length}
-                              hints={hints.get(bullet.id)}
-                              onChange={(text) =>
-                                edit((r) =>
-                                  updateBullets(r, section.id, block.entryId, (bs) =>
-                                    bs.map((b) => (b.id === bullet.id ? { ...b, text } : b)),
-                                  ),
-                                )
-                              }
-                              onMove={(delta) => edit((r) => updateBullets(r, section.id, block.entryId, (bs) => move(bs, i, delta)))}
-                              onDelete={() =>
-                                edit((r) => updateBullets(r, section.id, block.entryId, (bs) => bs.filter((b) => b.id !== bullet.id)))
-                              }
-                            />
-                          ))}
-                        </ul>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="mt-2 text-white/70"
-                          onClick={() =>
-                            edit((r) =>
-                              updateBullets(r, section.id, block.entryId, (bs) => [
-                                ...bs,
-                                { id: `b-u-${crypto.randomUUID().slice(0, 8)}`, text: "", factIds: [], origin: "user" },
-                              ]),
-                            )
-                          }
-                        >
-                          <Plus className="size-3.5" />
-                          Add a line
-                        </Button>
-                      </>
+                    {block.bullets.length > 0 && (
+                      <ul className="mt-3 flex flex-col gap-2.5">
+                        {block.bullets.map((bullet, i) => (
+                          <BulletRow
+                            key={bullet.id}
+                            bullet={bullet}
+                            index={i}
+                            count={block.bullets.length}
+                            hints={hints.get(bullet.id)}
+                            facts={bullet.factIds.map((id) => factText.get(id)).filter((t): t is string => Boolean(t))}
+                            role={role}
+                            onChange={(text) =>
+                              edit((r) =>
+                                updateBullets(r, section.id, block.entryId, (bs) =>
+                                  bs.map((b) => (b.id === bullet.id ? { ...b, text } : b)),
+                                ),
+                              )
+                            }
+                            onMove={(delta) => edit((r) => updateBullets(r, section.id, block.entryId, (bs) => move(bs, i, delta)))}
+                            onDelete={() =>
+                              undoable("Line deleted", (r) =>
+                                updateBullets(r, section.id, block.entryId, (bs) => bs.filter((b) => b.id !== bullet.id)),
+                              )
+                            }
+                            onEmpty={() =>
+                              edit((r) => updateBullets(r, section.id, block.entryId, (bs) => bs.filter((b) => b.id !== bullet.id)))
+                            }
+                          />
+                        ))}
+                      </ul>
                     )}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="mt-2 text-white/70"
+                      onClick={() =>
+                        edit((r) =>
+                          updateBullets(r, section.id, block.entryId, (bs) => [
+                            ...bs,
+                            { id: `b-u-${crypto.randomUUID().slice(0, 8)}`, text: "", factIds: [], origin: "user" },
+                          ]),
+                        )
+                      }
+                    >
+                      <Plus className="size-3.5" />
+                      {LINED.includes(section.kind) ? "Add a line" : "Add a detail"}
+                    </Button>
                   </div>
                 );
               })}
 
+              {(() => {
+                const kind = ENTRY_KIND_FOR[section.kind];
+                const removed = profile.entries.filter((e) => e.kind === kind && !used.has(e.id));
+                if (!removed.length) return null;
+                return (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-semibold text-white/60">Add back:</span>
+                    {removed.map((e) => (
+                      <Button
+                        key={e.id}
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          edit((r) =>
+                            updateSection(r, section.id, (s) =>
+                              "items" in s
+                                ? {
+                                    ...s,
+                                    items: insertByDate(
+                                      s.items,
+                                      {
+                                        entryId: e.id,
+                                        // Back in the user's own words — the AI wording went with the removal.
+                                        bullets: profile.facts
+                                          .filter((f) => f.entryId === e.id && LINED.includes(s.kind))
+                                          .map((f): Bullet => ({ id: `b-${f.id}`, text: f.text, factIds: [f.id], origin: "fallback" })),
+                                      },
+                                      entries,
+                                    ),
+                                  }
+                                : s,
+                            ),
+                          )
+                        }
+                      >
+                        <Plus className="size-3.5" />
+                        {[e.title, e.org].filter(Boolean).join(", ")}
+                      </Button>
+                    ))}
+                  </div>
+                );
+              })()}
+
               {addingTo === section.id ? (
                 <EntryForm
+                  kind={ENTRY_KIND_FOR[section.kind]}
                   initial={{}}
                   submitLabel={ADD_LABEL[section.kind]}
                   onCancel={() => setAddingTo(null)}
                   onSubmit={async (patch) => {
                     const entry: Entry = { id: `e-${crypto.randomUUID().slice(0, 8)}`, kind: ENTRY_KIND_FOR[section.kind], ...patch };
                     await onProfileSave({ ...profile, entries: [...profile.entries, entry] });
+                    const withNew = new Map(entries).set(entry.id, entry);
                     edit((r) =>
                       updateSection(r, section.id, (s) =>
-                        "items" in s ? { ...s, items: [...s.items, { entryId: entry.id, bullets: [] }] } : s,
+                        "items" in s ? { ...s, items: insertByDate(s.items, { entryId: entry.id, bullets: [] }, withNew) } : s,
                       ),
                     );
                     setAddingTo(null);
@@ -546,6 +551,8 @@ export function ResumeEditor({
           )}
         </SectionCard>
       ))}
+
+      <AddSectionMenu resume={resume} onAdd={addSection} />
     </div>
   );
 }

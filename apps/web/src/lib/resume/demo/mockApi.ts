@@ -4,6 +4,8 @@ import {
   type AnswersResult,
   type CareerProfile,
   type ComposeRequest,
+  type ImproveLineRequest,
+  type ImproveLineResult,
   type ComposeResult,
   type Fact,
   type FollowUpQuestion,
@@ -81,6 +83,27 @@ function storeResume(next: Resume, note: string) {
   store.resumes.set(next.id, next);
 }
 
+const WEAK_OPENINGS: [RegExp, string][] = [
+  [/^(i was |was )?responsible for (the )?/i, "Handled "],
+  [/^(i )?worked on /i, "Built "],
+  [/^(i )?was involved in /i, "Contributed to "],
+  [/^(i )?helped (to |with )?/i, "Helped "],
+  [/^(i )?did /i, "Completed "],
+  [/^(i )?(have |had )?done /i, "Completed "],
+  [/^i /i, ""],
+];
+
+function improveOpening(text: string): string {
+  let out = text.trim().replace(/\.$/, "");
+  for (const [pattern, replacement] of WEAK_OPENINGS) {
+    if (pattern.test(out)) {
+      out = out.replace(pattern, replacement);
+      break;
+    }
+  }
+  return out.charAt(0).toUpperCase() + out.slice(1);
+}
+
 function updateProfile(fn: (p: CareerProfile) => CareerProfile) {
   const store = getStore();
   if (!store.profile) return;
@@ -111,10 +134,12 @@ export const mockApi = {
     ai((): ParseResult => {
       if (req.text.trim().length < 10) throw new ApiError(400, "validation_error", "Tell us a little more about yourself.");
       const fx = fixtureFor(getScenario().persona);
-      if (getScenario().fail !== "no_role_pack") return fx.parse;
+      const location = fx.contact.location ? { location: fx.contact.location } : {};
+      if (getScenario().fail !== "no_role_pack") return { ...fx.parse, ...location };
       const firstJob = fx.parse.entries.find((e) => e.kind === "job");
       return {
         ...fx.parse,
+        ...location,
         rolePack: null,
         questions: GENERIC_QUESTIONS.map((q) => ({ ...q, entryId: firstJob?.id ?? null })),
         suggestedDuties: [],
@@ -125,10 +150,13 @@ export const mockApi = {
     ai((): ParseResult => {
       if (req.redactedText.trim().length < 50) throw new ApiError(400, "validation_error", "There isn't enough text to read.");
       const fx = fixtureFor(getScenario().persona);
+      // A whole resume already answers most questions; the real prompt asks only about gaps.
       return {
         ...fx.parse,
+        ...(fx.contact.location ? { location: fx.contact.location } : {}),
         detectedLanguage: "English",
         facts: fx.parse.facts.map((f) => ({ ...f, source: "upload" as const })),
+        questions: fx.parse.questions.slice(0, 2),
       };
     }),
 
@@ -199,6 +227,29 @@ export const mockApi = {
       const next = { ...resume, version: current.version + 1, updatedAt: now() };
       storeResume(next, "Edited");
       return next;
+    }),
+
+  copyResume: (id: string) =>
+    read((): Resume => {
+      const store = getStore();
+      const base = requireResume(id);
+      const copy: Resume = {
+        ...base,
+        id: `res-${crypto.randomUUID().slice(0, 8)}`,
+        title: `${base.title} (copy)`.slice(0, 80),
+        version: 1,
+        updatedAt: now(),
+      };
+      store.resumes.set(copy.id, copy);
+      store.history.set(copy.id, [{ at: now(), note: `Copied from "${base.title}"`, sections: base.sections }]);
+      return copy;
+    }),
+
+  // The mock can't rewrite, so it only fixes weak openings — the real call rewrites within the facts.
+  improveLine: (req: ImproveLineRequest) =>
+    ai((): ImproveLineResult => {
+      const text = improveOpening(req.text);
+      return { text, unchanged: text === req.text.trim() };
     }),
 
   deleteResume: (id: string) =>

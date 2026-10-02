@@ -1,54 +1,36 @@
 "use client";
 
 import * as React from "react";
-import { AlertCircle, FileDown, FileText, LoaderCircle } from "lucide-react";
+import { AlertCircle, LoaderCircle } from "lucide-react";
 import type { RenderData } from "@dossier/core/resume";
-import { useResumePdf } from "@/lib/resume/typst/compiler";
-import { buildResumeDocx, downloadBlob, resumeFileName } from "@/lib/resume/docx";
-import { useScenario } from "@/lib/resume/demo/scenario";
-import { toast } from "@/components/ui/toast";
-import { Button } from "@/components/ui/button";
+import type { ResumePdfState } from "@/lib/resume/typst/compiler";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DownloadMenu } from "./DownloadMenu";
 import { PdfPages } from "./PdfPages";
+import { PageCount } from "./editor/LayoutPanel";
 
-export function ResumePreview({ data }: { data: RenderData }) {
-  const scenario = useScenario();
-  const { pdf, status, error } = useResumePdf(data, { simulateFailure: scenario.fail === "typst" });
-  const [exportingWord, setExportingWord] = React.useState(false);
-
-  const downloadPdf = () => {
-    if (!pdf) return;
-    downloadBlob(new Blob([pdf.slice().buffer as ArrayBuffer], { type: "application/pdf" }), resumeFileName(data.contact.name, "pdf"));
-  };
-
-  const downloadWord = async () => {
-    setExportingWord(true);
-    try {
-      downloadBlob(await buildResumeDocx(data), resumeFileName(data.contact.name, "docx"));
-    } catch {
-      toast.error("Couldn't create the Word file", { description: "Please try again." });
-    } finally {
-      setExportingWord(false);
-    }
-  };
-
+export function ResumePreview({
+  data,
+  pdfState: { pdf, status, error },
+  pages,
+}: {
+  data: RenderData;
+  pdfState: ResumePdfState;
+  pages: number | null;
+}) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
-        <Button onClick={downloadPdf} disabled={!pdf || status === "error"}>
-          <FileDown className="size-4" />
-          Download PDF
-        </Button>
-        <Button variant="outline" onClick={() => void downloadWord()} disabled={exportingWord}>
-          {exportingWord ? <LoaderCircle className="size-4 animate-spin" /> : <FileText className="size-4" />}
-          Download Word
-        </Button>
-        {status === "rendering" && pdf && (
-          <span className="ml-auto flex items-center gap-1.5 text-[13px] font-medium text-white/55" role="status">
-            <LoaderCircle className="size-3.5 animate-spin" aria-hidden />
-            Updating
-          </span>
-        )}
+        <DownloadMenu data={data} pdf={pdf} pdfFailed={status === "error"} />
+        <span className="ml-auto flex items-center gap-2">
+          {status === "rendering" && pdf && (
+            <span className="flex items-center gap-1.5 text-[13px] font-medium text-white/60" role="status">
+              <LoaderCircle className="size-3.5 animate-spin" aria-hidden />
+              Updating
+            </span>
+          )}
+          {pages !== null && status !== "error" && <PageCount pages={pages} />}
+        </span>
       </div>
 
       {status === "error" ? (
@@ -58,7 +40,7 @@ export function ResumePreview({ data }: { data: RenderData }) {
             <div>
               <p className="text-[15px] font-semibold text-white">The PDF preview couldn&apos;t load</p>
               <p className="mt-1 text-sm leading-relaxed text-white/70">
-                Your resume is saved. You can still download it as a Word file
+                Your resume is saved. You can still download it as a Word or text file from the arrow next to Download PDF
                 {error && !/failed to load/i.test(error) ? ` (${error})` : ""}.
               </p>
             </div>

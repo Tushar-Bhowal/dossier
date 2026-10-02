@@ -114,7 +114,8 @@ export function Composer({
         }}
         placeholder={placeholder}
         rows={hero ? 3 : 1}
-        maxLength={4000}
+        // The opening message can be a whole pasted resume (the import path takes 20k); notes stop at 1,000.
+        maxLength={hero ? 20_000 : 1000}
         className={cn(
           "field-sizing-content block w-full resize-none bg-transparent text-base leading-relaxed text-white outline-none placeholder:text-white/40",
           hero ? "min-h-[96px] max-h-64 px-3 pt-2.5 pb-1" : "min-h-10 max-h-40 px-2.5 py-2",
@@ -163,7 +164,7 @@ export function Composer({
                 <input
                   ref={fileInput}
                   type="file"
-                  accept="application/pdf,.pdf"
+                  accept="application/pdf,.pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx"
                   className="sr-only"
                   tabIndex={-1}
                   onChange={(e) => {
@@ -177,8 +178,8 @@ export function Composer({
                   variant="ghost"
                   size="icon"
                   onClick={() => fileInput.current?.click()}
-                  aria-label="Attach your current resume (PDF)"
-                  title="Attach your current resume (PDF)"
+                  aria-label="Attach your current resume (PDF or Word)"
+                  title="Attach your current resume (PDF or Word)"
                   className="text-white/70"
                 >
                   <Paperclip className="size-[18px]" />

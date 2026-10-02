@@ -3,6 +3,7 @@
 import * as React from "react";
 import type { RenderData } from "@dossier/core/resume";
 import type { CompileRequest, CompileResponse } from "./compileWorker";
+import { countPdfPages } from "../pdfText";
 
 type Pending = { resolve: (pdf: Uint8Array) => void; reject: (err: Error) => void };
 
@@ -85,4 +86,21 @@ export function useResumePdf(
   }, [key, debounceMs, simulateFailure]);
 
   return state;
+}
+
+// Null until the first PDF is counted; keeps the last count while a newer PDF is being read.
+export function usePageCount(pdf: Uint8Array | null): number | null {
+  const [count, setCount] = React.useState<number | null>(null);
+  React.useEffect(() => {
+    if (!pdf) return;
+    let cancelled = false;
+    countPdfPages(pdf).then(
+      (n) => !cancelled && setCount(n),
+      () => {},
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [pdf]);
+  return count;
 }

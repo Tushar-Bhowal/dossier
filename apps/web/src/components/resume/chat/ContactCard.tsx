@@ -17,6 +17,7 @@ export function ContactCard({
   onSubmit,
   onEdit,
   example,
+  found = null,
 }: {
   contact: Contact;
   onChange: (contact: Contact) => void;
@@ -26,16 +27,69 @@ export function ContactCard({
   onSubmit: () => void;
   onEdit: () => void;
   example?: Contact;
+  // Where the prefilled details came from: shown as a one-tap check instead of a form.
+  found?: "text" | "profile" | null;
 }) {
   const [touched, setTouched] = React.useState(false);
+  const [editing, setEditing] = React.useState(false);
   const errors = contactErrors(contact, link);
   const set = (patch: Partial<Contact>) => onChange({ ...contact, ...patch });
 
   if (done) {
     return (
-      <DoneSummary onChange={onEdit}>
+      <DoneSummary
+        onChange={() => {
+          setEditing(true);
+          onEdit();
+        }}
+      >
         {[contact.name, contact.email, contact.phone].filter(Boolean).join(" · ")}
       </DoneSummary>
+    );
+  }
+
+  if (found && !editing && Object.keys(errors).length === 0) {
+    const rows = [
+      ["Name", contact.name],
+      ["Email", contact.email],
+      ["Phone", contact.phone],
+      ["City", contact.location],
+      ["Link", link],
+    ].filter((r): r is [string, string] => Boolean(r[1]));
+    return (
+      <div className={cardClass}>
+        <CardTitle
+          title={found === "profile" ? "Your details from last time" : "I found your details"}
+          note={
+            <span className="flex items-center gap-1.5">
+              <ShieldCheck className="size-4 shrink-0 text-emerald-400" aria-hidden />
+              Printed on your resume. Never sent to the AI.
+            </span>
+          }
+        />
+        <dl className="grid gap-x-6 gap-y-3 rounded-lg border border-white/[0.08] bg-white/[0.02] p-4 sm:grid-cols-2">
+          {rows.map(([label, value]) => (
+            <div key={label} className="min-w-0">
+              <dt className="text-[13px] font-semibold text-white/55">{label}</dt>
+              <dd className="mt-0.5 truncate text-[15px] font-medium text-white">{value}</dd>
+            </div>
+          ))}
+        </dl>
+        {(!contact.location || !link) && (
+          <p className="mt-3 text-sm text-white/60">
+            No {[!contact.location && "city", !link && "link"].filter(Boolean).join(" or ")} yet. Choose Edit if you want
+            to add {!contact.location && !link ? "them" : "it"}.
+          </p>
+        )}
+        <div className="mt-5 flex flex-wrap items-center gap-2">
+          <Button type="button" onClick={onSubmit}>
+            Looks right
+          </Button>
+          <Button type="button" variant="outline" onClick={() => setEditing(true)}>
+            Edit
+          </Button>
+        </div>
+      </div>
     );
   }
 

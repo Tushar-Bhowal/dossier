@@ -1,11 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { ChevronDown, LoaderCircle, UserRound } from "lucide-react";
+import { ChevronDown, LoaderCircle, Plus, UserRound, X } from "lucide-react";
 import type { CareerProfile, Contact } from "@dossier/core/resume";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { contactErrors, normaliseUrl } from "@/lib/resume/contact";
+import { contactErrors, linkLabel, normaliseUrl } from "@/lib/resume/contact";
+
+const MAX_LINKS = 5;
 
 export function DetailsCard({
   profile,
@@ -16,16 +18,18 @@ export function DetailsCard({
 }) {
   const [open, setOpen] = React.useState(false);
   const [contact, setContact] = React.useState<Contact>(profile.contact);
-  const [link, setLink] = React.useState(profile.contact.links[0]?.url ?? "");
+  const initialLinks = () => (profile.contact.links.length ? profile.contact.links.map((l) => l.url) : [""]);
+  const [links, setLinks] = React.useState<string[]>(initialLinks);
   const [touched, setTouched] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
 
-  const errors = contactErrors(contact, link);
+  const errors = contactErrors(contact, "");
+  const linkErrors = links.map((l) => (l.trim() && !normaliseUrl(l) ? "This doesn't look like a web address." : null));
 
   const save = async () => {
     setTouched(true);
-    if (Object.keys(errors).length) return;
-    const url = normaliseUrl(link);
+    if (Object.keys(errors).length || linkErrors.some(Boolean)) return;
+    const urls = [...new Set(links.map(normaliseUrl).filter((u): u is string => Boolean(u)))];
     setSaving(true);
     try {
       await onSave({
@@ -33,7 +37,7 @@ export function DetailsCard({
         contact: {
           ...contact,
           name: contact.name.trim(),
-          links: url ? [{ label: profile.contact.links[0]?.label ?? "Website", url }] : [],
+          links: urls.map((url) => ({ label: linkLabel(url), url })),
         },
       });
       setOpen(false);
@@ -56,7 +60,7 @@ export function DetailsCard({
         onClick={() => {
           if (!open) {
             setContact(profile.contact);
-            setLink(profile.contact.links[0]?.url ?? "");
+            setLinks(initialLinks());
             setTouched(false);
           }
           setOpen(!open);
@@ -95,11 +99,41 @@ export function DetailsCard({
               </label>
             );
           })}
-          <label className="flex flex-col gap-1.5 text-sm font-semibold text-white/80 sm:col-span-2">
-            Link
-            <Input value={link} onChange={(e) => setLink(e.target.value)} className="h-10" aria-invalid={touched && Boolean(errors.link)} />
-            {touched && errors.link && <span className="text-[13px] font-medium text-amber-300">{errors.link}</span>}
-          </label>
+          <fieldset className="flex flex-col gap-2 sm:col-span-2">
+            <legend className="mb-1.5 text-sm font-semibold text-white/80">Links (LinkedIn, GitHub, portfolio…)</legend>
+            {links.map((l, i) => (
+              <div key={i} className="flex flex-col gap-1">
+                <div className="flex gap-2">
+                  <Input
+                    value={l}
+                    onChange={(e) => setLinks(links.map((x, j) => (j === i ? e.target.value : x)))}
+                    placeholder={i === 0 ? "linkedin.com/in/you" : "github.com/you"}
+                    aria-label={`Link ${i + 1}`}
+                    className="h-10"
+                    aria-invalid={touched && Boolean(linkErrors[i])}
+                  />
+                  {links.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Remove link ${i + 1}`}
+                      onClick={() => setLinks(links.filter((_, j) => j !== i))}
+                    >
+                      <X className="size-4" />
+                    </Button>
+                  )}
+                </div>
+                {touched && linkErrors[i] && <span className="text-[13px] font-medium text-amber-300">{linkErrors[i]}</span>}
+              </div>
+            ))}
+            {links.length < MAX_LINKS && (
+              <Button type="button" variant="ghost" size="sm" className="self-start text-white/70" onClick={() => setLinks([...links, ""])}>
+                <Plus className="size-3.5" />
+                Add another link
+              </Button>
+            )}
+          </fieldset>
           <p className="text-[13px] font-medium text-white/50 sm:col-span-2">Printed on your resume, never sent to the AI.</p>
           <div className="flex gap-2 sm:col-span-2">
             <Button type="button" onClick={() => void save()} disabled={saving}>

@@ -12,6 +12,8 @@ export function DutiesCard({
   onToggle,
   done,
   onSubmit,
+  skipped = false,
+  onReopen,
 }: {
   duties: { text: string; entryId: string }[];
   entryLabel: (entryId: string) => string;
@@ -19,8 +21,18 @@ export function DutiesCard({
   onToggle: (text: string) => void;
   done: boolean;
   onSubmit: () => void;
+  // Every job already had enough lines, so the checklist was skipped; onReopen shows it anyway.
+  skipped?: boolean;
+  onReopen?: () => void;
 }) {
   if (done) {
+    if (skipped) {
+      return (
+        <DoneSummary onChange={onReopen} actionLabel="Show them">
+          Your resume already lists your duties, so I skipped the checklist
+        </DoneSummary>
+      );
+    }
     return <DoneSummary>{ticked.size === 0 ? "None of the usual duties" : `You did ${ticked.size} of the usual duties`}</DoneSummary>;
   }
 
