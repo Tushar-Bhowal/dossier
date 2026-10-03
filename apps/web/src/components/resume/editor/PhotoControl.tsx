@@ -52,6 +52,9 @@ export function PhotoControl({
           <p className="text-sm font-medium text-white/55">
             Off by default. Some schools and government jobs in India expect one; most companies don&apos;t.
           </p>
+          <p className="mt-1 text-sm font-medium text-white/55">
+            Passport size, 35 × 45 mm: face and shoulders, plain light background. We crop it to this shape.
+          </p>
         </div>
       </div>
       <input
@@ -74,11 +77,11 @@ export function PhotoControl({
             onClick={() => onToggle(!showPhoto)}
             className="flex h-9 items-center gap-2.5 rounded-lg border border-white/10 bg-white/[0.03] px-3 text-sm font-semibold text-white/85"
           >
-            <span className={cn("relative h-5 w-9 rounded-full transition-colors", showPhoto ? "bg-[#dc3019]" : "bg-white/15")}>
+            <span className={cn("relative h-5 w-9 shrink-0 rounded-full transition-colors", showPhoto ? "bg-[#dc3019]" : "bg-white/15")}>
               <span
                 className={cn(
-                  "absolute top-0.5 size-4 rounded-full bg-white transition-transform",
-                  showPhoto ? "translate-x-[18px]" : "translate-x-0.5",
+                  "absolute left-0.5 top-0.5 size-4 rounded-full bg-white transition-transform",
+                  showPhoto ? "translate-x-4" : "translate-x-0",
                 )}
               />
             </span>

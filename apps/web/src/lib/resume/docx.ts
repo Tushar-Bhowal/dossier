@@ -30,12 +30,17 @@ export async function buildResumeDocx(data: RenderData): Promise<Blob> {
     Packer,
     PageNumber,
     Paragraph,
+    Table,
+    TableCell,
+    TableRow,
     TabStopType,
     TextRun,
+    VerticalAlign,
+    WidthType,
   } = await import("docx");
 
   type Run = InstanceType<typeof TextRun> | InstanceType<typeof ExternalHyperlink>;
-  const children: InstanceType<typeof Paragraph>[] = [];
+  const children: (InstanceType<typeof Paragraph> | InstanceType<typeof Table>)[] = [];
   const { contact, layout } = data;
   const margin = {
     top: Math.round(layout.margins.top * TWIPS_PER_MM),
@@ -52,28 +57,57 @@ export async function buildResumeDocx(data: RenderData): Promise<Blob> {
   const joined = (runs: Run[], size?: number): Run[] =>
     runs.flatMap((r, i) => (i ? [new TextRun({ text: "   |   ", color: MUTED, ...(size ? { size } : {}) }), r] : [r]));
 
-  if (data.photo) {
-    children.push(
-      new Paragraph({
-        alignment: AlignmentType.RIGHT,
-        children: [
-          new ImageRun({
-            type: "jpg",
-            data: dataUrlToBytes(data.photo.dataUrl),
-            transformation: { width: 94, height: 117 },
-          }),
-        ],
-      }),
-    );
-  }
-
-  children.push(new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: contact.name, bold: true, size: 40 })] }));
-
+  const header = [new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: contact.name, bold: true, size: 40 })] })];
   if (data.contactLine.length) {
     const runs = data.contactLine.map((p) =>
       p.href ? linkRun(p.text, p.href, 19) : new TextRun({ text: p.text, size: 19, color: MUTED }),
     );
-    children.push(new Paragraph({ spacing: { after: 120 }, children: joined(runs, 19) }));
+    header.push(new Paragraph({ spacing: { after: 120 }, children: joined(runs, 19) }));
+  }
+
+  if (data.photo) {
+    // Photo column: 2.4 cm plus a 14 pt gutter, matching the PDF.
+    const photoCol = Math.round(24 * TWIPS_PER_MM) + 280;
+    const none = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
+    const noBorders = { top: none, bottom: none, left: none, right: none, insideHorizontal: none, insideVertical: none };
+    children.push(
+      new Table({
+        width: { size: rightTab, type: WidthType.DXA },
+        columnWidths: [rightTab - photoCol, photoCol],
+        borders: noBorders,
+        rows: [
+          new TableRow({
+            children: [
+              new TableCell({
+                width: { size: rightTab - photoCol, type: WidthType.DXA },
+                verticalAlign: VerticalAlign.TOP,
+                margins: { top: 0, bottom: 0, left: 0, right: 0 },
+                children: header,
+              }),
+              new TableCell({
+                width: { size: photoCol, type: WidthType.DXA },
+                verticalAlign: VerticalAlign.TOP,
+                margins: { top: 0, bottom: 0, left: 0, right: 0 },
+                children: [
+                  new Paragraph({
+                    alignment: AlignmentType.RIGHT,
+                    children: [
+                      new ImageRun({
+                        type: "jpg",
+                        data: dataUrlToBytes(data.photo.dataUrl),
+                        transformation: { width: 91, height: 117 },
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            ],
+          }),
+        ],
+      }),
+    );
+  } else {
+    children.push(...header);
   }
 
   for (const section of data.sections) {

@@ -55,9 +55,9 @@ export const RESUME_TEMPLATE = String.raw`
     grid(
       columns: (1fr, auto),
       column-gutter: 14pt,
-      align: (left + horizon, right + top),
+      align: (left + top, right + top),
       header,
-      image("/photo.jpg", width: 2.5cm, height: 3.1cm, fit: "cover"),
+      image("/photo.jpg", width: 2.4cm, height: 3.1cm, fit: "cover"),
     )
   } else {
     header
