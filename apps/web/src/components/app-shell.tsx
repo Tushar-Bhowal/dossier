@@ -36,9 +36,35 @@ function AppHeader() {
   );
 }
 
+// The resume editor needs the full width for the form and the preview side by side, so the sidebar
+// folds away on the way in and comes back on the way out if it was open before.
+function CollapseSidebarOnResume() {
+  const pathname = usePathname() ?? "";
+  const { open, setOpen, isMobile } = useSidebar();
+  const onResume = /^\/resumes\/(?!new$)[^/]+$/.test(pathname);
+  const wasOnResume = React.useRef(false);
+  const reopen = React.useRef(false);
+
+  React.useEffect(() => {
+    if (onResume === wasOnResume.current) return;
+    wasOnResume.current = onResume;
+    if (isMobile) return;
+    if (onResume) {
+      reopen.current = open;
+      if (open) setOpen(false);
+    } else if (reopen.current) {
+      reopen.current = false;
+      setOpen(true);
+    }
+  }, [onResume, isMobile, open, setOpen]);
+
+  return null;
+}
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider className="[--app-header-height:4rem]">
+      <CollapseSidebarOnResume />
       <AppSidebar />
       <SidebarInset className="bg-background min-h-screen flex flex-col">
         <AppHeader />
