@@ -2,29 +2,20 @@ import { randomUUID } from 'node:crypto';
 import { Router } from 'express';
 import argon2 from 'argon2';
 import { z } from 'zod';
-import { getDb } from '../db/mongo.js';
+import { users, type UserDoc } from '../db/users.js';
 import { validateBody } from '../middleware/validate.js';
 import { requireAuth, setSessionCookie, clearSessionCookie, signSession } from '../middleware/auth.js';
 import { AppError } from '../middleware/error.js';
-
-interface UserDoc {
-  _id: string;
-  email: string;
-  passwordHash: string;
-  createdAt: string;
-}
+import { googleAuthRouter } from './googleAuth.js';
 
 const Credentials = z.object({
   email: z.email(),
   password: z.string().min(8).max(200),
 });
 
-async function users() {
-  const db = await getDb();
-  return db.collection<UserDoc>('users');
-}
-
 export const authRouter = Router();
+
+authRouter.use('/google', googleAuthRouter);
 
 authRouter.post('/register', validateBody(Credentials), async (req, res, next) => {
   try {
@@ -55,6 +46,10 @@ authRouter.post('/login', validateBody(Credentials), async (req, res, next) => {
     const invalid = () => next(new AppError(401, 'invalid_credentials', 'invalid email or password'));
     if (!user) {
       invalid();
+      return;
+    }
+    if (!user.passwordHash) {
+      next(new AppError(401, 'google_account', 'This account uses Google sign-in. Use Continue with Google.'));
       return;
     }
     const ok = await argon2.verify(user.passwordHash, password);

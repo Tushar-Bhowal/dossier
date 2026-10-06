@@ -23,6 +23,12 @@ const FEATURES = [
   { icon: ScanSearch, text: "Resumes tailored to the job, no fake ATS scores" },
 ];
 
+const GOOGLE_ERRORS: Record<string, string> = {
+  google_cancelled: "Google sign-in was cancelled. Try again, or use your email and password.",
+  google_unavailable: "Google sign-in isn't available right now. Use your email and password.",
+  google_failed: "Google sign-in didn't work. Please try again.",
+};
+
 const inputClass =
   "h-12 w-full rounded-lg border border-white/10 bg-white/[0.03] px-4 text-[15px] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] outline-none transition-[border-color,box-shadow] placeholder:text-white/35 hover:border-white/20 focus:border-primary/60 focus:ring-3 focus:ring-primary/20";
 
@@ -35,8 +41,9 @@ function AuthContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(() => GOOGLE_ERRORS[searchParams?.get("error") ?? ""] ?? null);
   const [submitting, setSubmitting] = useState(false);
+  const [leavingForGoogle, setLeavingForGoogle] = useState(false);
 
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -48,6 +55,16 @@ function AuthContent() {
       router.replace("/kits");
     }
   }, [user, isCheckingAuth, router]);
+
+  // Coming back from Google with the browser's Back button restores this page from the back/forward
+  // cache, spinner and all.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) setLeavingForGoogle(false);
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
 
   // Adjusted during render rather than from an effect: an effect would paint the previous tab
   // first and correct it on the next frame.
@@ -108,9 +125,8 @@ function AuthContent() {
   }
 
   function handleGoogle() {
-    toast.info("Google sign-in is coming soon", {
-      description: "Use your email and password for now.",
-    });
+    setError(null);
+    setLeavingForGoogle(true);
   }
 
   return (
@@ -172,14 +188,20 @@ function AuthContent() {
             ))}
           </div>
 
-          <button
-            type="button"
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- an API route that redirects to Google; it needs a full page load, which <Link> would skip */}
+          <a
+            href="/api/v1/auth/google"
             onClick={handleGoogle}
-            className={cn(secondaryButtonClass, "mt-6 h-12 w-full text-[15px]")}
+            aria-disabled={leavingForGoogle}
+            className={cn(
+              secondaryButtonClass,
+              "mt-6 h-12 w-full text-[15px]",
+              leavingForGoogle && "pointer-events-none opacity-70",
+            )}
           >
-            <GoogleMark />
+            {leavingForGoogle ? <LoaderCircle className="size-[18px] animate-spin" aria-hidden /> : <GoogleMark />}
             Continue with Google
-          </button>
+          </a>
 
           <div className="my-6 flex items-center gap-4" aria-hidden>
             <span className="h-px flex-1 bg-white/10" />
