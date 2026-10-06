@@ -6,7 +6,8 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./resume": "./src/resume.ts"
+    "./resume": "./src/resume.ts",
+    "./applications": "./src/applications.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

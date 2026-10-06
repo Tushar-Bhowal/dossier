@@ -6,6 +6,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 
 function pageTitleFor(pathname: string): string {
+  if (pathname === "/applications") return "Applications";
   if (pathname === "/resumes") return "Resume Studio";
   if (pathname === "/resumes/new") return "New resume";
   if (pathname.startsWith("/resumes/") && pathname.endsWith("/tailor")) return "Tailor for a job";

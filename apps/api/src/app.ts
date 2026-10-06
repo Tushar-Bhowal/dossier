@@ -5,6 +5,7 @@ import { runsRouter } from './routes/runs.js';
 import { kitsRouter } from './routes/kits.js';
 import { regenerateRouter } from './routes/regenerate.js';
 import { practiceRouter } from './routes/practice.js';
+import { applicationsRouter } from './routes/applications.js';
 import { notFoundHandler, errorHandler } from './middleware/error.js';
 
 const app = express();
@@ -40,6 +41,7 @@ v1.use('/runs', runsRouter);
 v1.use('/kits', kitsRouter);
 v1.use('/kits', regenerateRouter);
 v1.use('/kits', practiceRouter);
+v1.use('/applications', applicationsRouter);
 
 app.use('/api/v1', v1);
 

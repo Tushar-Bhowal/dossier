@@ -31,6 +31,11 @@ function getClientPromise(): Promise<MongoClient> {
 async function ensureIndexes(db: Db): Promise<void> {
   await db.collection('runs').createIndex({ userId: 1, idempotencyKey: 1 }, { unique: true });
   await db.collection('kits').createIndex({ userId: 1 });
+  await db.collection('applications').createIndex({ userId: 1, updatedAt: -1 });
+  await db.collection('applications').createIndex(
+    { userId: 1, 'application.jobUrl': 1 },
+    { unique: true, partialFilterExpression: { 'application.jobUrl': { $type: 'string' } } },
+  );
   await db.collection('users').createIndex({ email: 1 }, { unique: true });
   await db.collection('users').createIndex({ googleSub: 1 }, { unique: true, sparse: true });
 }

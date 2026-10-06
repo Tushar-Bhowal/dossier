@@ -1,4 +1,10 @@
 import type { Kit } from "@dossier/core";
+import type {
+  ApplicationCreate,
+  ApplicationInput,
+  ApplicationPreview,
+  ApplicationRecord,
+} from "@dossier/core/applications";
 
 export class ApiError extends Error {
   readonly code: string;
@@ -193,4 +199,51 @@ export function recordPracticeReview(kitId: string, flashcardId: string, confide
     method: "POST",
     body: JSON.stringify({ flashcardId, confidence }),
   });
+}
+
+export function listApplications(): Promise<ApplicationRecord[]> {
+  return request<ApplicationRecord[]>("/applications");
+}
+
+export function previewJobLink(url: string): Promise<ApplicationPreview> {
+  return request<ApplicationPreview>("/applications/preview", { method: "POST", body: JSON.stringify({ url }) });
+}
+
+export function deleteApplication(id: string): Promise<void> {
+  return request<void>(`/applications/${id}`, { method: "DELETE" });
+}
+
+export type SaveApplicationResult =
+  | { ok: true; record: ApplicationRecord }
+  | { ok: false; reason: "duplicate" | "conflict"; record?: ApplicationRecord };
+
+// Like patchKit: a 409 (duplicate job link, or edited elsewhere) is an expected outcome the caller
+// handles, not an exception.
+async function sendApplication(path: string, method: "POST" | "PATCH", body: unknown): Promise<SaveApplicationResult> {
+  const res = await fetch(`/api/v1${path}`, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
+    body: JSON.stringify(body),
+  });
+  const json = await res.json().catch(() => null);
+  if (res.status === 409) {
+    return json?.code === "duplicate"
+      ? { ok: false, reason: "duplicate", record: json.existing }
+      : { ok: false, reason: "conflict", record: json?.current };
+  }
+  if (!res.ok) {
+    const code = typeof json?.code === "string" ? json.code : "unknown_error";
+    const message = typeof json?.message === "string" ? json.message : `request failed with status ${res.status}`;
+    throw new ApiError(res.status, code, message);
+  }
+  return { ok: true, record: json as ApplicationRecord };
+}
+
+export function createApplication(input: ApplicationCreate): Promise<SaveApplicationResult> {
+  return sendApplication("/applications", "POST", input);
+}
+
+export function updateApplication(id: string, version: number, application: ApplicationInput): Promise<SaveApplicationResult> {
+  return sendApplication(`/applications/${id}`, "PATCH", { version, application });
 }
