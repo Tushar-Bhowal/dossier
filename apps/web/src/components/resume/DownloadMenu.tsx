@@ -63,7 +63,7 @@ export function DownloadMenu({
         className="rounded-r-none"
       >
         {!pdf && !pdfFailed ? <LoaderCircle className="size-4 animate-spin" /> : <FileDown className="size-4" />}
-        Download PDF
+        Download<span className="hidden sm:inline">PDF</span>
       </Button>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger asChild>

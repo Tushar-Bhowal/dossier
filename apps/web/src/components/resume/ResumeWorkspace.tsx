@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Crosshair, FileText, Trash2 } from "lucide-react";
+import { ArrowLeft, Crosshair, Eye, FileText, Trash2 } from "lucide-react";
 import { lintResume, renderDataText, toRenderData, type CareerProfile, type LintHint, type Resume } from "@dossier/core/resume";
 import { ApiError } from "@/lib/api";
 import { deleteResume, getProfile, getResume, resumeKeys, saveProfile, saveResume } from "@/lib/resume/api";
@@ -24,7 +24,7 @@ import { ResumePreview } from "./ResumePreview";
 import { ResumeEditor } from "./editor/ResumeEditor";
 import { CheckPanel } from "./editor/CheckPanel";
 import { HistoryPanel } from "./editor/HistoryPanel";
-import { LayoutPanel, PageCount } from "./editor/LayoutPanel";
+import { LayoutPanel } from "./editor/LayoutPanel";
 import { DownloadMenu } from "./DownloadMenu";
 import { MarketTerms } from "./editor/MarketTerms";
 
@@ -168,6 +168,11 @@ function Workspace({ initial, profile: initialProfile }: { initial: Resume; prof
     }, 50);
   };
 
+  const showPreview = () => {
+    setTab("preview");
+    window.setTimeout(() => document.getElementById("resume-tabs")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+  };
+
   const renderData = React.useMemo(() => toRenderData(profile, draft), [profile, draft]);
   const resumeText = React.useMemo(() => renderDataText(renderData), [renderData]);
   const scenario = useScenario();
@@ -247,7 +252,7 @@ function Workspace({ initial, profile: initialProfile }: { initial: Resume; prof
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
         <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="min-w-0">
-          <TabsList className="w-full justify-start overflow-x-auto [scrollbar-width:none]">
+          <TabsList id="resume-tabs" className="w-full scroll-mt-20 justify-start overflow-x-auto [scrollbar-width:none]">
             {tabs.map((t) => (
               <TabsTrigger key={t.value} value={t.value} className={t.mobileOnly ? "lg:hidden" : undefined}>
                 {t.label}
@@ -291,11 +296,15 @@ function Workspace({ initial, profile: initialProfile }: { initial: Resume; prof
       {tab !== "preview" && (
         <div className="sticky bottom-0 z-20 -mx-4 flex items-center gap-3 border-t border-white/[0.08] bg-background/95 px-4 py-3 backdrop-blur md:-mx-8 md:px-8 lg:hidden">
           <DownloadMenu data={renderData} pdf={pdfState.pdf} pdfFailed={pdfState.status === "error"} />
-          {pages !== null && pdfState.status !== "error" && (
-            <span className="ml-auto">
-              <PageCount pages={pages} />
-            </span>
-          )}
+          <Button variant="outline" onClick={showPreview} className="ml-auto">
+            <Eye className="size-4" aria-hidden />
+            Preview
+            {pages !== null && pdfState.status !== "error" && (
+              <span className={pages === 1 ? "text-emerald-400" : "text-amber-300"}>
+                · {pages === 1 ? "1 page" : `${pages} pages`}
+              </span>
+            )}
+          </Button>
         </div>
       )}
 
