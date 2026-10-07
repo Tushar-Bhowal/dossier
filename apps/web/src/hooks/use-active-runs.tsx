@@ -104,6 +104,7 @@ export function ActiveRunsProvider({ children }: { children: React.ReactNode }) 
         const parsed: ActiveRun[] = JSON.parse(stored);
         const now = Date.now();
         const valid = parsed.filter((r) => now - r.createdAt < TTL_MS);
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage only exists after hydration; reading it during render would mismatch the server HTML
         setActiveRuns(valid);
       }
     } catch (e) {
@@ -123,54 +124,59 @@ export function ActiveRunsProvider({ children }: { children: React.ReactNode }) 
     }
   }, [activeRuns, isInitialized]);
 
+  // Local ids of queued runs whose createRun call is in flight. Tracked in a ref rather than by
+  // flipping their status in state, so starting a run doesn't trigger a render from inside the effect.
+  const dispatchingRef = React.useRef<Set<string>>(new Set());
+
   // Manage concurrency queue: dispatch queued runs when concurrency < MAX_CONCURRENCY
   React.useEffect(() => {
     if (!isInitialized) return;
 
-    const running = activeRuns.filter((r) => r.status === "running");
-    if (running.length >= MAX_CONCURRENCY) return;
+    const dispatching = dispatchingRef.current;
+    let busy = activeRuns.filter((r) => r.status === "running").length + dispatching.size;
+    // Queued runs that haven't started yet still hold their input.
+    const waiting = activeRuns.filter((r) => r.status === "queued" && r.input && !dispatching.has(r.id));
 
-    // Find next queued run that hasn't started yet (has an input)
-    const nextQueued = activeRuns.find((r) => r.status === "queued" && r.input);
-    if (!nextQueued || !nextQueued.input) return;
+    for (const next of waiting) {
+      if (busy >= MAX_CONCURRENCY) break;
+      busy += 1;
+      dispatching.add(next.id);
 
-    // Mark as running locally immediately to prevent duplicate triggers
-    setActiveRuns((prev) =>
-      prev.map((r) => (r.id === nextQueued.id ? { ...r, status: "running" as const } : r))
-    );
-
-    createRun(nextQueued.input)
-      .then((record) => {
-        setActiveRuns((prev) =>
-          prev.map((r) =>
-            r.id === nextQueued.id
-              ? {
-                  ...r,
-                  id: record.id,
-                  status: record.status,
-                  stepsSettled: record.steps.filter((s) => s.status === "ok" || s.status === "skipped").length,
-                  stepsTotal: record.steps.length || 9,
-                  currentStep: record.steps.find((s) => s.status === "running")?.name,
-                  input: undefined,
-                }
-              : r
-          )
-        );
-      })
-      .catch((err) => {
-        setActiveRuns((prev) =>
-          prev.map((r) =>
-            r.id === nextQueued.id
-              ? {
-                  ...r,
-                  status: "failed" as const,
-                  error: err instanceof Error ? err.message : "Failed to start run",
-                  input: undefined,
-                }
-              : r
-          )
-        );
-      });
+      createRun(next.input!)
+        .then((record) => {
+          dispatching.delete(next.id);
+          setActiveRuns((prev) =>
+            prev.map((r) =>
+              r.id === next.id
+                ? {
+                    ...r,
+                    id: record.id,
+                    status: record.status,
+                    stepsSettled: record.steps.filter((s) => s.status === "ok" || s.status === "skipped").length,
+                    stepsTotal: record.steps.length || 9,
+                    currentStep: record.steps.find((s) => s.status === "running")?.name,
+                    input: undefined,
+                  }
+                : r
+            )
+          );
+        })
+        .catch((err) => {
+          dispatching.delete(next.id);
+          setActiveRuns((prev) =>
+            prev.map((r) =>
+              r.id === next.id
+                ? {
+                    ...r,
+                    status: "failed" as const,
+                    error: err instanceof Error ? err.message : "Failed to start run",
+                    input: undefined,
+                  }
+                : r
+            )
+          );
+        });
+    }
   }, [activeRuns, isInitialized]);
 
   // Polling loop for in-flight runs. Keyed on the *set* of pollable run ids rather than the runs
