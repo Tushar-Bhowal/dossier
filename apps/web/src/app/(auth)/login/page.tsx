@@ -49,10 +49,10 @@ function AuthContent() {
   const queryClient = useQueryClient();
   const { data: user, isLoading: isCheckingAuth } = useMe();
 
-  // Redirect to /kits if already logged in
+  // Redirect to Home if already logged in
   useEffect(() => {
     if (!isCheckingAuth && user) {
-      router.replace("/kits");
+      router.replace("/home");
     }
   }, [user, isCheckingAuth, router]);
 
@@ -100,14 +100,14 @@ function AuthContent() {
         toast.success("Welcome back!", {
           description: `Signed in as ${loggedInUser.email}.`,
         });
-        router.push("/kits");
+        router.push("/home");
       } else {
         const registeredUser = await register(email, password);
         queryClient.setQueryData(["me"], registeredUser);
         toast.success("Account created successfully!", {
           description: "Welcome to Dossier.",
         });
-        router.push("/kits");
+        router.push("/home");
       }
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : "Authentication failed. Please try again.";

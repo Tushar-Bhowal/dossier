@@ -10,6 +10,7 @@ import { notificationHooksRouter, notificationsRouter } from './routes/notificat
 import { emailUpdatesRouter } from './routes/emailUpdates.js';
 import { assistantsRouter, oauthRouter } from './routes/oauth.js';
 import { mcpRouter } from './routes/mcp.js';
+import { chatRouter } from './routes/chat.js';
 import { notFoundHandler, errorHandler } from './middleware/error.js';
 
 const app = express();
@@ -64,6 +65,7 @@ v1.use('/notifications', notificationsRouter);
 v1.use('/oauth', oauthRouter);
 v1.use('/assistants', assistantsRouter);
 v1.use('/mcp', mcpRouter);
+v1.use('/chat', chatRouter);
 
 app.use('/api/v1', v1);
 

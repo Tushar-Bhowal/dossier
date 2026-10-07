@@ -4,6 +4,10 @@ import type {
   ApplicationInput,
   ApplicationPreview,
   ApplicationRecord,
+  ChatActionState,
+  ChatMessageView,
+  ChatRequest,
+  ChatStreamEvent,
   EmailUpdateRecord,
   NotificationPrefs,
   NotificationSettingsView,
@@ -299,10 +303,6 @@ export function listEmailUpdates(): Promise<EmailUpdateRecord[]> {
   return request<EmailUpdateRecord[]>("/applications/updates");
 }
 
-export function parseEmail(text: string, timezone: string): Promise<EmailUpdateRecord> {
-  return request<EmailUpdateRecord>("/applications/updates/parse", { method: "POST", body: JSON.stringify({ text, timezone }) });
-}
-
 export function applyEmailUpdate(id: string): Promise<ApplicationRecord> {
   return request<ApplicationRecord>(`/applications/updates/${id}/apply`, { method: "POST" });
 }
@@ -313,4 +313,44 @@ export function dismissEmailUpdate(id: string): Promise<void> {
 
 export function removePushSubscription(endpoint: string): Promise<NotificationSettingsView> {
   return request<NotificationSettingsView>("/notifications/webpush/remove", { method: "POST", body: JSON.stringify({ endpoint }) });
+}
+
+export function getChatHistory(): Promise<ChatMessageView[]> {
+  return request<ChatMessageView[]>("/chat");
+}
+
+export function clearChat(): Promise<void> {
+  return request<void>("/chat", { method: "DELETE" });
+}
+
+export function chatAction(
+  id: string,
+  verb: "undo" | "confirm" | "cancel",
+): Promise<{ state: ChatActionState; changed: { applications: boolean; settings: boolean } }> {
+  return request(`/chat/actions/${encodeURIComponent(id)}/${verb}`, { method: "POST" });
+}
+
+// The reply streams back as one JSON object per line: progress steps, then the stored reply.
+export async function sendChat(body: ChatRequest, onEvent: (event: ChatStreamEvent) => void): Promise<void> {
+  const res = await fetch("/api/v1/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
+    body: JSON.stringify(body),
+  });
+  if (!res.ok || !res.body) {
+    const err = await res.json().catch(() => null);
+    throw new ApiError(res.status, typeof err?.code === "string" ? err.code : "unknown_error", typeof err?.message === "string" ? err.message : "request failed");
+  }
+  const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+  let buffer = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += value;
+    const lines = buffer.split("\n");
+    buffer = lines.pop() ?? "";
+    for (const line of lines) if (line.trim()) onEvent(JSON.parse(line) as ChatStreamEvent);
+  }
+  if (buffer.trim()) onEvent(JSON.parse(buffer) as ChatStreamEvent);
 }

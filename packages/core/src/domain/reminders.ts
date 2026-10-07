@@ -1,12 +1,15 @@
 import type { Application, Interview } from '../contracts/application.js';
+import { MAX_REMINDER_OFFSET } from '../contracts/notifications.js';
 import { interviewEnds, isClosed, isStale } from './applications.js';
 
-export const REMINDER_OFFSET_MIN = { '2h': 120, '30m': 30 } as const;
-export type ReminderKind = keyof typeof REMINDER_OFFSET_MIN;
+// Reminder messages booked before reminder times existed named one of two fixed times.
+export const LEGACY_REMINDER_OFFSET = { '2h': 120, '30m': 30 } as const;
 
 // The hourly sweep books every reminder due before the next sweep. Five spare minutes cover a sweep
 // that runs a little late; a reminder booked twice is still only sent once (see sentReminders).
 export const SWEEP_WINDOW_MS = 65 * 60_000;
+// How far ahead the sweep looks for interviews: the window plus the earliest possible reminder.
+export const SWEEP_LOOKAHEAD_MS = SWEEP_WINDOW_MS + MAX_REMINDER_OFFSET * 60_000;
 
 export interface NotificationMessage {
   title: string;
@@ -17,16 +20,38 @@ export interface NotificationMessage {
 
 export interface DueReminder {
   interview: Interview;
-  kind: ReminderKind;
+  offsetMin: number;
   at: number;
 }
 
-export function remindersBetween(interviews: Interview[], kinds: ReminderKind[], fromMs: number, toMs: number): DueReminder[] {
+// An interview's own reminder times win over the user's usual ones.
+export function offsetsFor(defaults: number[], interview: Interview): number[] {
+  return [...new Set(interview.reminderOffsetsMin ?? defaults)];
+}
+
+export function remindersBetween(interviews: Interview[], defaults: number[], fromMs: number, toMs: number): DueReminder[] {
   return interviews.flatMap((interview) =>
-    kinds
-      .map((kind) => ({ interview, kind, at: Date.parse(interview.startsAt) - REMINDER_OFFSET_MIN[kind] * 60_000 }))
+    offsetsFor(defaults, interview)
+      .map((offsetMin) => ({ interview, offsetMin, at: Date.parse(interview.startsAt) - offsetMin * 60_000 }))
       .filter((r) => r.at >= fromMs && r.at < toMs),
   );
+}
+
+// 30 → "30 minutes", 60 → "1 hour", 90 → "1 hour 30 minutes", 1440 → "1 day".
+export function offsetLabel(minutes: number): string {
+  const unit = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+  if (minutes % 1440 === 0) return unit(minutes / 1440, 'day');
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return [h ? unit(h, 'hour') : '', m ? unit(m, 'minute') : ''].filter(Boolean).join(' ');
+}
+
+// "2 hours and 30 minutes before" / "no reminders"
+export function offsetsSentence(offsets: number[]): string {
+  if (!offsets.length) return 'no reminders';
+  const labels = [...offsets].sort((a, b) => b - a).map(offsetLabel);
+  const list = labels.length > 1 ? `${labels.slice(0, -1).join(', ')} and ${labels.at(-1)}` : labels[0];
+  return `${list} before`;
 }
 
 function parts(date: Date, timeZone: string, options: Intl.DateTimeFormatOptions): Record<string, string> {
@@ -66,13 +91,13 @@ function interviewLabel(app: Pick<Application, 'company' | 'role'>, interview: I
 export function reminderMessage(
   app: Pick<Application, 'company' | 'role'>,
   interview: Interview,
-  kind: ReminderKind,
+  offsetMin: number,
   timeZone: string,
 ): NotificationMessage {
   const lines = [interviewLabel(app, interview), `Starts at ${formatWhen(interview.startsAt, timeZone)}`];
   if (interview.meetingUrl) lines.push(`Join: ${interview.meetingUrl}`);
   return {
-    title: kind === '2h' ? 'Interview in 2 hours' : 'Interview in 30 minutes',
+    title: `Interview in ${offsetLabel(offsetMin)}`,
     body: lines.join('\n'),
     path: '/applications',
   };

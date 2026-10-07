@@ -3,7 +3,7 @@ import type { Collection } from 'mongodb';
 import type { EmailUpdateRecord, UpdateProposal } from '@dossier/core';
 import { getDb } from './mongo.js';
 
-export type UpdateSource = 'email' | 'assistant';
+export type UpdateSource = 'email' | 'assistant' | 'chat';
 
 // Only the proposal is kept, never the email text. Deleted automatically after 30 days (TTL index).
 interface EmailUpdateDoc {
@@ -34,8 +34,9 @@ export async function listPendingUpdates(userId: string): Promise<EmailUpdateDoc
 }
 
 // Pasted emails cost an AI call each; assistant proposals don't, so each has its own daily limit.
+// Proposals from chat are covered by the chat's own message limit.
 export async function countUpdatesSince(userId: string, since: Date, source: UpdateSource): Promise<number> {
-  const bySource = source === 'assistant' ? { source } : { source: { $ne: 'assistant' as const } };
+  const bySource = source === 'email' ? { source: { $nin: ['assistant', 'chat'] as UpdateSource[] } } : { source };
   return (await collection()).countDocuments({ userId, createdAt: { $gte: since }, ...bySource });
 }
 
@@ -52,4 +53,9 @@ export async function reopenUpdate(id: string, userId: string): Promise<void> {
 export async function settleUpdate(id: string, userId: string, state: 'applied' | 'dismissed'): Promise<boolean> {
   const result = await (await collection()).updateOne({ _id: id, userId, state: 'pending' }, { $set: { state } });
   return result.modifiedCount === 1;
+}
+
+export async function getUpdateStates(userId: string, ids: string[]): Promise<Map<string, EmailUpdateDoc['state']>> {
+  const docs = await (await collection()).find({ userId, _id: { $in: ids } }, { projection: { state: 1 } }).toArray();
+  return new Map(docs.map((d) => [d._id, d.state]));
 }

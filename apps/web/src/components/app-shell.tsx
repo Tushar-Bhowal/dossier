@@ -4,9 +4,13 @@ import * as React from "react";
 import { usePathname } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { AssistantProvider } from "@/components/assistant/AssistantPanel";
+import { cn } from "@/lib/utils";
 
 function pageTitleFor(pathname: string): string {
+  if (pathname === "/home") return "Home";
   if (pathname === "/applications") return "Applications";
+  if (pathname === "/assistants") return "AI assistants";
   if (pathname === "/resumes") return "Resume Studio";
   if (pathname === "/resumes/new") return "New resume";
   if (pathname.startsWith("/resumes/") && pathname.endsWith("/tailor")) return "Tailor for a job";
@@ -63,16 +67,20 @@ function CollapseSidebarOnResume() {
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  // Room at the bottom so the floating "Ask Dossier" button never covers the last thing on a page.
+  const onHome = usePathname() === "/home";
   return (
     <SidebarProvider className="[--app-header-height:4rem]">
       <CollapseSidebarOnResume />
       <AppSidebar />
-      <SidebarInset className="bg-background min-h-screen flex flex-col">
-        <AppHeader />
-        <main className="flex w-full min-w-0 flex-1 flex-col px-4 py-6 md:px-8 md:py-10">
-          {children}
-        </main>
-      </SidebarInset>
+      <AssistantProvider>
+        <SidebarInset className="bg-background min-h-screen flex flex-col">
+          <AppHeader />
+          <main className={cn("flex w-full min-w-0 flex-1 flex-col px-4 pt-6 md:px-8 md:pt-10", onHome ? "pb-6 md:pb-10" : "pb-24 md:pb-28")}>
+            {children}
+          </main>
+        </SidebarInset>
+      </AssistantProvider>
     </SidebarProvider>
   );
 }

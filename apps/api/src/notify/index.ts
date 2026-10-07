@@ -5,7 +5,6 @@ import {
   type Interview,
   type NotificationMessage,
   type NotificationPrefs,
-  type ReminderKind,
 } from '@dossier/core';
 import { getSettings, removePushSub, unlinkTelegram, type NotificationSettingsDoc } from '../db/notifications.js';
 import { publishAt, qstashConfigured } from './qstash.js';
@@ -47,12 +46,8 @@ export interface DeliverPayload {
   userId: string;
   applicationId: string;
   interviewId: string;
-  kind: ReminderKind;
+  offsetMin: number;
   startsAt: string;
-}
-
-export function reminderKinds(prefs: NotificationPrefs): ReminderKind[] {
-  return [...(prefs.remind2h ? (['2h'] as const) : []), ...(prefs.remind30m ? (['30m'] as const) : [])];
 }
 
 // Books an exact-time QStash message for each reminder due before the next hourly sweep. Called by
@@ -65,10 +60,10 @@ export async function bookDueReminders(
   now: Date,
 ): Promise<number> {
   if (!qstashConfigured() || !prefs.enabled.length) return 0;
-  const due = remindersBetween(interviews, reminderKinds(prefs), now.getTime(), now.getTime() + SWEEP_WINDOW_MS);
+  const due = remindersBetween(interviews, prefs.reminderOffsetsMin, now.getTime(), now.getTime() + SWEEP_WINDOW_MS);
   await Promise.all(
-    due.map(({ interview, kind, at }) => {
-      const payload: DeliverPayload = { userId, applicationId, interviewId: interview.id, kind, startsAt: interview.startsAt };
+    due.map(({ interview, offsetMin, at }) => {
+      const payload: DeliverPayload = { userId, applicationId, interviewId: interview.id, offsetMin, startsAt: interview.startsAt };
       return publishAt('/notifications/deliver', payload, new Date(at));
     }),
   );

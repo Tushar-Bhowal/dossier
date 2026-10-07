@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
+import { ReminderTimes } from "./ReminderTimes";
 
 const KEY = ["notification-settings"];
 const sectionTitle = "text-[13px] font-semibold uppercase tracking-[0.08em] text-white/45";
@@ -314,17 +315,16 @@ function SheetBody() {
           When
         </h3>
         <div className="flex flex-col divide-y divide-white/[0.06] rounded-lg border border-white/[0.08]">
-          {(
-            [
-              { key: "remind2h", label: "2 hours before an interview" },
-              { key: "remind30m", label: "30 minutes before an interview" },
-            ] as const
-          ).map((row) => (
-            <div key={row.key} className="flex items-center justify-between gap-3 px-4 py-3.5">
-              <span className="text-[15px] font-medium text-white/85">{row.label}</span>
-              <Toggle label={row.label} checked={prefs[row.key]} onChange={(v) => savePrefs({ [row.key]: v })} />
-            </div>
-          ))}
+          <div className="flex flex-col gap-3 px-4 py-3.5">
+            <span className="text-[15px] font-medium text-white/85">
+              Before each interview
+            </span>
+            <ReminderTimes
+              label="Reminder times before each interview"
+              value={prefs.reminderOffsetsMin}
+              onChange={(reminderOffsetsMin) => savePrefs({ reminderOffsetsMin })}
+            />
+          </div>
           <div className="flex flex-col gap-3 px-4 py-3.5">
             <div className="flex items-center justify-between gap-3">
               <span className="text-[15px] font-medium text-white/85">Morning summary</span>

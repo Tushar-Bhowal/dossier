@@ -5,11 +5,16 @@ import {
   NotificationPrefs,
   PushSubscriptionInput,
   PushUnsubscribe,
-  SWEEP_WINDOW_MS,
+  LEGACY_REMINDER_OFFSET,
+  MAX_REMINDER_OFFSET,
+  MIN_REMINDER_OFFSET,
+  SWEEP_LOOKAHEAD_MS,
   digestMessage,
   isClosed,
   localDateIn,
   localHourIn,
+  offsetsFor,
+  offsetsSentence,
   reminderMessage,
   type NotificationSettingsView,
   type TestResult,
@@ -34,7 +39,7 @@ import {
   unlinkTelegramChat,
   type NotificationSettingsDoc,
 } from '../db/notifications.js';
-import { bookDueReminders, notifyUser, reminderKinds, type DeliverPayload } from '../notify/index.js';
+import { bookDueReminders, notifyUser, type DeliverPayload } from '../notify/index.js';
 import { qstashConfigured, verifyQstash } from '../notify/qstash.js';
 import { isTelegramSecret, sendTelegramText, telegramConfigured, telegramLinkUrl } from '../notify/telegram.js';
 import { webpushConfigured } from '../notify/webpush.js';
@@ -84,7 +89,9 @@ notificationsRouter.post('/test', async (req, res, next) => {
     }
     const outcomes = await notifyUser(doc, {
       title: 'Test from Dossier',
-      body: 'Your interview reminders will arrive here, 2 hours and 30 minutes before each interview.',
+      body: doc.prefs.reminderOffsetsMin.length
+        ? `Your interview reminders will arrive here, ${offsetsSentence(doc.prefs.reminderOffsetsMin)} each interview.`
+        : 'Interview reminders are off; your morning summary will arrive here.',
       path: '/applications',
     });
     const results: TestResult[] = Object.entries(outcomes).map(([channel, outcome]) => ({
@@ -180,13 +187,24 @@ notificationHooksRouter.post('/telegram/webhook', async (req, res) => {
   res.status(200).end();
 });
 
-const DeliverBody = z.object({
-  userId: z.string().min(1).max(100),
-  applicationId: z.string().min(1).max(100),
-  interviewId: z.string().min(1).max(64),
-  kind: z.enum(['2h', '30m']),
-  startsAt: z.string().max(40),
-});
+// Messages booked before reminder times existed carry `kind` instead of `offsetMin`.
+const DeliverBody = z
+  .object({
+    userId: z.string().min(1).max(100),
+    applicationId: z.string().min(1).max(100),
+    interviewId: z.string().min(1).max(64),
+    offsetMin: z.int().min(MIN_REMINDER_OFFSET).max(MAX_REMINDER_OFFSET).optional(),
+    kind: z.enum(['2h', '30m']).optional(),
+    startsAt: z.string().max(40),
+  })
+  .transform(({ kind, offsetMin, ...rest }, ctx): DeliverPayload => {
+    const offset = offsetMin ?? (kind ? LEGACY_REMINDER_OFFSET[kind] : undefined);
+    if (offset === undefined) {
+      ctx.addIssue({ code: 'custom', message: 'offsetMin is required' });
+      return z.NEVER;
+    }
+    return { ...rest, offsetMin: offset };
+  });
 
 // QStash calls this at the reminder time. Everything is re-read from the database: an interview that
 // was moved, deleted or closed since the message was booked is simply skipped. Answering 2xx tells
@@ -205,19 +223,20 @@ notificationHooksRouter.post('/deliver', verifyQstash, validateBody(DeliverBody)
       res.json({ sent: false, reason: 'application closed or interview started' });
       return;
     }
-    if (!doc?.prefs.enabled.length || !reminderKinds(doc.prefs).includes(p.kind)) {
+    // The reminder times may have changed since this message was booked.
+    if (!doc?.prefs.enabled.length || !offsetsFor(doc.prefs.reminderOffsetsMin, interview).includes(p.offsetMin)) {
       res.json({ sent: false, reason: 'reminder turned off' });
       return;
     }
 
-    const key = `${p.interviewId}:${p.kind}:${p.startsAt}`;
+    const key = `${p.interviewId}:${p.offsetMin}:${p.startsAt}`;
     if (!(await claimSend(key))) {
       res.json({ sent: false, reason: 'already sent' });
       return;
     }
 
     const ttl = Math.max(60, Math.floor((Date.parse(interview.startsAt) - Date.now()) / 1000));
-    const outcomes = Object.values(await notifyUser(doc, reminderMessage(app.application, interview, p.kind, doc.prefs.timezone), ttl));
+    const outcomes = Object.values(await notifyUser(doc, reminderMessage(app.application, interview, p.offsetMin, doc.prefs.timezone), ttl));
     if (!outcomes.includes('sent') && outcomes.includes('failed')) {
       // Nothing got through and it might next time: give the claim back and let QStash retry.
       await releaseSend(key);
@@ -235,8 +254,8 @@ notificationHooksRouter.post('/deliver', verifyQstash, validateBody(DeliverBody)
 notificationHooksRouter.post('/sweep', verifyQstash, async (_req, res, next) => {
   const now = new Date();
   try {
-    // Reminders: interviews starting up to 2 h (the earliest reminder) after the window ends.
-    const until = new Date(now.getTime() + SWEEP_WINDOW_MS + 120 * 60_000).toISOString();
+    // Reminders: interviews starting up to a day (the earliest possible reminder) after the window ends.
+    const until = new Date(now.getTime() + SWEEP_LOOKAHEAD_MS).toISOString();
     const apps = (await findWithInterviewsBetween(now.toISOString(), until)).filter((a) => !isClosed(a.application.status));
     const settings = await getSettingsMany([...new Set(apps.map((a) => a.userId))]);
     let booked = 0;

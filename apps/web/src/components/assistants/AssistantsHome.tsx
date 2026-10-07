@@ -148,7 +148,7 @@ export function AssistantsHome() {
   const url = `${origin}/api/v1/mcp`;
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
+    <div className="mx-auto flex w-full flex-col gap-8">
       <div>
         <h1 className="text-[32px] font-semibold leading-tight tracking-[-0.035em] text-white">AI assistants</h1>
         <p className="mt-2 text-base leading-relaxed text-white/60">

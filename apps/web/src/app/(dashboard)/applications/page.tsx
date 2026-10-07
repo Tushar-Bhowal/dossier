@@ -1,5 +1,10 @@
+import { Suspense } from "react";
 import { ApplicationsHome } from "@/components/applications/ApplicationsHome";
 
 export default function ApplicationsPage() {
-  return <ApplicationsHome />;
+  return (
+    <Suspense>
+      <ApplicationsHome />
+    </Suspense>
+  );
 }

@@ -43,6 +43,9 @@ async function ensureIndexes(db: Db): Promise<void> {
   await db.collection('notificationSettings').createIndex({ 'telegram.chatId': 1 }, { sparse: true });
   await db.collection('emailUpdates').createIndex({ userId: 1, state: 1, createdAt: -1 });
   await db.collection('emailUpdates').createIndex({ createdAt: 1 }, { expireAfterSeconds: 30 * 24 * 60 * 60 });
+  await db.collection('chatMessages').createIndex({ userId: 1, createdAt: -1 });
+  await db.collection('chatMessages').createIndex({ createdAt: 1 }, { expireAfterSeconds: 30 * 24 * 60 * 60 });
+  await db.collection('chatActions').createIndex({ createdAt: 1 }, { expireAfterSeconds: 7 * 24 * 60 * 60 });
   await db.collection('oauthCodes').createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
   await db.collection('oauthTokens').createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
   await db.collection('oauthTokens').createIndex({ userId: 1, kind: 1 });

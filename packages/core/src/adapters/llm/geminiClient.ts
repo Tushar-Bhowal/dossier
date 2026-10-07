@@ -32,16 +32,19 @@ class RetryableGeminiError extends Error {
 
 // Gemini's responseSchema accepts a constrained subset of JSON Schema — strip the keywords
 // z.toJSONSchema emits that Gemini's API rejects, keeping the structural keywords it does support.
+// A discriminated union comes out as oneOf + const, which Gemini only accepts as anyOf + enum.
 function toGeminiSchema(schema: unknown): unknown {
   if (Array.isArray(schema)) return schema.map(toGeminiSchema);
   if (schema === null || typeof schema !== 'object') return schema;
-  const { $schema, additionalProperties, $id, ...rest } = schema as Record<string, unknown>;
+  const { $schema, additionalProperties, $id, oneOf, const: constValue, ...rest } = schema as Record<string, unknown>;
   void $schema;
   void additionalProperties;
   void $id;
   for (const key of Object.keys(rest)) {
     rest[key] = toGeminiSchema(rest[key]);
   }
+  if (oneOf !== undefined) rest.anyOf = toGeminiSchema(oneOf);
+  if (constValue !== undefined) rest.enum = [constValue];
   return rest;
 }
 

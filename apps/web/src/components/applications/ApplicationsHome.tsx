@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   AlertCircle,
   BellRing,
@@ -17,7 +18,7 @@ import {
   ArrowUpRight,
   Bell,
   CalendarClock,
-  Inbox,
+  MessageSquareText,
 } from "lucide-react";
 import {
   OPEN_STAGES,
@@ -44,7 +45,9 @@ import { Board } from "./Board";
 import { STATUS_LABEL } from "./statusStyle";
 import { useApplications } from "./useApplications";
 import { NotificationsSheet } from "./NotificationsSheet";
-import { PasteEmailDialog, UpdatesToReview } from "./EmailUpdates";
+import { UpdatesToReview } from "./EmailUpdates";
+import { useAssistantPanel } from "@/components/assistant/AssistantPanel";
+import { setOpenApplication } from "@/components/assistant/useAssistant";
 
 type View = "board" | "list";
 const VIEW_KEY = "dossier.applications.view";
@@ -265,8 +268,33 @@ export function ApplicationsHome() {
   const [openId, setOpenId] = React.useState<string | null>(null);
   const [adding, setAdding] = React.useState(false);
   const [notifying, setNotifying] = React.useState(false);
-  const [pasting, setPasting] = React.useState(false);
+  const [kitFor, setKitFor] = React.useState<string | null>(null);
   const searchRef = React.useRef<HTMLInputElement>(null);
+  const assistantPanel = useAssistantPanel();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Links from the assistant: ?open=<id> (&section=kit), ?new=1, ?reminders=1. Read during render, like
+  // ?new on the kits page, so the sheet doesn't paint closed for a frame first.
+  const params = searchParams?.toString() ?? "";
+  const [lastParams, setLastParams] = React.useState<string | null>(null);
+  if (params !== lastParams) {
+    setLastParams(params);
+    const open = searchParams?.get("open");
+    if (open) setOpenId(open);
+    if (open && searchParams?.get("section") === "kit") setKitFor(open);
+    if (searchParams?.get("new") === "1") setAdding(true);
+    if (searchParams?.get("reminders") === "1") setNotifying(true);
+  }
+  React.useEffect(() => {
+    if (params) router.replace("/applications", { scroll: false });
+  }, [params, router]);
+
+  // The assistant knows which application is open, so "move this one to round 2" just works.
+  React.useEffect(() => {
+    setOpenApplication(openId);
+    return () => setOpenApplication(null);
+  }, [openId]);
   const now = React.useMemo(() => new Date(), []);
   const today = toLocalDate(now);
 
@@ -302,6 +330,16 @@ export function ApplicationsHome() {
   const openRecord = records.find((r) => r.id === openId);
   const hasRecords = records.length > 0;
 
+  React.useEffect(() => {
+    if (!kitFor || openRecord?.id !== kitFor) return;
+    // After the sheet has slid in.
+    const timer = setTimeout(() => {
+      document.querySelector('[aria-label="Interview kit"]')?.scrollIntoView({ behavior: "smooth", block: "start" });
+      setKitFor(null);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [kitFor, openRecord?.id]);
+
   return (
     <div className="mx-auto flex w-full flex-col gap-7">
       <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
@@ -314,9 +352,9 @@ export function ApplicationsHome() {
             <Bell className="size-4" aria-hidden />
             Reminders
           </Button>
-          <Button size="lg" variant="outline" onClick={() => setPasting(true)}>
-            <Inbox className="size-4" aria-hidden />
-            Paste email
+          <Button size="lg" variant="outline" onClick={() => assistantPanel.setOpen(true)}>
+            <MessageSquareText className="size-4" aria-hidden />
+            Ask Dossier
           </Button>
           <Button size="lg" onClick={() => setAdding(true)} className="flex-1 sm:flex-none">
             <Plus className="size-4" aria-hidden />
@@ -457,7 +495,6 @@ export function ApplicationsHome() {
       />
       <ApplicationSheet record={openRecord} api={api} onOpenChange={(open) => !open && setOpenId(null)} />
       <NotificationsSheet open={notifying} onOpenChange={setNotifying} />
-      <PasteEmailDialog open={pasting} onOpenChange={setPasting} />
     </div>
   );
 }

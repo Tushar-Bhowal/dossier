@@ -55,3 +55,8 @@ export * from './domain/reminders.js';
 export * from './contracts/emailUpdate.js';
 export * from './domain/emailUpdate.js';
 export * from './prompts/emailUpdate.js';
+export * from './contracts/chat.js';
+export * from './domain/chat/context.js';
+export * from './domain/chat/apply.js';
+export * from './domain/chat/answers.js';
+export * from './prompts/chat.js';

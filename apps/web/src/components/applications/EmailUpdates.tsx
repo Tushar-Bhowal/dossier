@@ -2,12 +2,10 @@
 
 import * as React from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, Inbox, LoaderCircle, MailOpen } from "lucide-react";
+import { CalendarClock, LoaderCircle, MailOpen } from "lucide-react";
 import type { ApplicationRecord, EmailUpdateRecord, UpdateProposal } from "@dossier/core/applications";
-import { ApiError, applyEmailUpdate, dismissEmailUpdate, listEmailUpdates, parseEmail } from "@/lib/api";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ApiError, applyEmailUpdate, dismissEmailUpdate, listEmailUpdates } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
 import { interviewWhen } from "./calendar";
 import { STATUS_LABEL } from "./statusStyle";
@@ -25,7 +23,7 @@ function useEmailUpdateActions() {
   const queryClient = useQueryClient();
   const drop = (id: string) => queryClient.setQueryData<EmailUpdateRecord[]>(KEY, (list = []) => list.filter((u) => u.id !== id));
 
-  async function apply(update: EmailUpdateRecord) {
+  async function apply(update: EmailUpdateRecord): Promise<boolean> {
     try {
       const record = await applyEmailUpdate(update.id);
       drop(update.id);
@@ -33,9 +31,11 @@ function useEmailUpdateActions() {
         list.some((r) => r.id === record.id) ? list.map((r) => (r.id === record.id ? record : r)) : [record, ...list],
       );
       toast.success(update.proposal.applicationId ? `Updated ${record.application.company}` : `Added ${record.application.company}`);
+      return true;
     } catch (err) {
       toast.error("Couldn't apply that update", { description: err instanceof ApiError ? err.message : "Try again in a moment." });
       void queryClient.invalidateQueries({ queryKey: KEY });
+      return false;
     }
   }
 
@@ -47,7 +47,7 @@ function useEmailUpdateActions() {
   return { apply, dismiss };
 }
 
-function ProposalCard({ update, onDone }: { update: EmailUpdateRecord; onDone?: () => void }) {
+export function ProposalCard({ update, onDone }: { update: EmailUpdateRecord; onDone?: (outcome: "applied" | "dismissed") => void }) {
   const { apply, dismiss } = useEmailUpdateActions();
   const [busy, setBusy] = React.useState(false);
   const p = update.proposal;
@@ -76,7 +76,7 @@ function ProposalCard({ update, onDone }: { update: EmailUpdateRecord; onDone?: 
           disabled={busy}
           onClick={() => {
             void dismiss(update);
-            onDone?.();
+            onDone?.("dismissed");
           }}
         >
           Dismiss
@@ -86,9 +86,9 @@ function ProposalCard({ update, onDone }: { update: EmailUpdateRecord; onDone?: 
           disabled={busy}
           onClick={async () => {
             setBusy(true);
-            await apply(update);
+            const applied = await apply(update);
             setBusy(false);
-            onDone?.();
+            if (applied) onDone?.("applied");
           }}
         >
           {busy && <LoaderCircle className="size-3.5 animate-spin" aria-hidden />}
@@ -115,92 +115,5 @@ export function UpdatesToReview() {
         ))}
       </ul>
     </section>
-  );
-}
-
-export function PasteEmailDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
-  const queryClient = useQueryClient();
-  const [text, setText] = React.useState("");
-  const [reading, setReading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [result, setResult] = React.useState<EmailUpdateRecord | null>(null);
-
-  function close(next: boolean) {
-    onOpenChange(next);
-    if (!next) {
-      setText("");
-      setError(null);
-      setResult(null);
-    }
-  }
-
-  async function read(e: React.FormEvent) {
-    e.preventDefault();
-    setReading(true);
-    setError(null);
-    try {
-      const update = await parseEmail(text, Intl.DateTimeFormat().resolvedOptions().timeZone);
-      queryClient.setQueryData<EmailUpdateRecord[]>(KEY, (list = []) => [update, ...list]);
-      setResult(update);
-    } catch (err) {
-      setError(
-        err instanceof ApiError && err.code === "not_job_email"
-          ? "This doesn't look like an email about a job application."
-          : err instanceof ApiError && err.code === "daily_limit"
-            ? "You've read 20 emails today. Try again tomorrow."
-            : "Couldn't read that email. Try again in a minute.",
-      );
-    } finally {
-      setReading(false);
-    }
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={close}>
-      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-xl">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold tracking-[-0.02em] text-white">Paste a recruiter email</DialogTitle>
-          <DialogDescription className="text-[15px] text-white/60">
-            Dossier reads it and suggests the update. Nothing changes until you apply it. Email addresses, phone numbers and links are
-            hidden before the email is read, and the email itself isn&apos;t saved.
-          </DialogDescription>
-        </DialogHeader>
-        {result ? (
-          <div className="flex flex-col gap-3">
-            <ul>
-              <ProposalCard update={result} onDone={() => close(false)} />
-            </ul>
-            <Button variant="ghost" className="self-start" onClick={() => close(false)}>
-              Decide later
-            </Button>
-          </div>
-        ) : (
-          <form onSubmit={read} className="flex flex-col gap-3">
-            <label htmlFor="email-text" className="sr-only">
-              Email text
-            </label>
-            <Textarea
-              id="email-text"
-              autoFocus
-              rows={10}
-              maxLength={20_000}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Paste the whole email, including the subject…"
-              className="text-[15px]"
-            />
-            {error && (
-              <p role="alert" className="text-sm font-medium text-red-300">
-                {error}
-              </p>
-            )}
-            <Button type="submit" disabled={reading || text.trim().length < 20} className="self-end">
-              {reading ? <LoaderCircle className="size-4 animate-spin" aria-hidden /> : <Inbox className="size-4" aria-hidden />}
-              {reading ? "Reading…" : "Read email"}
-            </Button>
-          </form>
-        )}
-      </DialogContent>
-    </Dialog>
   );
 }

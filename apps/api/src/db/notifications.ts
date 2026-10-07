@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import type { Collection } from 'mongodb';
-import { DEFAULT_PREFS, type BuiltChannel, type NotificationPrefs, type PushSubscriptionInput } from '@dossier/core';
+import { DEFAULT_PREFS, normalizePrefs, type BuiltChannel, type NotificationPrefs, type PushSubscriptionInput } from '@dossier/core';
 import { getDb } from './mongo.js';
 import { isDuplicateKey } from './applications.js';
 
@@ -34,19 +34,25 @@ async function settings(): Promise<Collection<NotificationSettingsDoc>> {
   return (await getDb()).collection<NotificationSettingsDoc>('notificationSettings');
 }
 
+// Older documents still carry the two reminder switches; every read hands back reminder times.
+function normalized(doc: NotificationSettingsDoc): NotificationSettingsDoc {
+  return { ...doc, prefs: normalizePrefs(doc.prefs) };
+}
+
 export async function getSettings(userId: string): Promise<NotificationSettingsDoc | null> {
-  return (await settings()).findOne({ _id: userId });
+  const doc = await (await settings()).findOne({ _id: userId });
+  return doc && normalized(doc);
 }
 
 export async function getSettingsMany(userIds: string[]): Promise<Map<string, NotificationSettingsDoc>> {
   const docs = await (await settings()).find({ _id: { $in: userIds } }).toArray();
-  return new Map(docs.map((d) => [d._id, d]));
+  return new Map(docs.map((d) => [d._id, normalized(d)]));
 }
 
 // Everyone who could get a morning summary; the hour is checked in code because it depends on
 // each user's time zone.
 export async function findDigestCandidates(): Promise<NotificationSettingsDoc[]> {
-  return (await settings()).find({ 'prefs.digest': true, 'prefs.enabled.0': { $exists: true } }).toArray();
+  return (await (await settings()).find({ 'prefs.digest': true, 'prefs.enabled.0': { $exists: true } }).toArray()).map(normalized);
 }
 
 export async function savePrefs(userId: string, prefs: NotificationPrefs): Promise<NotificationSettingsDoc | null> {

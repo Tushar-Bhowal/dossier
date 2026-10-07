@@ -11,7 +11,8 @@
     "test": "vitest run",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit -p tsconfig.json && npm run typecheck --workspaces --if-present",
-    "evaluate": "tsx tools/evaluate/src/main.ts"
+    "evaluate": "tsx tools/evaluate/src/main.ts",
+    "evaluate:chat": "tsx --env-file=.env tools/evaluate/src/chat/run.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

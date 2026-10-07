@@ -67,7 +67,7 @@ export function AppSidebar() {
     >
       <SidebarHeader className="flex h-(--app-header-height,4rem) flex-row items-center justify-between px-4">
         <Link
-          href="/kits"
+          href="/home"
           onClick={() => {
             if (isMobile) setOpenMobile(false);
           }}

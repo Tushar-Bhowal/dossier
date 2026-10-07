@@ -16,11 +16,16 @@ export function isTimeZone(value: string): boolean {
   }
 }
 
+export const MIN_REMINDER_OFFSET = 10;
+export const MAX_REMINDER_OFFSET = 1440;
+
+// Minutes before an interview, e.g. [120, 30]. Empty means no interview reminders.
+export const ReminderOffsetsMin = z.array(z.int().min(MIN_REMINDER_OFFSET).max(MAX_REMINDER_OFFSET)).max(3);
+
 export const NotificationPrefs = z.object({
   enabled: z.array(BuiltChannel).max(2),
   timezone: z.string().min(1).max(64).refine(isTimeZone, 'unknown time zone'),
-  remind2h: z.boolean(),
-  remind30m: z.boolean(),
+  reminderOffsetsMin: ReminderOffsetsMin,
   digest: z.boolean(),
   digestHour: z.int().min(0).max(23),
 });
@@ -29,11 +34,17 @@ export type NotificationPrefs = z.infer<typeof NotificationPrefs>;
 export const DEFAULT_PREFS: NotificationPrefs = {
   enabled: [],
   timezone: 'Asia/Kolkata',
-  remind2h: true,
-  remind30m: true,
+  reminderOffsetsMin: [120, 30],
   digest: true,
   digestHour: 8,
 };
+
+// Settings saved before reminder times existed had two switches: 2 hours and 30 minutes before.
+export function normalizePrefs(raw: Partial<NotificationPrefs> & { remind2h?: boolean; remind30m?: boolean }): NotificationPrefs {
+  const { remind2h, remind30m, ...rest } = raw;
+  const legacy = [...(remind2h === false ? [] : [120]), ...(remind30m === false ? [] : [30])];
+  return { ...DEFAULT_PREFS, ...rest, reminderOffsetsMin: rest.reminderOffsetsMin ?? legacy };
+}
 
 export const PushSubscriptionInput = z.object({
   endpoint: z.url({ protocol: /^https$/ }).max(1000),

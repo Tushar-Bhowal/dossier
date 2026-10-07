@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 // verifies the session and sends a stale one to /login, which never routes back here.
 export function proxy(request: NextRequest) {
   if (request.cookies.has("dossier_session")) {
-    return NextResponse.redirect(new URL("/kits", request.url));
+    return NextResponse.redirect(new URL("/home", request.url));
   }
   return NextResponse.next();
 }

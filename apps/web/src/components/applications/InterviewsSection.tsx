@@ -3,7 +3,9 @@
 import * as React from "react";
 import { ArrowUpRight, CalendarClock, CalendarPlus, Download, Pencil, Plus, Trash2 } from "lucide-react";
 import {
+  DEFAULT_PREFS,
   interviewEnds,
+  offsetsSentence,
   toLocalDate,
   type ApplicationInput,
   type ApplicationRecord,
@@ -14,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { downloadIcs, googleCalendarUrl, interviewWhen } from "./calendar";
+import { ReminderTimes } from "./ReminderTimes";
 import type { ApplicationsApi } from "./useApplications";
 
 const sectionTitle = "text-[13px] font-semibold uppercase tracking-[0.08em] text-white/45";
@@ -29,6 +32,8 @@ interface Draft {
   durationMin: number;
   meetingUrl: string;
   notes: string;
+  // Undefined = the user's usual reminder times.
+  reminderOffsetsMin?: number[];
 }
 
 function hhmm(date: Date): string {
@@ -45,6 +50,7 @@ function draftFrom(interview: Interview): Draft {
     durationMin: interview.durationMin ?? 60,
     meetingUrl: interview.meetingUrl ?? "",
     notes: interview.notes ?? "",
+    reminderOffsetsMin: interview.reminderOffsetsMin,
   };
 }
 
@@ -87,6 +93,7 @@ function InterviewForm({
       round,
       meetingUrl,
       notes: form.notes.trim() || undefined,
+      reminderOffsetsMin: form.reminderOffsetsMin,
     });
   }
 
@@ -140,6 +147,40 @@ function InterviewForm({
           </label>
           <Textarea id="iv-notes" rows={2} maxLength={1000} value={form.notes} onChange={(e) => set({ notes: e.target.value })} placeholder="Who's interviewing you, what to prepare…" />
         </div>
+        <fieldset className="flex flex-col gap-2.5 sm:col-span-2">
+          <legend className={cn(fieldLabel, "mb-1.5")}>Reminders</legend>
+          <div className="flex flex-wrap gap-2">
+            {(
+              [
+                { id: "usual", label: "My usual times", value: undefined },
+                { id: "custom", label: "Custom for this one", value: form.reminderOffsetsMin ?? DEFAULT_PREFS.reminderOffsetsMin },
+              ] as const
+            ).map((option) => {
+              const on = option.id === "usual" ? !form.reminderOffsetsMin : !!form.reminderOffsetsMin;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => set({ reminderOffsetsMin: option.value ? [...option.value] : undefined })}
+                  className={cn(
+                    "h-9 rounded-lg border px-3 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                    on ? "border-primary/60 bg-primary/15 text-white" : "border-white/[0.1] text-white/70 hover:bg-white/[0.04]",
+                  )}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+          {form.reminderOffsetsMin && (
+            <ReminderTimes
+              label="Reminder times for this interview"
+              value={form.reminderOffsetsMin}
+              onChange={(reminderOffsetsMin) => set({ reminderOffsetsMin })}
+            />
+          )}
+        </fieldset>
       </div>
       {error && (
         <p role="alert" className="text-sm font-medium text-red-300">
@@ -168,7 +209,7 @@ export function InterviewsSection({ record, update }: { record: ApplicationRecor
     const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     const lastRound = Math.max(0, ...interviews.map((i) => i.round ?? 0));
     const round = lastRound ? lastRound + 1 : app.status === "interviewing" ? (app.round ?? 1) : 1;
-    return { id: null, date: toLocalDate(tomorrow), time: "11:00", round: String(round), durationMin: 60, meetingUrl: "", notes: "" };
+    return { id: null, date: toLocalDate(tomorrow), time: "11:00", round: String(round), durationMin: 60, meetingUrl: "", notes: "", reminderOffsetsMin: undefined };
   }
 
   function save(interview: Interview) {
@@ -210,6 +251,9 @@ export function InterviewsSection({ record, update }: { record: ApplicationRecor
             >
               Join meeting <ArrowUpRight className="size-3.5" aria-hidden />
             </a>
+          )}
+          {interview.reminderOffsetsMin && !isPast && (
+            <p className="mt-0.5 text-sm font-medium text-white/55">Reminders: {offsetsSentence(interview.reminderOffsetsMin)}</p>
           )}
           {interview.notes && <p className="mt-1 whitespace-pre-wrap text-sm font-medium text-white/60">{interview.notes}</p>}
         </div>

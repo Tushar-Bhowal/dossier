@@ -153,7 +153,7 @@ googleAuthRouter.get('/callback', async (req, res) => {
       return;
     }
     setSessionCookie(res, signSession(await signInGoogleUser(identity)));
-    res.redirect(303, '/kits');
+    res.redirect(303, '/home');
   } catch (err) {
     console.error('Google sign-in failed:', err);
     backToLogin(res, 'google_failed');

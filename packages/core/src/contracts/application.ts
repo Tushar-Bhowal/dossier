@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ReminderOffsetsMin } from './notifications.js';
 
 export const ApplicationStatus = z.enum([
   'saved',
@@ -33,6 +34,8 @@ export const Interview = z.object({
   round: z.int().min(1).max(20).optional(),
   meetingUrl: HttpUrl.optional(),
   notes: z.string().max(1000).optional(),
+  // Overrides the user's reminder times for this interview; [] = no reminders for it.
+  reminderOffsetsMin: ReminderOffsetsMin.optional(),
 });
 export type Interview = z.infer<typeof Interview>;
 
