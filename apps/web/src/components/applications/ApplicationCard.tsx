@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import { DropdownMenu } from "radix-ui";
-import { BellRing, Check, MoreHorizontal } from "lucide-react";
-import { followUpDue, type ApplicationRecord, type ApplicationStatus } from "@dossier/core/applications";
+import { BellRing, CalendarClock, Check, MoreHorizontal } from "lucide-react";
+import { followUpDue, isClosed, nextInterview, type ApplicationRecord, type ApplicationStatus } from "@dossier/core/applications";
+import { interviewWhen } from "./calendar";
 import { cn } from "@/lib/utils";
 import { STATUS_LABEL, STATUS_TONE, relativeDays } from "./statusStyle";
 
@@ -89,6 +90,8 @@ export function ApplicationCard({
 }) {
   const app = record.application;
   const due = followUpDue(app, new Date(`${today}T12:00:00`));
+  const now = new Date();
+  const upcoming = isClosed(app.status) ? undefined : nextInterview(app, now);
   const since = app.appliedOn ? `Applied ${relativeDays(app.appliedOn, today)}` : `Saved ${relativeDays(record.createdAt.slice(0, 10), today)}`;
 
   return (
@@ -128,6 +131,13 @@ export function ApplicationCard({
         />
       </div>
       <p className="pointer-events-none relative mt-2 line-clamp-3 text-[15px] font-semibold leading-snug text-white">{app.role}</p>
+      {upcoming && (
+        <p className="pointer-events-none relative mt-2.5 flex items-center gap-1.5 text-[13px] font-semibold text-amber-300">
+          <CalendarClock className="size-3.5 shrink-0" aria-hidden />
+          {interviewWhen(upcoming.startsAt, now)}
+          {upcoming.round ? ` · R${upcoming.round}` : ""}
+        </p>
+      )}
       <div className="pointer-events-none relative mt-3 flex flex-wrap items-center gap-2">
         {app.status === "interviewing" && app.round ? (
           <span className="rounded-lg bg-amber-400/10 px-2 py-0.5 text-[13px] font-semibold text-amber-300">Round {app.round}</span>

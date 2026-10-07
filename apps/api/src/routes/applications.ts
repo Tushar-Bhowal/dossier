@@ -5,6 +5,7 @@ import {
   ApplicationPreviewRequest,
   HttpFetcher,
   applyStatusChange,
+  normalizeInterviews,
   previewFromJobPage,
   type Application,
   type ApplicationPreview,
@@ -23,6 +24,7 @@ import {
   replaceOwnedApplication,
   toRecord,
 } from '../db/applications.js';
+import { bookSoonReminders } from '../notify/index.js';
 
 const fetcher = new HttpFetcher({ allowPrivateHosts: false });
 
@@ -65,8 +67,14 @@ applicationsRouter.post('/', validateBody(ApplicationCreate), async (req, res, n
   const input = req.body as z.output<typeof ApplicationCreate>;
   try {
     const { source, ...fields } = input;
-    const application: Application = { ...fields, ...applyStatusChange(null, fields, new Date()), source };
+    const application: Application = {
+      ...fields,
+      ...applyStatusChange(null, fields, new Date()),
+      interviews: normalizeInterviews(fields.interviews),
+      source,
+    };
     const doc = await createApplication(req.userId!, application);
+    await bookSoonReminders(req.userId!, doc._id, doc.application.interviews);
     res.status(201).json(toRecord(doc));
   } catch (err) {
     if (isDuplicateKey(err) && input.jobUrl) {
@@ -104,10 +112,15 @@ applicationsRouter.patch('/:id', validateBody(ApplicationPatch), async (req, res
     const application: Application = {
       ...input,
       ...applyStatusChange(current.application, input, new Date()),
+      interviews: normalizeInterviews(input.interviews),
       source: current.application.source,
     };
     const updated = await replaceOwnedApplication(current._id, req.userId!, version, application);
     if (updated) {
+      // Notes autosave on every pause in typing; only an interview change needs booking.
+      if (JSON.stringify(current.application.interviews) !== JSON.stringify(updated.application.interviews)) {
+        await bookSoonReminders(req.userId!, updated._id, updated.application.interviews);
+      }
       res.json(toRecord(updated));
       return;
     }

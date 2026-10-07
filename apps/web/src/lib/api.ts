@@ -4,6 +4,11 @@ import type {
   ApplicationInput,
   ApplicationPreview,
   ApplicationRecord,
+  EmailUpdateRecord,
+  NotificationPrefs,
+  NotificationSettingsView,
+  PushSubscriptionInput,
+  TestResult,
 } from "@dossier/core/applications";
 
 export class ApiError extends Error {
@@ -246,4 +251,66 @@ export function createApplication(input: ApplicationCreate): Promise<SaveApplica
 
 export function updateApplication(id: string, version: number, application: ApplicationInput): Promise<SaveApplicationResult> {
   return sendApplication(`/applications/${id}`, "PATCH", { version, application });
+}
+
+export function getNotificationSettings(): Promise<NotificationSettingsView> {
+  return request<NotificationSettingsView>("/notifications/settings");
+}
+
+export function saveNotificationPrefs(prefs: NotificationPrefs): Promise<NotificationSettingsView> {
+  return request<NotificationSettingsView>("/notifications/settings", { method: "PUT", body: JSON.stringify(prefs) });
+}
+
+export function sendTestNotification(): Promise<TestResult[]> {
+  return request<TestResult[]>("/notifications/test", { method: "POST" });
+}
+
+export function createTelegramLink(): Promise<{ url: string }> {
+  return request<{ url: string }>("/notifications/telegram/link", { method: "POST" });
+}
+
+export function disconnectTelegram(): Promise<NotificationSettingsView> {
+  return request<NotificationSettingsView>("/notifications/telegram", { method: "DELETE" });
+}
+
+export function savePushSubscription(subscription: PushSubscriptionInput): Promise<NotificationSettingsView> {
+  return request<NotificationSettingsView>("/notifications/webpush", { method: "POST", body: JSON.stringify(subscription) });
+}
+
+export function getOAuthClient(clientId: string): Promise<{ name: string; redirectHost: string }> {
+  return request<{ name: string; redirectHost: string }>(`/oauth/clients/${encodeURIComponent(clientId)}`);
+}
+
+export interface ConnectedAssistant {
+  clientId: string;
+  clientName: string;
+  connectedAt: string;
+}
+
+export function listAssistants(): Promise<ConnectedAssistant[]> {
+  return request<ConnectedAssistant[]>("/assistants");
+}
+
+export function disconnectAssistant(clientId: string): Promise<void> {
+  return request<void>(`/assistants/${encodeURIComponent(clientId)}`, { method: "DELETE" });
+}
+
+export function listEmailUpdates(): Promise<EmailUpdateRecord[]> {
+  return request<EmailUpdateRecord[]>("/applications/updates");
+}
+
+export function parseEmail(text: string, timezone: string): Promise<EmailUpdateRecord> {
+  return request<EmailUpdateRecord>("/applications/updates/parse", { method: "POST", body: JSON.stringify({ text, timezone }) });
+}
+
+export function applyEmailUpdate(id: string): Promise<ApplicationRecord> {
+  return request<ApplicationRecord>(`/applications/updates/${id}/apply`, { method: "POST" });
+}
+
+export function dismissEmailUpdate(id: string): Promise<void> {
+  return request<void>(`/applications/updates/${id}/dismiss`, { method: "POST" });
+}
+
+export function removePushSubscription(endpoint: string): Promise<NotificationSettingsView> {
+  return request<NotificationSettingsView>("/notifications/webpush/remove", { method: "POST", body: JSON.stringify({ endpoint }) });
 }

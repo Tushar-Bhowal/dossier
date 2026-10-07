@@ -14,6 +14,10 @@ import {
   Trophy,
   Users,
   Activity,
+  ArrowUpRight,
+  Bell,
+  CalendarClock,
+  Inbox,
 } from "lucide-react";
 import {
   OPEN_STAGES,
@@ -21,6 +25,7 @@ import {
   followUpDue,
   isClosed,
   isStale,
+  nextInterview,
   toLocalDate,
   type ApplicationRecord,
   type ApplicationStatus,
@@ -38,6 +43,8 @@ import { ApplicationSheet } from "./ApplicationSheet";
 import { Board } from "./Board";
 import { STATUS_LABEL } from "./statusStyle";
 import { useApplications } from "./useApplications";
+import { NotificationsSheet } from "./NotificationsSheet";
+import { PasteEmailDialog, UpdatesToReview } from "./EmailUpdates";
 
 type View = "board" | "list";
 const VIEW_KEY = "dossier.applications.view";
@@ -120,9 +127,16 @@ function NeedsYou({
   update: ReturnType<typeof useApplications>["update"];
 }) {
   const today = toLocalDate(now);
+  const interviewsToday = records
+    .filter((r) => !isClosed(r.application.status))
+    .map((record) => ({ record, interview: nextInterview(record.application, now) }))
+    .filter((x): x is { record: ApplicationRecord; interview: NonNullable<typeof x.interview> } =>
+      Boolean(x.interview && toLocalDate(new Date(x.interview.startsAt)) === today),
+    )
+    .sort((a, b) => a.interview.startsAt.localeCompare(b.interview.startsAt));
   const due = records.filter((r) => followUpDue(r.application, now));
   const stale = records.filter((r) => !followUpDue(r.application, now) && isStale(r.application, now));
-  if (due.length === 0 && stale.length === 0) return null;
+  if (interviewsToday.length === 0 && due.length === 0 && stale.length === 0) return null;
 
   const item = (record: ApplicationRecord, kind: "due" | "stale") => {
     const app = record.application;
@@ -192,10 +206,41 @@ function NeedsYou({
       <h2 id="needs-you" className="flex items-center gap-2 text-[15px] font-semibold text-white">
         Needs you today
         <span className="rounded-lg bg-primary/15 px-1.5 text-[13px] font-semibold tabular-nums text-[#ff7a5c]">
-          {due.length + stale.length}
+          {interviewsToday.length + due.length + stale.length}
         </span>
       </h2>
       <ul className="flex flex-col gap-2">
+        {interviewsToday.map(({ record, interview }) => (
+          <li
+            key={`interview-${record.id}`}
+            className="flex flex-col gap-3 rounded-lg border border-amber-400/20 bg-amber-400/[0.05] p-4 sm:flex-row sm:items-center"
+          >
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-400/10 text-amber-300" aria-hidden>
+              <CalendarClock className="size-4" />
+            </span>
+            <button type="button" onClick={() => onOpen(record.id)} className="min-w-0 flex-1 text-left">
+              <span className="block truncate text-[15px] font-semibold text-white">
+                Interview with {record.application.company} at{" "}
+                {new Date(interview.startsAt).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}
+              </span>
+              <span className="block truncate text-sm font-medium text-white/55">
+                {record.application.role}
+                {interview.round ? ` · Round ${interview.round}` : ""}
+              </span>
+            </button>
+            {interview.meetingUrl ? (
+              <Button asChild size="sm">
+                <a href={interview.meetingUrl} target="_blank" rel="noopener noreferrer">
+                  Join <ArrowUpRight className="size-3.5" aria-hidden />
+                </a>
+              </Button>
+            ) : (
+              <Button size="sm" variant="outline" onClick={() => onOpen(record.id)}>
+                Open
+              </Button>
+            )}
+          </li>
+        ))}
         {due.map((r) => item(r, "due"))}
         {stale.map((r) => item(r, "stale"))}
       </ul>
@@ -219,6 +264,8 @@ export function ApplicationsHome() {
   const [filter, setFilter] = React.useState<(typeof FILTERS)[number]["id"]>("all");
   const [openId, setOpenId] = React.useState<string | null>(null);
   const [adding, setAdding] = React.useState(false);
+  const [notifying, setNotifying] = React.useState(false);
+  const [pasting, setPasting] = React.useState(false);
   const searchRef = React.useRef<HTMLInputElement>(null);
   const now = React.useMemo(() => new Date(), []);
   const today = toLocalDate(now);
@@ -262,11 +309,21 @@ export function ApplicationsHome() {
           <h1 className="text-[32px] font-semibold leading-tight tracking-[-0.035em] text-white">Applications</h1>
           <p className="mt-2 text-base text-white/60">Every job you apply to, where it stands, and what to do next.</p>
         </div>
-        <Button size="lg" onClick={() => setAdding(true)} className="shrink-0">
-          <Plus className="size-4" aria-hidden />
-          Add application
-          <kbd className="ml-1 hidden rounded border border-white/25 px-1.5 text-[12px] font-semibold text-white/80 sm:inline">N</kbd>
-        </Button>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <Button size="lg" variant="outline" onClick={() => setNotifying(true)}>
+            <Bell className="size-4" aria-hidden />
+            Reminders
+          </Button>
+          <Button size="lg" variant="outline" onClick={() => setPasting(true)}>
+            <Inbox className="size-4" aria-hidden />
+            Paste email
+          </Button>
+          <Button size="lg" onClick={() => setAdding(true)} className="flex-1 sm:flex-none">
+            <Plus className="size-4" aria-hidden />
+            Add application
+            <kbd className="ml-1 hidden rounded border border-white/25 px-1.5 text-[12px] font-semibold text-white/80 sm:inline">N</kbd>
+          </Button>
+        </div>
       </div>
 
       {isError && (
@@ -320,6 +377,7 @@ export function ApplicationsHome() {
       {hasRecords && (
         <>
           <Stats records={records} />
+          <UpdatesToReview />
           <NeedsYou records={records} now={now} onOpen={setOpenId} update={update} />
 
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
@@ -398,6 +456,8 @@ export function ApplicationsHome() {
         onOpenExisting={(record) => setOpenId(record.id)}
       />
       <ApplicationSheet record={openRecord} api={api} onOpenChange={(open) => !open && setOpenId(null)} />
+      <NotificationsSheet open={notifying} onOpenChange={setNotifying} />
+      <PasteEmailDialog open={pasting} onOpenChange={setPasting} />
     </div>
   );
 }

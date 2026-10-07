@@ -55,6 +55,12 @@ export async function listOwnedApplications(userId: string): Promise<Application
   return col.find({ userId }).sort({ updatedAt: -1 }).toArray();
 }
 
+// Start times are stored as UTC ISO strings (normalizeInterviews), so a string range is a time range.
+export async function findWithInterviewsBetween(fromIso: string, toIso: string): Promise<ApplicationDoc[]> {
+  const col = await collection();
+  return col.find({ 'application.interviews': { $elemMatch: { startsAt: { $gte: fromIso, $lt: toIso } } } }).toArray();
+}
+
 // Compare-and-swap on version: null when the document is missing for this user or the version is stale.
 export async function replaceOwnedApplication(
   id: string,

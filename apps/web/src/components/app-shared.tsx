@@ -1,5 +1,5 @@
 import * as React from "react";
-import { FileText, FolderKanban, Map, Mic, SquareKanban } from "lucide-react";
+import { FileText, FolderKanban, Map, Mic, Plug, SquareKanban } from "lucide-react";
 
 export interface NavItem {
   title: string;
@@ -31,6 +31,11 @@ export const navGroups: NavGroup[] = [
         title: "Resume Studio",
         path: "/resumes",
         icon: <FileText className="size-[18px]" />,
+      },
+      {
+        title: "AI assistants",
+        path: "/assistants",
+        icon: <Plug className="size-[18px]" />,
       },
     ],
   },

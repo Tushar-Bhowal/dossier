@@ -3,6 +3,7 @@ import {
   type Application,
   type ApplicationInput,
   type ApplicationStatus,
+  type Interview,
   type StatusEvent,
 } from '../contracts/application.js';
 
@@ -53,4 +54,25 @@ export function isStale(app: Application, now: Date): boolean {
 
 export function followUpDue(app: Application, now: Date): boolean {
   return !!app.followUpOn && !isClosed(app.status) && app.followUpOn <= toLocalDate(now);
+}
+
+export const DEFAULT_INTERVIEW_MIN = 60;
+
+// Stored as UTC ISO strings, sorted, so the database can range-query start times as plain strings.
+export function normalizeInterviews(interviews: Interview[] | undefined): Interview[] | undefined {
+  if (!interviews?.length) return undefined;
+  return interviews
+    .map((i) => ({ ...i, startsAt: new Date(i.startsAt).toISOString() }))
+    .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+}
+
+export function interviewEnds(interview: Interview): number {
+  return Date.parse(interview.startsAt) + (interview.durationMin ?? DEFAULT_INTERVIEW_MIN) * 60_000;
+}
+
+// The earliest interview that hasn't finished yet.
+export function nextInterview(app: Pick<Application, 'interviews'>, now: Date): Interview | undefined {
+  return (app.interviews ?? [])
+    .filter((i) => interviewEnds(i) > now.getTime())
+    .sort((a, b) => a.startsAt.localeCompare(b.startsAt))[0];
 }

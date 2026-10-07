@@ -21,6 +21,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { Monogram } from "./ApplicationCard";
+import { InterviewsSection } from "./InterviewsSection";
 import { STATUS_LABEL, STATUS_TONE } from "./statusStyle";
 import type { ApplicationsApi } from "./useApplications";
 
@@ -281,6 +282,8 @@ function SheetBody({
           </div>
         )}
       </section>
+
+      <InterviewsSection record={record} update={update} />
 
       <section className="mt-7 grid gap-4 sm:grid-cols-2" aria-label="Dates">
         <div className="flex flex-col gap-1.5">

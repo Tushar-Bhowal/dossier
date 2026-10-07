@@ -26,6 +26,16 @@ export const StatusEvent = z.object({
 });
 export type StatusEvent = z.infer<typeof StatusEvent>;
 
+export const Interview = z.object({
+  id: z.string().min(1).max(64),
+  startsAt: z.iso.datetime({ offset: true }),
+  durationMin: z.int().min(15).max(480).optional(),
+  round: z.int().min(1).max(20).optional(),
+  meetingUrl: HttpUrl.optional(),
+  notes: z.string().max(1000).optional(),
+});
+export type Interview = z.infer<typeof Interview>;
+
 // Everything the user can set. The server owns statusHistory and source.
 export const ApplicationInput = z.object({
   company: z.string().trim().min(1).max(120),
@@ -41,6 +51,7 @@ export const ApplicationInput = z.object({
   notes: z.string().max(4000).optional(),
   followUpOn: LocalDate.optional(),
   kitRunId: z.string().max(100).optional(),
+  interviews: z.array(Interview).max(20).optional(),
 });
 export type ApplicationInput = z.infer<typeof ApplicationInput>;
 

@@ -36,6 +36,16 @@ async function ensureIndexes(db: Db): Promise<void> {
     { userId: 1, 'application.jobUrl': 1 },
     { unique: true, partialFilterExpression: { 'application.jobUrl': { $type: 'string' } } },
   );
+  await db.collection('applications').createIndex({ 'application.interviews.startsAt': 1 });
+  // TTL indexes: MongoDB deletes these documents by itself once the date field is old enough.
+  await db.collection('telegramLinks').createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+  await db.collection('sentReminders').createIndex({ createdAt: 1 }, { expireAfterSeconds: 30 * 24 * 60 * 60 });
+  await db.collection('notificationSettings').createIndex({ 'telegram.chatId': 1 }, { sparse: true });
+  await db.collection('emailUpdates').createIndex({ userId: 1, state: 1, createdAt: -1 });
+  await db.collection('emailUpdates').createIndex({ createdAt: 1 }, { expireAfterSeconds: 30 * 24 * 60 * 60 });
+  await db.collection('oauthCodes').createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+  await db.collection('oauthTokens').createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+  await db.collection('oauthTokens').createIndex({ userId: 1, kind: 1 });
   await db.collection('users').createIndex({ email: 1 }, { unique: true });
   await db.collection('users').createIndex({ googleSub: 1 }, { unique: true, sparse: true });
 }

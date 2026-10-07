@@ -1,7 +1,8 @@
 "use client";
 
 import { ChevronDown } from "lucide-react";
-import type { ApplicationRecord, ApplicationStatus } from "@dossier/core/applications";
+import { isClosed, nextInterview, type ApplicationRecord, type ApplicationStatus } from "@dossier/core/applications";
+import { interviewWhen } from "./calendar";
 import { Monogram, MoveMenu, StatusPill } from "./ApplicationCard";
 import { BOARD_COLUMNS, STATUS_LABEL, columnOf, relativeDays } from "./statusStyle";
 
@@ -32,6 +33,7 @@ export function ApplicationList({
           <ul className="flex flex-col divide-y divide-white/[0.06] overflow-hidden rounded-lg border border-white/[0.08] bg-[#121212]">
             {group.items.map((record) => {
               const app = record.application;
+              const upcoming = isClosed(app.status) ? undefined : nextInterview(app, new Date());
               return (
                 <li key={record.id} className="flex items-center gap-3 px-3 py-3 sm:px-4">
                   <button
@@ -47,6 +49,11 @@ export function ApplicationList({
                         {app.status === "interviewing" && app.round ? ` · round ${app.round}` : ""}
                         {app.appliedOn ? ` · applied ${relativeDays(app.appliedOn, today)}` : ""}
                       </span>
+                      {upcoming && (
+                        <span className="block truncate text-[13px] font-semibold text-amber-300">
+                          Interview {interviewWhen(upcoming.startsAt, new Date())}
+                        </span>
+                      )}
                     </span>
                   </button>
                   <MoveMenu
