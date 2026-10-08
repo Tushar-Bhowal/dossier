@@ -129,7 +129,7 @@ export function Pillars() {
 function StagesVisual() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-20%" });
-  const stages = ["Concepts", "Practice", "Scenario", "Mock"];
+  const stages = ["Concepts", "Practise", "Real situations", "Mock interview"];
   return (
     <div ref={ref} className="absolute inset-0 flex items-center px-8 sm:px-12" aria-hidden>
       <div className="relative w-full">

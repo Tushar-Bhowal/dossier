@@ -9,11 +9,15 @@ import {
   Briefcase,
   CalendarClock,
   Clock,
+  FileText,
   FolderKanban,
   Hourglass,
   Inbox,
   Languages,
   ListChecks,
+  Map as MapIcon,
+  Mic,
+  MousePointerClick,
   RotateCcw,
   ShieldCheck,
   Trash2,
@@ -289,6 +293,43 @@ function Capabilities({ onPick }: { onPick: (fill: string) => void }) {
   );
 }
 
+const PAGES = [
+  { href: "/roadmaps", icon: MapIcon, title: "Roadmaps", body: "A step-by-step plan for any job or skill." },
+  { href: "/interviews", icon: Mic, title: "Mock interviews", body: "Practise out loud and get a report on your answers." },
+  { href: "/resumes", icon: FileText, title: "Resume Studio", body: "Build a resume from what you tell it, in any language." },
+  { href: "/autofill", icon: MousePointerClick, title: "Autofill", body: "Fill job application forms from your profile." },
+] as const;
+
+// The assistant can't act on these yet, so they're links rather than things to say.
+function AlsoInDossier() {
+  return (
+    <section aria-labelledby="also-heading" className="flex flex-col gap-4">
+      <h2 id="also-heading" className="text-[17px] font-semibold text-white">
+        Also in Dossier
+      </h2>
+      <ul className="grid gap-3 sm:grid-cols-2">
+        {PAGES.map((p) => (
+          <li key={p.href}>
+            <Link
+              href={p.href}
+              className={cn(panel, "group flex h-full items-center gap-3 p-4 transition-colors hover:border-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring")}
+            >
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-white/[0.05] text-[#ff7a5c]" aria-hidden>
+                <p.icon className="size-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[15px] font-semibold text-white group-hover:text-[#ff7a5c]">{p.title}</span>
+                <span className="block text-sm font-medium text-white/60">{p.body}</span>
+              </span>
+              <ArrowRight className="size-4 shrink-0 text-white/35 group-hover:text-white" aria-hidden />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 function HowIWork() {
   return (
     <section aria-labelledby="how-heading" className={cn(panel, "p-5")}>
@@ -310,7 +351,7 @@ function HowIWork() {
       </ul>
       <p className="mt-5 flex items-start gap-2 border-t border-white/[0.06] pt-4 text-sm font-medium leading-relaxed text-white/55">
         <Clock className="mt-0.5 size-4 shrink-0" aria-hidden />
-        Coming soon: resume help in chat, and reminders by email, WhatsApp or SMS.
+        Coming soon: roadmaps, mock interviews and resumes in chat, and reminders by email, WhatsApp or SMS.
       </p>
     </section>
   );
@@ -383,6 +424,7 @@ export function AssistantHome() {
                 <TodayPanel />
               </div>
               <Capabilities onPick={pick} />
+              <AlsoInDossier />
               <div className="lg:hidden">
                 <HowIWork />
               </div>
