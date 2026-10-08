@@ -4,3 +4,5 @@ export * from './contracts/notifications.js';
 export * from './domain/reminders.js';
 export * from './contracts/emailUpdate.js';
 export * from './contracts/chat.js';
+export * from './contracts/referral.js';
+export * from './domain/referrals.js';

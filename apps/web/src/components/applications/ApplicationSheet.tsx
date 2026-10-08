@@ -21,6 +21,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { Monogram } from "./ApplicationCard";
+import { ReferralsSection } from "./referrals/ReferralsSection";
 import { InterviewsSection } from "./InterviewsSection";
 import { STATUS_LABEL, STATUS_TONE } from "./statusStyle";
 import type { ApplicationsApi } from "./useApplications";
@@ -364,6 +365,8 @@ function SheetBody({
       <section className="mt-7" aria-label="Interview kit">
         <InterviewKitCard record={record} update={update} />
       </section>
+
+      <ReferralsSection applicationId={record.id} job={{ company: app.company, role: app.role, jobUrl: app.jobUrl }} />
 
       <section className="mt-7 flex flex-col gap-3" aria-labelledby="details-heading">
         <h3 id="details-heading" className={sectionTitle}>
