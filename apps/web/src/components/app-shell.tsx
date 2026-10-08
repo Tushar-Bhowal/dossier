@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 function pageTitleFor(pathname: string): string {
   if (pathname === "/home") return "Home";
   if (pathname === "/applications") return "Applications";
+  if (pathname === "/applications/bookmark") return "Save from any site";
   if (pathname === "/assistants") return "AI assistants";
   if (pathname === "/resumes") return "Resume Studio";
   if (pathname === "/resumes/new") return "New resume";

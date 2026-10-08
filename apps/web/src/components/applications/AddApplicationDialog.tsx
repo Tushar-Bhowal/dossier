@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { ArrowRight, Link2, LoaderCircle } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Bookmark, Link2, LoaderCircle } from "lucide-react";
 import { toLocalDate, type ApplicationRecord, type ApplicationStatus } from "@dossier/core/applications";
 import { previewJobLink } from "@/lib/api";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -210,6 +211,14 @@ export function AddApplicationDialog({
                 {loadingPreview ? "Reading the page…" : "Continue"}
               </Button>
             </div>
+            <Link
+              href="/applications/bookmark"
+              className="flex items-center gap-2 border-t border-white/[0.06] pt-4 text-sm font-semibold text-white/60 hover:text-white"
+            >
+              <Bookmark className="size-4 text-[#ff7a5c]" aria-hidden />
+              Save jobs straight from job sites with a bookmark
+              <ArrowRight className="size-4" aria-hidden />
+            </Link>
           </form>
         ) : (
           <form onSubmit={submit} className="flex flex-col gap-4" noValidate>

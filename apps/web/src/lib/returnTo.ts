@@ -10,12 +10,12 @@ export function saveReturnTo(path: string): void {
   }
 }
 
-// Only same-site consent paths are honoured, so nothing else can steer the redirect.
+// Only same-site consent and bookmark-add paths are honoured, so nothing else can steer the redirect.
 export function takeReturnTo(): string | null {
   try {
     const path = sessionStorage.getItem(KEY);
     sessionStorage.removeItem(KEY);
-    return path?.startsWith("/connect/") ? path : null;
+    return path?.startsWith("/connect/") || path?.startsWith("/add?") ? path : null;
   } catch {
     return null;
   }
