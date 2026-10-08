@@ -4,6 +4,8 @@ import * as React from "react";
 import { AlertCircle, Clock, LoaderCircle, RefreshCcw } from "lucide-react";
 import { ApiError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import { QuotaNotice } from "@/components/quota-notice";
+import { formatResetTime } from "@/lib/account/usage";
 import { cn } from "@/lib/utils";
 
 // Step messages advance on a timer while one AI call runs, so a slow response never looks frozen.
@@ -64,7 +66,7 @@ export function describeAiError(error: unknown): { title: string; body: string }
     if (error.code === "quota_exceeded") {
       return {
         title: "Today's free AI requests are used up",
-        body: "They reset at midnight UTC. You can still edit and download anything you've already made.",
+        body: `They come back at ${formatResetTime()} your time. You can still edit and download anything you've already made.`,
       };
     }
     if (error.code === "llm_unavailable") {
@@ -88,26 +90,26 @@ export function AiErrorNotice({
   onRetry?: () => void;
   className?: string;
 }) {
+  if (error instanceof ApiError && error.code === "quota_exceeded") return <QuotaNotice className={className} />;
   const { title, body } = describeAiError(error);
-  const isQuota = error instanceof ApiError && error.code === "quota_exceeded";
 
   return (
     <div
       role="alert"
       className={cn(
         "flex flex-col gap-3 rounded-lg border p-5 sm:flex-row sm:items-center sm:justify-between",
-        isQuota ? "border-amber-500/30 bg-amber-500/10" : "border-destructive/35 bg-destructive/10",
+        "border-destructive/35 bg-destructive/10",
         className,
       )}
     >
       <div className="flex items-start gap-3">
-        <AlertCircle className={cn("mt-0.5 size-5 shrink-0", isQuota ? "text-amber-300" : "text-destructive")} aria-hidden />
+        <AlertCircle className="mt-0.5 size-5 shrink-0 text-destructive" aria-hidden />
         <div>
           <p className="text-[15px] font-semibold text-white">{title}</p>
           <p className="mt-1 text-sm leading-relaxed text-white/70">{body}</p>
         </div>
       </div>
-      {onRetry && !isQuota && (
+      {onRetry && (
         <Button variant="outline" onClick={onRetry} className="shrink-0">
           <RefreshCcw className="size-4" />
           Try again

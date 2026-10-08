@@ -280,7 +280,15 @@ function AuthContent() {
           </form>
 
           <p className="mt-8 text-center text-[13px] leading-relaxed text-white/45">
-            By continuing, you agree to Dossier&apos;s Terms of Service and Privacy Policy.
+            By continuing, you agree to Dossier&apos;s{" "}
+            <Link href="/terms" className="font-semibold text-white/70 underline underline-offset-4 hover:text-white">
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" className="font-semibold text-white/70 underline underline-offset-4 hover:text-white">
+              Privacy
+            </Link>
+            .
           </p>
         </div>
       </section>

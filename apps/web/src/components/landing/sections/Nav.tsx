@@ -10,11 +10,11 @@ import { EASE_OUT } from "../motion/Reveal";
 import { PrimaryButton } from "../Buttons";
 
 const LINKS = [
-  { href: "#product", label: "Product" },
-  { href: "#resume-studio", label: "Resume Studio" },
-  { href: "#how", label: "How it works" },
-  { href: "#features", label: "Features" },
-  { href: "#faq", label: "FAQ" },
+  { href: "/#product", label: "Product" },
+  { href: "/#resume-studio", label: "Resume Studio" },
+  { href: "/#how", label: "How it works" },
+  { href: "/#features", label: "Features" },
+  { href: "/#faq", label: "FAQ" },
 ];
 
 export function Nav() {

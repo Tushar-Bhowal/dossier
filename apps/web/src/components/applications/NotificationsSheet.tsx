@@ -79,7 +79,7 @@ function ChannelCard({
   );
 }
 
-function SheetBody() {
+export function ReminderSettings() {
   const queryClient = useQueryClient();
   const [telegramWaitUntil, setTelegramWaitUntil] = React.useState(0);
   const [busy, setBusy] = React.useState<null | "telegram" | "push" | "test">(null);
@@ -388,7 +388,7 @@ export function NotificationsSheet({ open, onOpenChange }: { open: boolean; onOp
         <SheetDescription className="mt-1 text-[15px] font-medium text-white/60">
           A nudge before every interview, and a short summary each morning.
         </SheetDescription>
-        {open && <SheetBody />}
+        {open && <ReminderSettings />}
       </SheetContent>
     </Sheet>
   );

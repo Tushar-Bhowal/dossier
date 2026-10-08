@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { AssistantProvider } from "@/components/assistant/AssistantPanel";
+import { SettingsProvider } from "@/components/settings/SettingsDialog";
 import { cn } from "@/lib/utils";
 
 function pageTitleFor(pathname: string): string {
@@ -71,16 +72,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const onHome = usePathname() === "/home";
   return (
     <SidebarProvider className="[--app-header-height:4rem]">
-      <CollapseSidebarOnResume />
-      <AppSidebar />
-      <AssistantProvider>
-        <SidebarInset className="bg-background min-h-screen flex flex-col">
-          <AppHeader />
-          <main className={cn("flex w-full min-w-0 flex-1 flex-col px-4 pt-6 md:px-8 md:pt-10", onHome ? "pb-6 md:pb-10" : "pb-24 md:pb-28")}>
-            {children}
-          </main>
-        </SidebarInset>
-      </AssistantProvider>
+      <SettingsProvider>
+        <CollapseSidebarOnResume />
+        <AppSidebar />
+        <AssistantProvider>
+          <SidebarInset className="bg-background min-h-screen flex flex-col">
+            <AppHeader />
+            <main className={cn("flex w-full min-w-0 flex-1 flex-col px-4 pt-6 md:px-8 md:pt-10", onHome ? "pb-6 md:pb-10" : "pb-24 md:pb-28")}>
+              {children}
+            </main>
+          </SidebarInset>
+        </AssistantProvider>
+      </SettingsProvider>
     </SidebarProvider>
   );
 }

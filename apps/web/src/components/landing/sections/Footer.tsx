@@ -6,18 +6,18 @@ const COLUMNS = [
   {
     heading: "Product",
     links: [
-      { href: "#product", label: "Platform" },
-      { href: "#resume-studio", label: "Resume Studio" },
-      { href: "#how", label: "How it works" },
-      { href: "#features", label: "Features" },
-      { href: "#loop", label: "The loop" },
+      { href: "/#product", label: "Platform" },
+      { href: "/#resume-studio", label: "Resume Studio" },
+      { href: "/#how", label: "How it works" },
+      { href: "/#features", label: "Features" },
+      { href: "/#loop", label: "The loop" },
     ],
   },
   {
     heading: "Company",
     links: [
-      { href: "#principles", label: "Principles" },
-      { href: "#faq", label: "FAQ" },
+      { href: "/#principles", label: "Principles" },
+      { href: "/#faq", label: "FAQ" },
     ],
   },
   {
@@ -25,6 +25,13 @@ const COLUMNS = [
     links: [
       { href: "/login", label: "Sign in" },
       { href: "/login?mode=register", label: "Create account" },
+    ],
+  },
+  {
+    heading: "Legal",
+    links: [
+      { href: "/privacy", label: "Privacy" },
+      { href: "/terms", label: "Terms" },
     ],
   },
 ];
@@ -42,7 +49,7 @@ export function Footer() {
             Interview prep for any role, researched for you.
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-10 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-10 lg:grid-cols-4">
           {COLUMNS.map((c) => (
             <div key={c.heading}>
               <p className="text-[13px] font-semibold uppercase tracking-[0.1em] text-white/50">

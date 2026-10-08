@@ -89,7 +89,7 @@ export function Toaster() {
     <div
       role="region"
       aria-label="Notifications"
-      className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"
+      className="fixed bottom-4 right-4 z-[60] flex flex-col gap-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"
     >
       <AnimatePresence mode="popLayout">
         {toasts.map((item) => (

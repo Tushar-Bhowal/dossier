@@ -1,12 +1,9 @@
 "use client";
 
-import * as React from "react";
+import { createScenarioStore, type Scenario as BaseScenario } from "@/lib/demo/scenario";
 
-// Demo affordances (example text, the scenario switcher) only appear while the mock is in use.
-export const DEMO_UI = process.env.NEXT_PUBLIC_RESUME_MOCK === "1" || process.env.NODE_ENV === "development";
+export { DEMO_UI, READ_DELAY_MS, sleep, type Latency, type Persona } from "@/lib/demo/scenario";
 
-export type Persona = "teacher" | "engineer";
-export type Latency = "normal" | "slow";
 export type DemoFailure =
   | "none"
   | "ai_down"
@@ -20,12 +17,7 @@ export type DemoFailure =
   | "market_thin"
   | "tailoring";
 
-export interface Scenario {
-  persona: Persona;
-  latency: Latency;
-  fail: DemoFailure;
-  empty: boolean;
-}
+export type Scenario = BaseScenario<DemoFailure>;
 
 export const FAILURES: { value: DemoFailure; label: string }[] = [
   { value: "none", label: "Everything works" },
@@ -41,53 +33,5 @@ export const FAILURES: { value: DemoFailure; label: string }[] = [
   { value: "tailoring", label: "Tailoring fails" },
 ];
 
-const DEFAULT: Scenario = { persona: "teacher", latency: "normal", fail: "none", empty: false };
-
-let scenario: Scenario = DEFAULT;
-let initialised = false;
-const listeners = new Set<() => void>();
-
-function readUrl(): Partial<Scenario> {
-  const params = new URLSearchParams(window.location.search);
-  const out: Partial<Scenario> = {};
-  const persona = params.get("persona");
-  if (persona === "teacher" || persona === "engineer") out.persona = persona;
-  if (params.get("latency") === "slow") out.latency = "slow";
-  const fail = params.get("fail");
-  if (fail && FAILURES.some((f) => f.value === fail)) out.fail = fail as DemoFailure;
-  if (params.get("state") === "empty") out.empty = true;
-  return out;
-}
-
-// A test link like /resumes?persona=engineer&fail=quota opens straight into that scenario.
-export function getScenario(): Scenario {
-  if (!initialised && typeof window !== "undefined") {
-    initialised = true;
-    scenario = { ...DEFAULT, ...readUrl() };
-  }
-  return scenario;
-}
-
-export function setScenario(patch: Partial<Scenario>) {
-  scenario = { ...getScenario(), ...patch };
-  listeners.forEach((l) => l());
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
-
-export function useScenario(): Scenario {
-  return React.useSyncExternalStore(subscribe, getScenario, () => DEFAULT);
-}
-
-export function aiDelayMs(): number {
-  return getScenario().latency === "slow" ? 12_000 : 800 + Math.round(Math.random() * 1700);
-}
-
-export const READ_DELAY_MS = 250;
-
-export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+export const resumeScenario = createScenarioStore(FAILURES, "none");
+export const { getScenario, setScenario, useScenario, aiDelayMs } = resumeScenario;

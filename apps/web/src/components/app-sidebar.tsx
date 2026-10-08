@@ -1,14 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { LogOut, Plus, X } from "lucide-react";
+import { BellRing, ChevronsUpDown, Gauge, LogOut, Plus, Settings, ShieldCheck, X, type LucideIcon } from "lucide-react";
+import { DropdownMenu } from "radix-ui";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
+import { usePathname } from "next/navigation";
 import { useMe } from "@/hooks/use-me";
-import { logout } from "@/lib/api";
-import { toast } from "@/components/ui/toast";
+import { useSignOut } from "@/hooks/use-sign-out";
+import { useOpenSettings, type SettingsTab } from "@/components/settings/SettingsDialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { navGroups } from "@/components/app-shared";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -27,34 +27,34 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
+const menuItemClass =
+  "flex h-11 cursor-pointer items-center gap-3 rounded-md px-3 text-[15px] font-medium text-white/85 outline-none transition-colors data-[highlighted]:bg-white/[0.07] data-[highlighted]:text-white";
+
+function MenuItem({ icon: Icon, label, onSelect }: { icon: LucideIcon; label: string; onSelect: () => void }) {
+  return (
+    <DropdownMenu.Item onSelect={onSelect} className={menuItemClass}>
+      <Icon className="size-[18px] text-white/60" aria-hidden />
+      {label}
+    </DropdownMenu.Item>
+  );
+}
+
 export function AppSidebar() {
   const pathname = usePathname();
   const currentPath = pathname ?? "";
-  const router = useRouter();
-  const queryClient = useQueryClient();
   const { data: user } = useMe();
   const { isMobile, setOpenMobile, toggleSidebar } = useSidebar();
   const [confirmSignOutOpen, setConfirmSignOutOpen] = React.useState(false);
+  const openSettings = useOpenSettings();
 
-  async function handleSignOut() {
-    try {
-      await logout();
-      // Cancel any in-flight queries first, then remove the "me" cache entry
-      // entirely (not set to undefined — that triggers a refetch cycle which
-      // causes the dashboard layout to flicker between loading/error states).
-      await queryClient.cancelQueries({ queryKey: ["me"] });
-      queryClient.removeQueries({ queryKey: ["me"] });
-      if (isMobile) {
-        setOpenMobile(false);
-      }
-      toast.success("Signed out successfully.");
-      // replace, not push — prevents back-button bouncing to the dashboard
-      router.replace("/login");
-    } catch (err) {
-      toast.error("Sign out failed. Please try again.");
-      throw err;
-    }
+  function showSettings(tab: SettingsTab) {
+    if (isMobile) setOpenMobile(false);
+    openSettings?.(tab);
   }
+
+  const handleSignOut = useSignOut(() => {
+    if (isMobile) setOpenMobile(false);
+  });
 
   const userDisplayName = user?.email ? user.email.split("@")[0] : "Candidate";
   const userInitials = (userDisplayName || "DS").slice(0, 2).toUpperCase();
@@ -137,7 +137,7 @@ export function AppSidebar() {
                 const isActive =
                   currentPath === item.path ||
                   currentPath.startsWith(`${item.path}/`) ||
-                  currentPath.startsWith("/runs/");
+                  (item.path === "/kits" && currentPath.startsWith("/runs/"));
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
@@ -170,27 +170,50 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-3">
-        <div className="flex items-center gap-3 rounded-lg border border-white/[0.08] bg-white/[0.03] p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-          <Avatar className="size-9 shrink-0 rounded-lg bg-[#dc3019]" title={userDisplayName}>
-            <AvatarFallback className="rounded-lg bg-transparent text-[13px] font-bold text-white">
-              {userInitials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="grid min-w-0 flex-1 leading-tight">
-            <span className="truncate text-sm font-semibold capitalize text-white">{userDisplayName}</span>
-            <span className="truncate text-xs text-white/55">{user?.email ?? ""}</span>
-          </div>
-          <Button
-            onClick={() => setConfirmSignOutOpen(true)}
-            title="Sign out"
-            aria-label="Sign out"
-            size="icon-sm"
-            variant="ghost"
-            className="shrink-0 text-white/55 hover:bg-destructive/10 hover:text-[#ff7a5c]"
-          >
-            <LogOut className="size-4" />
-          </Button>
-        </div>
+        <DropdownMenu.Root modal={false}>
+          <DropdownMenu.Trigger asChild>
+            <button
+              type="button"
+              className="flex w-full items-center gap-3 rounded-lg border border-white/[0.08] bg-white/[0.03] p-2.5 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] outline-none transition-colors hover:bg-white/[0.06] focus-visible:ring-3 focus-visible:ring-ring/50 data-[state=open]:bg-white/[0.06]"
+            >
+              <Avatar className="size-9 shrink-0 rounded-lg bg-[#dc3019]">
+                <AvatarFallback className="rounded-lg bg-transparent text-[13px] font-bold text-white">
+                  {userInitials}
+                </AvatarFallback>
+              </Avatar>
+              <span className="grid min-w-0 flex-1 leading-tight">
+                <span className="truncate text-sm font-semibold capitalize text-white">{userDisplayName}</span>
+                <span className="truncate text-xs font-medium text-white/55">{user?.email ?? ""}</span>
+              </span>
+              <ChevronsUpDown className="size-4 shrink-0 text-white/50" aria-hidden />
+              <span className="sr-only">Account menu</span>
+            </button>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Portal>
+            <DropdownMenu.Content
+              side="top"
+              align="start"
+              sideOffset={8}
+              className="z-50 w-(--radix-dropdown-menu-trigger-width) min-w-[232px] rounded-lg border border-white/10 bg-[#141414] p-1.5 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.9)] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
+            >
+              <DropdownMenu.Label className="truncate px-3 pb-2 pt-1.5 text-sm font-medium text-white/55">
+                {user?.email ?? ""}
+              </DropdownMenu.Label>
+              <MenuItem icon={Settings} label="Settings" onSelect={() => showSettings("account")} />
+              <MenuItem icon={Gauge} label="Usage" onSelect={() => showSettings("usage")} />
+              <MenuItem icon={BellRing} label="Reminders" onSelect={() => showSettings("reminders")} />
+              <DropdownMenu.Separator className="my-1.5 h-px bg-white/[0.08]" />
+              <DropdownMenu.Item asChild className={menuItemClass}>
+                <Link href="/privacy">
+                  <ShieldCheck className="size-[18px] text-white/60" aria-hidden />
+                  Privacy and terms
+                </Link>
+              </DropdownMenu.Item>
+              <DropdownMenu.Separator className="my-1.5 h-px bg-white/[0.08]" />
+              <MenuItem icon={LogOut} label="Sign out" onSelect={() => setConfirmSignOutOpen(true)} />
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
+        </DropdownMenu.Root>
       </SidebarFooter>
 
       <ConfirmDialog

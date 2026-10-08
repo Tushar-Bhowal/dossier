@@ -24,6 +24,8 @@ export interface ConfirmDialogProps {
   cancelLabel?: string;
   variant?: "destructive" | "default";
   icon?: React.ReactNode;
+  children?: React.ReactNode;
+  confirmDisabled?: boolean;
   onConfirm: () => Promise<void> | void;
 }
 
@@ -37,6 +39,8 @@ export function ConfirmDialog({
   cancelLabel = "Cancel",
   variant = "destructive",
   icon,
+  children,
+  confirmDisabled = false,
   onConfirm,
 }: ConfirmDialogProps) {
   const [isConfirming, setIsConfirming] = React.useState(false);
@@ -49,6 +53,8 @@ export function ConfirmDialog({
     try {
       await onConfirm();
       onOpenChange(false);
+    } catch {
+      // Stays open so the user can retry; the caller reports what went wrong.
     } finally {
       setIsConfirming(false);
     }
@@ -84,7 +90,7 @@ export function ConfirmDialog({
             <div className="flex flex-col gap-1 text-left">
               <AlertDialogTitle className="text-base font-semibold">{title}</AlertDialogTitle>
               {description && (
-                <AlertDialogDescription className="text-xs text-muted-foreground">
+                <AlertDialogDescription className="text-sm leading-relaxed text-muted-foreground">
                   {description}
                 </AlertDialogDescription>
               )}
@@ -92,19 +98,21 @@ export function ConfirmDialog({
           </div>
         </AlertDialogHeader>
 
+        {children}
+
         <AlertDialogFooter className="mt-2 flex items-center gap-2 sm:justify-end">
           <AlertDialogCancel
             disabled={isConfirming}
-            className="rounded-lg h-9 px-4 text-xs font-medium"
+            className="rounded-lg h-11 px-4 text-sm font-medium sm:h-9"
           >
             {cancelLabel}
           </AlertDialogCancel>
           <Button
             type="button"
             variant={variant === "destructive" ? "destructive" : "default"}
-            disabled={isConfirming}
+            disabled={isConfirming || confirmDisabled}
             onClick={handleConfirm}
-            className="rounded-lg h-9 px-4 text-xs font-medium gap-1.5"
+            className="rounded-lg h-11 px-4 text-sm font-semibold gap-1.5 sm:h-9"
           >
             {isConfirming && <Loader2 className="size-3.5 animate-spin" />}
             <span>{isConfirming ? activeConfirming : confirmLabel}</span>
