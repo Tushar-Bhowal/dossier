@@ -8,6 +8,7 @@
     ".": "./src/index.ts",
     "./resume": "./src/resume.ts",
     "./account": "./src/account.ts",
+    "./roadmap": "./src/roadmap.ts",
     "./applications": "./src/applications.ts"
   },
   "scripts": {

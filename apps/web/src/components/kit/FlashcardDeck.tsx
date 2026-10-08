@@ -31,11 +31,43 @@ function formatDueDate(dateOnly: string): string {
 }
 
 export function FlashcardDeck({ kitId }: { kitId: string }) {
+  return (
+    <PracticeDeck
+      queryKey={["practice", kitId]}
+      load={() => getPracticeSession(kitId)}
+      review={(cardId, confidence) => recordPracticeReview(kitId, cardId, confidence)}
+      backHref={`/kits/${kitId}`}
+      backLabel="Back to kit"
+      emptyHref={`/kits/${kitId}#flashcards`}
+      emptyBody="This interview kit doesn't have any flashcards yet. Generate or add flashcards in the Kit Builder to start practicing."
+    />
+  );
+}
+
+interface PracticeDeckProps {
+  queryKey: readonly unknown[];
+  load: () => Promise<PracticeSession>;
+  review: (cardId: string, confidence: Confidence) => Promise<PracticeSession>;
+  backHref: string;
+  backLabel: string;
+  emptyHref: string;
+  emptyBody: string;
+  // False when there's no interview date, so no countdown is shown.
+  hasDeadline?: boolean;
+}
+
+export function PracticeDeck({
+  queryKey,
+  load,
+  review: reviewCard,
+  backHref,
+  backLabel,
+  emptyHref,
+  emptyBody,
+  hasDeadline = true,
+}: PracticeDeckProps) {
   const queryClient = useQueryClient();
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["practice", kitId],
-    queryFn: () => getPracticeSession(kitId),
-  });
+  const { data, isLoading, isError } = useQuery({ queryKey, queryFn: load });
 
   const [revealed, setRevealed] = useState(false);
   const [seenCardId, setSeenCardId] = useState<string | null>(null);
@@ -56,10 +88,10 @@ export function FlashcardDeck({ kitId }: { kitId: string }) {
   const review = useMutation({
     mutationFn: (confidence: Confidence) => {
       if (!current) throw new Error("No card to review");
-      return recordPracticeReview(kitId, current.id, confidence);
+      return reviewCard(current.id, confidence);
     },
     onSuccess: (session: PracticeSession) => {
-      queryClient.setQueryData(["practice", kitId], session);
+      queryClient.setQueryData(queryKey, session);
       setRevealed(false);
 
       if (extraPractice) {
@@ -133,7 +165,7 @@ export function FlashcardDeck({ kitId }: { kitId: string }) {
       <Card className="rounded-lg border-border/80 p-8 text-center">
         <p className="text-sm text-destructive">Couldn&apos;t load the practice session.</p>
         <Button asChild variant="outline" size="sm" className="mt-4 rounded-lg">
-          <Link href={`/kits/${kitId}`}>Return to Kit</Link>
+          <Link href={backHref}>{backLabel}</Link>
         </Button>
       </Card>
     );
@@ -147,11 +179,10 @@ export function FlashcardDeck({ kitId }: { kitId: string }) {
         </div>
         <h3 className="text-xl font-semibold text-white">No flashcards yet</h3>
         <p className="max-w-sm text-[15px] leading-relaxed text-white/60">
-          This interview kit doesn&apos;t have any flashcards yet. Generate or add flashcards in the Kit
-          Builder to start practicing.
+          {emptyBody}
         </p>
         <Button asChild size="lg" className="mt-2">
-          <Link href={`/kits/${kitId}#flashcards`}>Go to flashcards</Link>
+          <Link href={emptyHref}>Go to flashcards</Link>
         </Button>
       </Card>
     );
@@ -195,7 +226,7 @@ export function FlashcardDeck({ kitId }: { kitId: string }) {
             <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-white/65">
               You&apos;ve reviewed all due flashcards. Consistent daily spaced repetition outperforms
               cramming.
-              {data.daysRemaining > 0 &&
+              {hasDeadline && data.daysRemaining > 0 &&
                 ` You have ${data.daysRemaining} day${data.daysRemaining === 1 ? "" : "s"} left before your interview.`}
             </p>
           </div>
@@ -212,7 +243,7 @@ export function FlashcardDeck({ kitId }: { kitId: string }) {
               Practise all {totalCards} again
             </Button>
             <Button asChild size="lg">
-              <Link href={`/kits/${kitId}`}>Back to kit</Link>
+              <Link href={backHref}>{backLabel}</Link>
             </Button>
           </div>
         </Card>
@@ -440,7 +471,11 @@ export function FlashcardDeck({ kitId }: { kitId: string }) {
               </p>
               <p className="mt-1 flex items-center gap-1.5 text-white/55">
                 <Clock className="size-3.5" />
-                {data.daysRemaining > 0 ? `${data.daysRemaining} days to interview` : "Interview day"}
+                {!hasDeadline
+                  ? "No interview date set"
+                  : data.daysRemaining > 0
+                    ? `${data.daysRemaining} days to interview`
+                    : "Interview day"}
               </p>
             </div>
           </div>

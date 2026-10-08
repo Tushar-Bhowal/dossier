@@ -38,6 +38,11 @@ export const navGroups: NavGroup[] = [
         icon: <FileText className="size-[18px]" />,
       },
       {
+        title: "Roadmaps",
+        path: "/roadmaps",
+        icon: <Map className="size-[18px]" />,
+      },
+      {
         title: "AI assistants",
         path: "/assistants",
         icon: <Plug className="size-[18px]" />,
@@ -47,7 +52,6 @@ export const navGroups: NavGroup[] = [
   {
     label: "Coming soon",
     items: [
-      { title: "Roadmaps", path: "/roadmaps", icon: <Map className="size-[18px]" />, soon: true },
       { title: "Mock interviews", path: "/interviews", icon: <Mic className="size-[18px]" />, soon: true },
     ],
   },
