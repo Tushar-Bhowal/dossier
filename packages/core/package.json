@@ -10,6 +10,7 @@
     "./account": "./src/account.ts",
     "./roadmap": "./src/roadmap.ts",
     "./interview": "./src/interview.ts",
+    "./autofill": "./src/autofill.ts",
     "./applications": "./src/applications.ts"
   },
   "scripts": {
