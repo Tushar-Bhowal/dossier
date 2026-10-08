@@ -348,7 +348,15 @@ export function TopicView({ roadmapId, topicId }: { roadmapId: string; topicId: 
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
           <div className="min-w-0">
             <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.03em] text-white sm:text-[32px]">{topic.title}</h1>
-            <div className="mt-2 empty:hidden">
+            <div className="mt-2 flex flex-wrap gap-1.5 empty:hidden">
+              {topic.from_interview && (
+                <Link
+                  href={`/interviews/${topic.from_interview.interviewId}`}
+                  className="inline-flex h-7 items-center rounded-lg bg-violet-500/10 px-2.5 text-[13px] font-semibold text-violet-300 hover:bg-violet-500/15"
+                >
+                  From your mock interview: {topic.from_interview.label}
+                </Link>
+              )}
               <OriginTag origin={topic.origin} />
             </div>
           </div>
@@ -381,7 +389,9 @@ export function TopicView({ roadmapId, topicId }: { roadmapId: string; topicId: 
           className="min-h-32 resize-y border-white/[0.08] bg-[#111111] p-4 text-base leading-relaxed text-white/85 md:text-base"
         />
         <p className="text-sm font-medium text-white/50">
-          Written by AI from the roadmap&apos;s sources. Change anything; your edits are kept when the roadmap is refreshed.
+          {topic.from_interview
+            ? "Added from your mock interview report. Change anything to suit you."
+            : "Written by AI from the roadmap's sources. Change anything; your edits are kept when the roadmap is refreshed."}
         </p>
       </section>
 

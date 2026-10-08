@@ -58,6 +58,8 @@ export const RoadmapTopic = z.object({
   resources: z.array(ResourceLink),
   // origin covers the title and explanation; questions and cards carry their own.
   origin: Origin,
+  // Set when a weak spot from a mock interview was added here.
+  from_interview: z.object({ interviewId: z.string(), label: z.string() }).nullable().optional(),
   pinned: z.boolean(),
   order: z.int(),
 });

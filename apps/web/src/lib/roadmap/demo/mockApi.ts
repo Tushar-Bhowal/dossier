@@ -158,6 +158,42 @@ function nextIds(roadmap: Roadmap, prefix: "q" | "f"): () => string {
   return () => `${prefix}${(n += 1)}`;
 }
 
+export interface InterviewTopicInput {
+  interviewId: string;
+  label: string;
+  title: string;
+  why: string;
+  practice: string;
+  resource: Roadmap["topics"][number]["resources"][number] | null;
+}
+
+// A weak spot from a mock interview becomes a practice topic on the roadmap, marked with where it came from.
+export function addTopicFromInterview(roadmapId: string, input: InterviewTopicInput): string {
+  const entry = getStore().entries.get(roadmapId);
+  const roadmap = entry?.record.roadmap;
+  if (!entry || !roadmap) throw new ApiError(404, "not_found", "roadmap not found");
+  const topicNumbers = roadmap.topics.map((t) => Number(t.id.slice(1)));
+  const topicId = `t${Math.max(0, ...topicNumbers) + 1}`;
+  const questionId = nextIds(roadmap, "q")();
+  roadmap.topics.push({
+    id: topicId,
+    title: input.title,
+    stage: "practice",
+    prerequisite_ids: [],
+    explanation: input.why,
+    questions: [{ id: questionId, prompt: input.practice, answer_outline: "", round_id: null, difficulty: 2, origin: "generated", pinned: false, order: 1 }],
+    flashcards: [],
+    resources: input.resource ? [input.resource] : [],
+    origin: "generated",
+    pinned: false,
+    order: Math.max(0, ...roadmap.topics.map((t) => t.order)) + 1,
+    from_interview: { interviewId: input.interviewId, label: input.label },
+  });
+  entry.record.version += 1;
+  entry.record.updatedAt = new Date().toISOString();
+  return topicId;
+}
+
 export const mockApi = {
   async listRoadmaps(): Promise<RoadmapListItem[]> {
     await sleep(roadmapScenario.getScenario().latency === "slow" ? 4000 : READ_DELAY_MS);

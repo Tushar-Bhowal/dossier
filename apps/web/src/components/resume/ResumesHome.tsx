@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowUpRight, Copy, Crosshair, FileText, GraduationCap, Plus, Trash2 } from "lucide-react";
+import { ArrowUpRight, BookOpenText, Copy, Crosshair, FileText, GraduationCap, Mic, Plus, Trash2 } from "lucide-react";
 import type { ResumeListItem } from "@dossier/core/resume";
 import { copyResume, deleteResume, getProfile, listResumes, resumeKeys } from "@/lib/resume/api";
 import { Button } from "@/components/ui/button";
@@ -201,17 +201,54 @@ export function ResumesHome() {
         </ul>
       )}
 
+      {list.data && list.data.length > 0 && (
+        <div className="grid gap-4 md:grid-cols-2">
+          <Link
+            href="/resumes/stories"
+            className="group flex items-center gap-4 rounded-lg border border-white/[0.08] bg-[#111111] p-5 transition-colors hover:border-white/20"
+          >
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-white/[0.05] text-[#ff7a5c]">
+              <BookOpenText className="size-5" aria-hidden />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px] font-semibold text-white group-hover:text-[#ff7a5c]">Your stories</span>
+              <span className="mt-0.5 block text-sm font-medium text-white/55">Real stories from your resume for &ldquo;Tell me about a time…&rdquo;</span>
+            </span>
+            <ArrowUpRight className="size-4 shrink-0 text-white/40 group-hover:text-white" aria-hidden />
+          </Link>
+          <Link
+            href="/interviews/new?resume=first"
+            className="group flex items-center gap-4 rounded-lg border border-white/[0.08] bg-[#111111] p-5 transition-colors hover:border-white/20"
+          >
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-white/[0.05] text-[#ff7a5c]">
+              <Mic className="size-5" aria-hidden />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px] font-semibold text-white group-hover:text-[#ff7a5c]">Drill me on my resume</span>
+              <span className="mt-0.5 block text-sm font-medium text-white/55">A mock interview asking about the lines on your resume</span>
+            </span>
+            <ArrowUpRight className="size-4 shrink-0 text-white/40 group-hover:text-white" aria-hidden />
+          </Link>
+        </div>
+      )}
+
       {profile.data && profile.data.skillsToLearn.length > 0 && (
         <section className="rounded-lg border border-white/[0.08] bg-[#111111] p-5">
           <div className="flex flex-wrap items-center gap-2">
             <GraduationCap className="size-[18px] text-[#ff7a5c]" aria-hidden />
             <h2 className="text-base font-semibold text-white">Skills to learn</h2>
-            <Badge variant="outline">Roadmaps — Coming soon</Badge>
           </div>
+          <p className="mt-1 text-sm font-medium text-white/55">Pick one to get a step-by-step roadmap for it.</p>
           <ul className="mt-3 flex flex-wrap gap-2">
             {profile.data.skillsToLearn.map((s) => (
-              <li key={s} className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-sm font-semibold text-white/85">
-                {s}
+              <li key={s}>
+                <Link
+                  href={`/roadmaps?${new URLSearchParams({ new: "1", kind: "skill", subject: s }).toString()}`}
+                  className="flex h-10 items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm font-semibold text-white/85 transition-colors hover:border-primary/40 hover:text-white"
+                >
+                  {s}
+                  <ArrowUpRight className="size-3.5 text-white/45" aria-hidden />
+                </Link>
               </li>
             ))}
           </ul>

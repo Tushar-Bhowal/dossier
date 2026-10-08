@@ -14,6 +14,7 @@ function pageTitleFor(pathname: string): string {
   if (pathname === "/assistants") return "AI assistants";
   if (pathname === "/resumes") return "Resume Studio";
   if (pathname === "/resumes/new") return "New resume";
+  if (pathname === "/resumes/stories") return "Your stories";
   if (pathname.startsWith("/resumes/") && pathname.endsWith("/tailor")) return "Tailor for a job";
   if (pathname.startsWith("/resumes/")) return "Resume";
   if (pathname === "/interviews") return "Mock interviews";
@@ -54,7 +55,7 @@ function AppHeader() {
 function CollapseSidebarOnResume() {
   const pathname = usePathname() ?? "";
   const { open, setOpen, isMobile } = useSidebar();
-  const onResume = /^\/resumes\/(?!new$)[^/]+$/.test(pathname);
+  const onResume = /^\/resumes\/(?!new$|stories$)[^/]+$/.test(pathname);
   const wasOnResume = React.useRef(false);
   const reopen = React.useRef(false);
 

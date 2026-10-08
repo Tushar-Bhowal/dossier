@@ -9,6 +9,7 @@ import { ApiError } from "@/lib/api";
 import { getInterview, interviewKeys } from "@/lib/interview/api";
 import { InterviewReportView } from "./InterviewReport";
 import { LiveInterview } from "./LiveInterview";
+import { AddToRoadmap } from "./AddToRoadmap";
 
 export function InterviewView({ id }: { id: string }) {
   const query = useQuery({
@@ -48,5 +49,7 @@ export function InterviewView({ id }: { id: string }) {
     );
   }
 
-  return query.data.status === "live" ? <LiveInterview record={query.data} /> : <InterviewReportView record={query.data} />;
+  return query.data.status === "live" ? <LiveInterview record={query.data} /> : (
+    <InterviewReportView record={query.data} weaknessAction={(w) => <AddToRoadmap record={query.data} weakness={w} />} />
+  );
 }

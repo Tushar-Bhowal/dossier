@@ -13,6 +13,7 @@ import { findSource, sampleAnswer, sourcesFor } from "./data";
 import { gradeInterview } from "./grader";
 import { interviewScenario } from "./scenario";
 import { interviewerLines } from "../script";
+import { addTopicFromInterview } from "@/lib/roadmap/demo/mockApi";
 
 interface Entry {
   record: InterviewRecord;
@@ -196,6 +197,27 @@ export const mockApi = {
     const entry = requireEntry(id);
     entry.record = { ...entry.record, status: "grading" };
     entry.readyAt = Date.now() + 5_000;
+    return clone(entry.record);
+  },
+
+  async addWeaknessToRoadmap(id: string, weaknessId: string, roadmapId: string): Promise<InterviewRecord> {
+    await sleep(600);
+    const entry = requireEntry(id);
+    const report = entry.record.report;
+    const weakness = report?.weaknesses.find((w) => w.id === weaknessId);
+    if (!report || !weakness) throw new ApiError(404, "not_found", "weak spot not found");
+    const weakest = [...report.questions]
+      .filter((q) => q.answered)
+      .sort((a, b) => a.scores.reduce((n, s) => n + s.score, 0) - b.scores.reduce((n, s) => n + s.score, 0))[0];
+    const topicId = addTopicFromInterview(roadmapId, {
+      interviewId: id,
+      label: entry.record.source.label,
+      title: weakness.title,
+      why: weakness.why,
+      practice: weakest ? `Answer this again, out loud, fixing what the report pointed out: ${weakest.prompt}` : "Answer one question from your mock interview again, out loud.",
+      resource: weakness.resource,
+    });
+    weakness.roadmapTopic = { roadmapId, topicId };
     return clone(entry.record);
   },
 

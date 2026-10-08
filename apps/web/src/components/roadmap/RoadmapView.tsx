@@ -125,7 +125,13 @@ function TopicRow({
           {!done && blockedBy.length > 0 && (
             <span className="mt-1 block text-sm font-medium text-amber-200/80">Best after: {blockedBy.map((t) => t.title).join(", ")}</span>
           )}
-          <span className="mt-1.5 block empty:hidden">
+          <span className="mt-1.5 flex flex-wrap gap-1.5 empty:hidden">
+            {topic.from_interview && (
+              <span className="inline-flex h-6 items-center gap-1 rounded-lg bg-violet-500/10 px-2 text-xs font-semibold text-violet-300">
+                <Mic className="size-3" aria-hidden />
+                From your mock interview
+              </span>
+            )}
             <OriginTag origin={topic.origin} pinned={topic.pinned} />
           </span>
         </span>

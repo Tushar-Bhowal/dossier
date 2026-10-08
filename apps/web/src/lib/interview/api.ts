@@ -16,6 +16,8 @@ export const getInterview = (id: string): Promise<InterviewRecord> => mockApi.ge
 export const createInterview = (req: CreateInterviewRequest): Promise<InterviewRecord> => mockApi.createInterview(req);
 export const finishInterview = (id: string, req: FinishInterviewRequest): Promise<InterviewRecord> => mockApi.finishInterview(id, req);
 export const retryGrading = (id: string): Promise<InterviewRecord> => mockApi.retryGrading(id);
+export const addWeaknessToRoadmap = (id: string, weaknessId: string, roadmapId: string): Promise<InterviewRecord> =>
+  mockApi.addWeaknessToRoadmap(id, weaknessId, roadmapId);
 export const deleteInterview = (id: string): Promise<void> => mockApi.deleteInterview(id);
 
 export const interviewKeys = {
