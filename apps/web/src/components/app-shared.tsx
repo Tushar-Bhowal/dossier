@@ -43,16 +43,15 @@ export const navGroups: NavGroup[] = [
         icon: <Map className="size-[18px]" />,
       },
       {
+        title: "Mock interviews",
+        path: "/interviews",
+        icon: <Mic className="size-[18px]" />,
+      },
+      {
         title: "AI assistants",
         path: "/assistants",
         icon: <Plug className="size-[18px]" />,
       },
-    ],
-  },
-  {
-    label: "Coming soon",
-    items: [
-      { title: "Mock interviews", path: "/interviews", icon: <Mic className="size-[18px]" />, soon: true },
     ],
   },
 ];

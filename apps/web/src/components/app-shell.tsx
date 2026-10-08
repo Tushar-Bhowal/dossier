@@ -16,6 +16,9 @@ function pageTitleFor(pathname: string): string {
   if (pathname === "/resumes/new") return "New resume";
   if (pathname.startsWith("/resumes/") && pathname.endsWith("/tailor")) return "Tailor for a job";
   if (pathname.startsWith("/resumes/")) return "Resume";
+  if (pathname === "/interviews") return "Mock interviews";
+  if (pathname === "/interviews/new") return "New mock interview";
+  if (pathname.startsWith("/interviews/")) return "Mock interview";
   if (pathname === "/roadmaps") return "Roadmaps";
   if (/^\/roadmaps\/[^/]+\/practice$/.test(pathname)) return "Flashcards";
   if (pathname.includes("/topics/")) return "Topic";

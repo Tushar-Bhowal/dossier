@@ -9,6 +9,7 @@
     "./resume": "./src/resume.ts",
     "./account": "./src/account.ts",
     "./roadmap": "./src/roadmap.ts",
+    "./interview": "./src/interview.ts",
     "./applications": "./src/applications.ts"
   },
   "scripts": {
