@@ -30,7 +30,7 @@ import {
   toLocalDate,
   type ApplicationRecord,
   type ApplicationStatus,
-} from "@dossier/core/applications";
+} from "@roleground/core/applications";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,7 +50,7 @@ import { useAssistantPanel } from "@/components/assistant/AssistantPanel";
 import { setOpenApplication } from "@/components/assistant/useAssistant";
 
 type View = "board" | "list";
-const VIEW_KEY = "dossier.applications.view";
+const VIEW_KEY = "roleground.applications.view";
 
 const viewListeners = new Set<() => void>();
 
@@ -354,7 +354,7 @@ export function ApplicationsHome() {
           </Button>
           <Button size="lg" variant="outline" onClick={() => assistantPanel.setOpen(true)}>
             <MessageSquareText className="size-4" aria-hidden />
-            Ask Dossier
+            Ask Roleground
           </Button>
           <Button size="lg" onClick={() => setAdding(true)} className="flex-1 sm:flex-none">
             <Plus className="size-4" aria-hidden />
@@ -403,7 +403,7 @@ export function ApplicationsHome() {
           </div>
           <h2 className="relative mt-6 text-2xl font-semibold tracking-[-0.03em] text-white">Track every application in one place</h2>
           <p className="relative mt-2 max-w-md text-base leading-relaxed text-white/60">
-            Paste a job link and Dossier fills in the company and role. Move it along as you hear back, and get a nudge when
+            Paste a job link and Roleground fills in the company and role. Move it along as you hear back, and get a nudge when
             it&apos;s time to follow up.
           </p>
           <Button size="lg" className="relative mt-7" onClick={() => setAdding(true)}>

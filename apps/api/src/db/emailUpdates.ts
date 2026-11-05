@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { Collection } from 'mongodb';
-import type { EmailUpdateRecord, UpdateProposal } from '@dossier/core';
+import type { EmailUpdateRecord, UpdateProposal } from '@roleground/core';
 import { getDb } from './mongo.js';
 
 export type UpdateSource = 'email' | 'assistant' | 'chat';

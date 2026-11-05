@@ -60,7 +60,7 @@ let indexesReady: Promise<void> | null = null;
 // concurrent requests don't all race to create the same index.
 export async function getDb(): Promise<Db> {
   const client = await getClientPromise();
-  const db = client.db(process.env.MONGODB_DB ?? 'dossier');
+  const db = client.db(process.env.MONGODB_DB ?? 'roleground');
   if (!indexesReady) {
     indexesReady = ensureIndexes(db);
   }

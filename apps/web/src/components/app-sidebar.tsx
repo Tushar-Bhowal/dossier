@@ -75,13 +75,13 @@ export function AppSidebar() {
         >
           <Image
             src="/logo.png"
-            alt="Dossier"
+            alt="Roleground"
             width={30}
             height={30}
             className="size-[30px] object-contain"
             priority
           />
-          <span className="truncate text-[17px] font-bold tracking-[-0.02em]">Dossier</span>
+          <span className="truncate text-[17px] font-bold tracking-[-0.02em]">Roleground</span>
         </Link>
         <Button
           onClick={toggleSidebar}
@@ -219,7 +219,7 @@ export function AppSidebar() {
       <ConfirmDialog
         open={confirmSignOutOpen}
         onOpenChange={setConfirmSignOutOpen}
-        title="Sign out of Dossier?"
+        title="Sign out of Roleground?"
         description="Are you sure you want to sign out? You will need to log back in to access your interview kits and progress."
         confirmLabel="Sign out"
         confirmingLabel="Signing out…"

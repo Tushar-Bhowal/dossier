@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { Kit } from "@dossier/core";
+import type { Kit } from "@roleground/core";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";

@@ -17,7 +17,7 @@ import {
   type Resume,
   type Section,
   type SectionKind,
-} from "@dossier/core/resume";
+} from "@roleground/core/resume";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { SaveApiKeyRequest, type ApiKeyStatus, type UsageToday } from "@dossier/core/account";
+import { SaveApiKeyRequest, type ApiKeyStatus, type UsageToday } from "@roleground/core/account";
 import { AlertCircle, ArrowUpRight, KeyRound, LoaderCircle, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -290,7 +290,7 @@ export function ApiKeySection() {
             <KeyForm replacing={Boolean(key.data)} onCancel={() => setReplacing(false)} />
             <p className="border-t border-white/[0.06] pt-5 text-sm font-medium leading-relaxed text-white/55">
               On Google&apos;s free plan, Google may use what you send to improve its products. That&apos;s the same as
-              Dossier&apos;s shared key, so avoid pasting anything private.
+              Roleground&apos;s shared key, so avoid pasting anything private.
             </p>
           </>
         )}

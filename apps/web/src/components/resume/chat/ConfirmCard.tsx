@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Hammer, Pencil, Plus, Trash2, X } from "lucide-react";
-import { formatDateRange, type CareerProfile, type Entry, type Fact } from "@dossier/core/resume";
+import { formatDateRange, type CareerProfile, type Entry, type Fact } from "@roleground/core/resume";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CardTitle, DoneSummary, cardClass } from "./Thread";

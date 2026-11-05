@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { ArrowRight, FolderKanban } from "lucide-react";
-import type { TailorTarget } from "@dossier/core/resume";
+import type { TailorTarget } from "@roleground/core/resume";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

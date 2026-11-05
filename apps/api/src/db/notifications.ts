@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import type { Collection } from 'mongodb';
-import { DEFAULT_PREFS, normalizePrefs, type BuiltChannel, type NotificationPrefs, type PushSubscriptionInput } from '@dossier/core';
+import { DEFAULT_PREFS, normalizePrefs, type BuiltChannel, type NotificationPrefs, type PushSubscriptionInput } from '@roleground/core';
 import { getDb } from './mongo.js';
 import { isDuplicateKey } from './applications.js';
 
@@ -91,7 +91,7 @@ export async function unlinkTelegram(userId: string): Promise<void> {
   );
 }
 
-// "/stop" in Telegram knows only the chat, not the Dossier account.
+// "/stop" in Telegram knows only the chat, not the Roleground account.
 export async function unlinkTelegramChat(chatId: number): Promise<number> {
   const result = await (await settings()).updateMany(
     { 'telegram.chatId': chatId },
@@ -127,7 +127,7 @@ async function telegramLinks(): Promise<Collection<TelegramLinkDoc>> {
 }
 
 // Random, single-use and short-lived: it proves the person pressing Start in Telegram is the person
-// signed in to Dossier. base64url only uses characters Telegram allows in a start parameter.
+// signed in to Roleground. base64url only uses characters Telegram allows in a start parameter.
 export async function createLinkToken(userId: string): Promise<string> {
   const col = await telegramLinks();
   await col.deleteMany({ userId });

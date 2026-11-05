@@ -5,7 +5,7 @@ import {
   type Interview,
   type NotificationMessage,
   type NotificationPrefs,
-} from '@dossier/core';
+} from '@roleground/core';
 import { getSettings, removePushSub, unlinkTelegram, type NotificationSettingsDoc } from '../db/notifications.js';
 import { publishAt, qstashConfigured } from './qstash.js';
 import { sendTelegram, type SendOutcome } from './telegram.js';

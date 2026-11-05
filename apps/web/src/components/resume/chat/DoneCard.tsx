@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Camera, LoaderCircle, PenLine } from "lucide-react";
-import { toRenderData, type CareerProfile } from "@dossier/core/resume";
+import { toRenderData, type CareerProfile } from "@roleground/core/resume";
 import { getResume, resumeKeys, saveProfile, saveResume } from "@/lib/resume/api";
 import { useResumePdf } from "@/lib/resume/typst/compiler";
 import { resizePhoto } from "@/lib/resume/photo";

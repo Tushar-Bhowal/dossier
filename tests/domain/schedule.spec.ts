@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildSchedule, type Requirement, type Question } from '@dossier/core';
+import { buildSchedule, type Requirement, type Question } from '@roleground/core';
 
 function requirement(id: string, priority: 'must' | 'nice', order: number): Requirement {
   return {

@@ -1,5 +1,5 @@
-import type { InterviewQuestion, InterviewSourceOption, InterviewSourceType } from "@dossier/core/interview";
-import type { Roadmap, RoadmapStage } from "@dossier/core/roadmap";
+import type { InterviewQuestion, InterviewSourceOption, InterviewSourceType } from "@roleground/core/interview";
+import type { Roadmap, RoadmapStage } from "@roleground/core/roadmap";
 import type { Persona } from "@/lib/demo/scenario";
 import { seedFor } from "@/lib/roadmap/demo/data";
 import { getStore as getResumeStore } from "@/lib/resume/demo/store";

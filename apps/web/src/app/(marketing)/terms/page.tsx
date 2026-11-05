@@ -3,8 +3,8 @@ import Link from "next/link";
 import { Bullets, LegalPage } from "@/components/legal/LegalPage";
 
 export const metadata: Metadata = {
-  title: "Terms — Dossier",
-  description: "The plain-English terms for using Dossier.",
+  title: "Terms — Roleground",
+  description: "The plain-English terms for using Roleground.",
 };
 
 const link = "font-semibold text-[#ff7a5c] underline-offset-4 hover:underline";
@@ -14,14 +14,14 @@ export default function TermsPage() {
     <LegalPage
       title="Terms"
       updated="8 October 2026"
-      intro={<p>Dossier is a free tool for preparing for job interviews and keeping track of applications. By using it, you agree to these terms.</p>}
+      intro={<p>Roleground is a free tool for preparing for job interviews and keeping track of applications. By using it, you agree to these terms.</p>}
       sections={[
         {
           id: "yours",
           title: "Your content is yours",
           body: (
             <p>
-              What you add to Dossier stays yours. You let us store it and send it to the services listed on the{" "}
+              What you add to Roleground stays yours. You let us store it and send it to the services listed on the{" "}
               <Link href="/privacy" className={link}>
                 Privacy page
               </Link>{" "}
@@ -41,7 +41,7 @@ export default function TermsPage() {
         },
         {
           id: "use",
-          title: "Using Dossier fairly",
+          title: "Using Roleground fairly",
           body: (
             <Bullets
               items={[
@@ -58,7 +58,7 @@ export default function TermsPage() {
           title: "A free service, as it is",
           body: (
             <p>
-              Dossier is free and provided as it is, without guarantees. Features, daily limits and availability can change,
+              Roleground is free and provided as it is, without guarantees. Features, daily limits and availability can change,
               and the service can pause or end. If it ends, we&apos;ll give notice where we reasonably can so you can save
               what you need.
             </p>

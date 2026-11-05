@@ -78,7 +78,7 @@ function CollapseSidebarOnResume() {
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  // Room at the bottom so the floating "Ask Dossier" button never covers the last thing on a page.
+  // Room at the bottom so the floating "Ask Roleground" button never covers the last thing on a page.
   const onHome = usePathname() === "/home";
   return (
     <SidebarProvider className="[--app-header-height:4rem]">

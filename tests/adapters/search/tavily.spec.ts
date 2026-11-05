@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { TavilySearchAdapter } from '@dossier/core';
+import { TavilySearchAdapter } from '@roleground/core';
 
 describe('TavilySearchAdapter', () => {
   it('maps Tavily results to SearchResult', async () => {

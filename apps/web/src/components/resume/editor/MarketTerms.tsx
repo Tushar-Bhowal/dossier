@@ -11,7 +11,7 @@ import {
   type Proposal,
   type Resume,
   type Section,
-} from "@dossier/core/resume";
+} from "@roleground/core/resume";
 import { answerMarketTerms, getMarketTerms, resumeKeys } from "@/lib/resume/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

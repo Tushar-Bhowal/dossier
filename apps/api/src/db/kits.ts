@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { Collection } from 'mongodb';
-import type { Kit } from '@dossier/core';
+import type { Kit } from '@roleground/core';
 import { getDb } from './mongo.js';
 
 export interface KitInput {

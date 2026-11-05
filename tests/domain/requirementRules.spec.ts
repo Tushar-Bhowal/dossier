@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { verifyAgainstSource, type RawRequirementCandidate } from '@dossier/core';
+import { verifyAgainstSource, type RawRequirementCandidate } from '@roleground/core';
 
 const JD = `Senior Backend Engineer
 

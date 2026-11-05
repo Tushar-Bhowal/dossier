@@ -20,7 +20,7 @@ import type {
   StartTailoringRequest,
   TailoringDecision,
   TailoringState,
-} from "@dossier/core/resume";
+} from "@roleground/core/resume";
 import { mockApi } from "./demo/mockApi";
 
 // Phase U: every call resolves from the static demo data — no network, no storage. Phase B adds the

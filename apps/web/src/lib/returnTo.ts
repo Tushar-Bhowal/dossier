@@ -1,6 +1,6 @@
 // A page that needs sign-in (the assistant consent screen) saves its address here before sending
 // the user to /login; the dashboard sends them back once they're in, whichever way they signed in.
-const KEY = "dossier.returnTo";
+const KEY = "roleground.returnTo";
 
 export function saveReturnTo(path: string): void {
   try {

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { DropdownMenu } from "radix-ui";
 import { ChevronDown, ClipboardCopy, FileCode2, FileDown, FileText, LoaderCircle, type LucideIcon } from "lucide-react";
-import { toMarkdown, type RenderData } from "@dossier/core/resume";
+import { toMarkdown, type RenderData } from "@roleground/core/resume";
 import { buildResumeDocx, downloadBlob, resumeFileName } from "@/lib/resume/docx";
 import { toast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";

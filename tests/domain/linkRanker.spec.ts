@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { scoreLink, rankLinks, type CrawlLink } from '@dossier/core';
+import { scoreLink, rankLinks, type CrawlLink } from '@roleground/core';
 
 function link(url: string, anchorText = '', depth = 1): CrawlLink {
   return { url, anchorText, depth };

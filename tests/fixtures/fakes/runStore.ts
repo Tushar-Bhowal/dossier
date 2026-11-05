@@ -1,1 +1,1 @@
-export { InMemoryRunStore } from '@dossier/core';
+export { InMemoryRunStore } from '@roleground/core';

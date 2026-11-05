@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Image from "next/image";
-import type { FieldResult, FixedTopic } from "@dossier/core/autofill";
+import type { FieldResult, FixedTopic } from "@roleground/core/autofill";
 import { AlertCircle, Check, ChevronRight, FileText, LoaderCircle, LogIn, PenLine, RefreshCcw, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -121,11 +121,11 @@ export function Panel({
   const needs = groups.find((x) => x.g === "blank")!.items.length;
 
   return (
-    <aside aria-label="Dossier side panel" className="flex h-full min-h-[640px] flex-col bg-[#0f0f0f] text-white">
+    <aside aria-label="Roleground side panel" className="flex h-full min-h-[640px] flex-col bg-[#0f0f0f] text-white">
       <header className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-4 py-3">
         <span className="flex items-center gap-2">
           <Image src="/logo.png" alt="" width={22} height={22} className="size-[22px]" />
-          <span className="text-[15px] font-bold tracking-[-0.02em]">Dossier</span>
+          <span className="text-[15px] font-bold tracking-[-0.02em]">Roleground</span>
         </span>
         {email && <span className="truncate text-[13px] font-medium text-white/50">{email}</span>}
       </header>
@@ -133,11 +133,11 @@ export function Panel({
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
         {!email ? (
           <div className="flex flex-col gap-3 rounded-lg border border-white/[0.08] bg-white/[0.02] p-4">
-            <p className="text-[15px] font-semibold">Sign in to Dossier first</p>
-            <p className="text-sm leading-relaxed text-white/60">The extension uses your Dossier profile and saved answers. Nothing on this page is read until you&apos;re signed in.</p>
+            <p className="text-[15px] font-semibold">Sign in to Roleground first</p>
+            <p className="text-sm leading-relaxed text-white/60">The extension uses your Roleground profile and saved answers. Nothing on this page is read until you&apos;re signed in.</p>
             <Button className="h-11">
               <LogIn className="size-4" aria-hidden />
-              Open Dossier to sign in
+              Open Roleground to sign in
             </Button>
           </div>
         ) : phase === "idle" ? (
@@ -196,7 +196,7 @@ export function Panel({
               <p className="text-[15px] font-semibold">
                 {results.length - needs} of {results.length} filled{needs ? ` · ${needs} need you` : ""}
               </p>
-              <p className="mt-1 text-sm text-white/60">Check everything, then submit the form yourself. Dossier never clicks Submit or Next.</p>
+              <p className="mt-1 text-sm text-white/60">Check everything, then submit the form yourself. Roleground never clicks Submit or Next.</p>
             </div>
 
             {aiProblem && (
@@ -214,7 +214,7 @@ export function Panel({
             )}
             {unreadableParts > 0 && (
               <p role="note" className="rounded-lg border border-white/[0.08] bg-white/[0.02] p-3 text-sm text-white/65">
-                Part of this form is inside a box from another site that Dossier can&apos;t read. Fill that part yourself.
+                Part of this form is inside a box from another site that Roleground can&apos;t read. Fill that part yourself.
               </p>
             )}
 

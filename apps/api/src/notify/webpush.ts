@@ -1,5 +1,5 @@
 import webpush from 'web-push';
-import type { NotificationMessage } from '@dossier/core';
+import type { NotificationMessage } from '@roleground/core';
 import type { PushSub } from '../db/notifications.js';
 import type { SendOutcome } from './telegram.js';
 

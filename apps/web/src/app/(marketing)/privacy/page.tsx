@@ -3,8 +3,8 @@ import Link from "next/link";
 import { Bullets, Facts, LegalPage } from "@/components/legal/LegalPage";
 
 export const metadata: Metadata = {
-  title: "Privacy — Dossier",
-  description: "What Dossier stores, who processes it, how long it's kept, and how to delete it.",
+  title: "Privacy — Roleground",
+  description: "What Roleground stores, who processes it, how long it's kept, and how to delete it.",
 };
 
 const link = "font-semibold text-[#ff7a5c] underline-offset-4 hover:underline";
@@ -16,7 +16,7 @@ export default function PrivacyPage() {
       updated="8 October 2026"
       intro={
         <p>
-          The short version: what you put in Dossier is yours and only you can see it. We send text to AI services so they
+          The short version: what you put in Roleground is yours and only you can see it. We send text to AI services so they
           can do the work you asked for, we never sell anything, and you can delete everything at once.
         </p>
       }
@@ -40,8 +40,8 @@ export default function PrivacyPage() {
                   text: "Everything you type into the job tracker, including notes and interview dates.",
                 },
                 {
-                  label: "Chat with Dossier",
-                  text: "Your messages and Dossier's replies, deleted automatically after 30 days. Files or text you paste in are read once and never stored, only their name.",
+                  label: "Chat with Roleground",
+                  text: "Your messages and Roleground's replies, deleted automatically after 30 days. Files or text you paste in are read once and never stored, only their name.",
                 },
                 {
                   label: "Pasted recruiter emails",
@@ -68,12 +68,12 @@ export default function PrivacyPage() {
           title: "Who else handles it",
           body: (
             <>
-              <p>Dossier uses a few outside services to do its work. Each one gets only what that job needs.</p>
+              <p>Roleground uses a few outside services to do its work. Each one gets only what that job needs.</p>
               <Facts
                 items={[
                   {
                     label: "Google Gemini",
-                    text: "Writes kits, answers chat and suggests edits. It receives the text needed for that request, such as a job description, or your chat message with a short summary of your tracked applications and recent chat so it knows what you mean. Dossier uses Gemini's free plan, and on that plan Google may use what it receives to improve its products. Please don't paste things you'd want kept private, like ID numbers.",
+                    text: "Writes kits, answers chat and suggests edits. It receives the text needed for that request, such as a job description, or your chat message with a short summary of your tracked applications and recent chat so it knows what you mean. Roleground uses Gemini's free plan, and on that plan Google may use what it receives to improve its products. Please don't paste things you'd want kept private, like ID numbers.",
                   },
                   { label: "Groq", text: "A backup AI service, used when Gemini is busy. It receives the same kind of text." },
                   {
@@ -82,7 +82,7 @@ export default function PrivacyPage() {
                   },
                   {
                     label: "Web pages you give us",
-                    text: "When you add a company website or job link, Dossier visits that page to read it.",
+                    text: "When you add a company website or job link, Roleground visits that page to read it.",
                   },
                   {
                     label: "Telegram and your browser",
@@ -106,7 +106,7 @@ export default function PrivacyPage() {
                 "Sell your data, or share it for advertising.",
                 "Read your Gmail or any inbox. You paste an email in, or your own AI assistant reads it and suggests changes you approve.",
                 "Sign in to LinkedIn or any other site as you.",
-                "Show your data to other Dossier users.",
+                "Show your data to other Roleground users.",
               ]}
             />
           ),

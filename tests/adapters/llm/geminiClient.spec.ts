@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
-import { GeminiClient, LlmCallError, RateLimiter } from '@dossier/core';
+import { GeminiClient, LlmCallError, RateLimiter } from '@roleground/core';
 
 function geminiResponse(text: string, status = 200, headers: Record<string, string> = {}): Response {
   const payload =

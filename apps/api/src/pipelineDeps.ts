@@ -8,7 +8,7 @@ import {
   createSearchChain,
   createLlmChain,
   type PipelineDeps,
-} from '@dossier/core';
+} from '@roleground/core';
 
 let geminiRateLimiter: RateLimiter | null = null;
 let groqRateLimiter: RateLimiter | null = null;

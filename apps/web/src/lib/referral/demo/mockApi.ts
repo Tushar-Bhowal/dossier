@@ -8,7 +8,7 @@ import {
   type ReferralContact,
   type ReferralSuggestion,
   type SuggestResult,
-} from "@dossier/core/applications";
+} from "@roleground/core/applications";
 import { ApiError } from "@/lib/api";
 import { READ_DELAY_MS, sleep, type Persona } from "@/lib/demo/scenario";
 import { referralScenario } from "./scenario";

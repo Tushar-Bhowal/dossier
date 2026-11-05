@@ -22,7 +22,7 @@ import {
   ShieldCheck,
   Trash2,
 } from "lucide-react";
-import { followUpDue, isClosed, isStale, nextInterview, toLocalDate, type ApplicationRecord } from "@dossier/core/applications";
+import { followUpDue, isClosed, isStale, nextInterview, toLocalDate, type ApplicationRecord } from "@roleground/core/applications";
 import { listApplications, listEmailUpdates } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -301,11 +301,11 @@ const PAGES = [
 ] as const;
 
 // The assistant can't act on these yet, so they're links rather than things to say.
-function AlsoInDossier() {
+function AlsoInRoleground() {
   return (
     <section aria-labelledby="also-heading" className="flex flex-col gap-4">
       <h2 id="also-heading" className="text-[17px] font-semibold text-white">
-        Also in Dossier
+        Also in Roleground
       </h2>
       <ul className="grid gap-3 sm:grid-cols-2">
         {PAGES.map((p) => (
@@ -424,7 +424,7 @@ export function AssistantHome() {
                 <TodayPanel />
               </div>
               <Capabilities onPick={pick} />
-              <AlsoInDossier />
+              <AlsoInRoleground />
               <div className="lg:hidden">
                 <HowIWork />
               </div>

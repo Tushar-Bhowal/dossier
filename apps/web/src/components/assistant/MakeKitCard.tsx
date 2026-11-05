@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { ArrowUpRight, Check, FolderKanban, LoaderCircle } from "lucide-react";
-import { nextInterview, type ApplicationRecord, type ChatPart } from "@dossier/core/applications";
+import { nextInterview, type ApplicationRecord, type ChatPart } from "@roleground/core/applications";
 import { useActiveRuns } from "@/hooks/use-active-runs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

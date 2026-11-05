@@ -76,7 +76,7 @@ function AccountSection() {
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        title="Sign out of Dossier?"
+        title="Sign out of Roleground?"
         description="You'll need to sign in again to see your kits, applications and resumes."
         confirmLabel="Sign out"
         confirmingLabel="Signing out…"

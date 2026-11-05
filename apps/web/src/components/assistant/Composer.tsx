@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { DictationButton, DictationLanguageSelect } from "@/components/resume/parts";
 import { LONG_PASTE } from "./useAssistant";
 
-const LANG_KEY = "dossier.assistant.lang";
+const LANG_KEY = "roleground.assistant.lang";
 const MAX_TEXT = 4000;
 const MAX_PASTE = 20_000;
 

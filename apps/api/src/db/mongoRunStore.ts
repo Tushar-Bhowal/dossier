@@ -1,6 +1,6 @@
 import type { Collection } from 'mongodb';
 import { MongoServerError } from 'mongodb';
-import type { RunRecord, RunStore } from '@dossier/core';
+import type { RunRecord, RunStore } from '@roleground/core';
 import { getDb } from './mongo.js';
 
 export interface RunInput {

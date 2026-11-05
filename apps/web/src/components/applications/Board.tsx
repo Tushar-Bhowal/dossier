@@ -14,7 +14,7 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { CLOSED_STATUSES, type ApplicationRecord, type ApplicationStatus } from "@dossier/core/applications";
+import { CLOSED_STATUSES, type ApplicationRecord, type ApplicationStatus } from "@roleground/core/applications";
 import { cn } from "@/lib/utils";
 import { ApplicationCard } from "./ApplicationCard";
 import { BOARD_COLUMNS, STATUS_LABEL, STATUS_TONE, columnOf, type BoardColumnId } from "./statusStyle";

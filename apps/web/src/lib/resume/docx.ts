@@ -1,6 +1,6 @@
 "use client";
 
-import type { RenderData } from "@dossier/core/resume";
+import type { RenderData } from "@roleground/core/resume";
 
 // A4 in twips. Margins and gaps follow the resume's layout; Word can't measure ahead, so there is no
 // fit-to-one-page here — text stays at its normal size.

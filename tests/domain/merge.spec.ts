@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mergeRegeneration, type Question } from '@dossier/core';
+import { mergeRegeneration, type Question } from '@roleground/core';
 
 function question(
   id: string,

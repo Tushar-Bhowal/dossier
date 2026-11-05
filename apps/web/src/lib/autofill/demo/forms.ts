@@ -1,4 +1,4 @@
-import type { FieldDescriptor, FieldResult } from "@dossier/core/autofill";
+import type { FieldDescriptor, FieldResult } from "@roleground/core/autofill";
 import type { Persona } from "@/lib/demo/scenario";
 
 export interface DemoForm {

@@ -88,7 +88,7 @@ export function Hero() {
         </h1>
 
         <p className="mt-7 max-w-2xl text-pretty text-[17px] leading-relaxed text-white/70 sm:text-xl">
-          Dossier studies how real companies hire, then turns it into a roadmap, practice, a mock interview
+          Roleground studies how real companies hire, then turns it into a roadmap, practice, a mock interview
           that tells you the truth, and a resume that fits the job.
         </p>
 

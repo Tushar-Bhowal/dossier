@@ -1,4 +1,4 @@
-import type { DraftKind, DraftResult, Pitch, ReferralContact, ReferralSuggestion, SuggestResult } from "@dossier/core/applications";
+import type { DraftKind, DraftResult, Pitch, ReferralContact, ReferralSuggestion, SuggestResult } from "@roleground/core/applications";
 import { mockApi } from "./demo/mockApi";
 
 // Stage 1: sample people and drafts. S7 adds search-engine lookup and real drafts behind these.

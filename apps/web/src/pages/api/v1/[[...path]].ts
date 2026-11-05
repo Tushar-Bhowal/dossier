@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import app from '@dossier/api';
+import app from '@roleground/api';
 
 export const config = {
   api: { bodyParser: false },

@@ -1,4 +1,4 @@
-import type { Contact, RedactedKind, Redaction } from "@dossier/core/resume";
+import type { Contact, RedactedKind, Redaction } from "@roleground/core/resume";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

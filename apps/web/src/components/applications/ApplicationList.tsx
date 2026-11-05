@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronDown } from "lucide-react";
-import { isClosed, nextInterview, type ApplicationRecord, type ApplicationStatus } from "@dossier/core/applications";
+import { isClosed, nextInterview, type ApplicationRecord, type ApplicationStatus } from "@roleground/core/applications";
 import { interviewWhen } from "./calendar";
 import { Monogram, MoveMenu, StatusPill } from "./ApplicationCard";
 import { BOARD_COLUMNS, STATUS_LABEL, columnOf, relativeDays } from "./statusStyle";

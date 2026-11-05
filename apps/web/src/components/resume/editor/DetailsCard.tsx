@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { ChevronDown, LoaderCircle, Plus, UserRound, X } from "lucide-react";
-import type { CareerProfile, Contact } from "@dossier/core/resume";
+import type { CareerProfile, Contact } from "@roleground/core/resume";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { contactErrors, linkLabel, normaliseUrl } from "@/lib/resume/contact";

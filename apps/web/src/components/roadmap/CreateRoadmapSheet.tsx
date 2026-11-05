@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CreateRoadmapRequest, type RoadmapKind } from "@dossier/core/roadmap";
+import { CreateRoadmapRequest, type RoadmapKind } from "@roleground/core/roadmap";
 import { AlertCircle, Briefcase, GraduationCap, LoaderCircle } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";

@@ -32,7 +32,7 @@ import {
   type ChatPart,
   type NotificationPrefs,
   type UpdateProposal,
-} from '@dossier/core';
+} from '@roleground/core';
 import { createApplication, getOwnedApplication, isDuplicateKey, replaceOwnedApplication, type ApplicationDoc } from '../db/applications.js';
 import { saveAction } from '../db/chat.js';
 import { createEmailUpdate, toUpdateRecord } from '../db/emailUpdates.js';

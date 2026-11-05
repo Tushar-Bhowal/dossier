@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { AlertCircle, ArrowUp, FileText, LoaderCircle, MapPin, Paperclip, X } from "lucide-react";
-import type { Redaction, Region } from "@dossier/core/resume";
+import type { Redaction, Region } from "@roleground/core/resume";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { DictationButton, DictationLanguageSelect } from "../parts";

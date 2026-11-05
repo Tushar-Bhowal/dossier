@@ -17,7 +17,7 @@ import {
   Send,
   Trash2,
 } from "lucide-react";
-import type { ChatFallback, ChatPart, NotificationSettingsView } from "@dossier/core/applications";
+import type { ChatFallback, ChatPart, NotificationSettingsView } from "@roleground/core/applications";
 import { ApiError, createTelegramLink, getNotificationSettings, listApplications, savePushSubscription } from "@/lib/api";
 import { pushSupport, subscribeThisDevice } from "@/lib/push";
 import { Button } from "@/components/ui/button";
@@ -232,9 +232,9 @@ function EnablePushCard() {
         <p className="text-[15px] font-semibold text-white">{on ? "Notifications are on for this device" : "Notifications on this device"}</p>
         <p className="text-sm font-medium text-white/55">
           {on
-            ? "Reminders will show here, even with Dossier closed."
+            ? "Reminders will show here, even with Roleground closed."
             : support === "needs-home-screen"
-              ? "On iPhone: tap Share → Add to Home Screen, open Dossier from there, then ask me again."
+              ? "On iPhone: tap Share → Add to Home Screen, open Roleground from there, then ask me again."
               : support === "unsupported"
                 ? "This browser can't show notifications. Telegram works everywhere."
                 : "Your browser will ask for permission. Choose Allow."}

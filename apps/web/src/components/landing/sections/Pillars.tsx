@@ -62,7 +62,7 @@ export function Pillars() {
               Four tools. <Accent>One</Accent> loop.
             </>
           }
-          sub="Most people juggle a course, a mock-interview app, a resume builder and a spreadsheet. Dossier is one place where each part feeds the next."
+          sub="Most people juggle a course, a mock-interview app, a resume builder and a spreadsheet. Roleground is one place where each part feeds the next."
         />
 
         <div className="mt-16 grid gap-4 sm:mt-20 md:grid-cols-5">

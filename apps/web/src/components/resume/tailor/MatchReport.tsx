@@ -1,7 +1,7 @@
 "use client";
 
 import { CheckCircle2, Circle, Target } from "lucide-react";
-import { termCoverage, type TailoringState, type Verdict } from "@dossier/core/resume";
+import { termCoverage, type TailoringState, type Verdict } from "@roleground/core/resume";
 import { cn } from "@/lib/utils";
 
 const VERDICT: Record<Verdict, { label: string; className: string }> = {

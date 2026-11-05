@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Kit, BatchCase, BatchInput, BatchOutput, createIdMinter } from '@dossier/core';
+import { Kit, BatchCase, BatchInput, BatchOutput, createIdMinter } from '@roleground/core';
 
 function validKit() {
   return {

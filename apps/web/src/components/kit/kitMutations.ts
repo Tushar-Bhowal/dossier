@@ -1,10 +1,10 @@
-import type { Flashcard, Kit, Question, Requirement } from "@dossier/core";
+import type { Flashcard, Kit, Question, Requirement } from "@roleground/core";
 
 function markEdited(origin: Requirement["origin"]): Requirement["origin"] {
   return origin === "manual" ? "manual" : "edited";
 }
 
-// `@dossier/core`'s barrel re-exports its server-only adapters (Node `dns`/`net` etc.) alongside
+// `@roleground/core`'s barrel re-exports its server-only adapters (Node `dns`/`net` etc.) alongside
 // the contract types, so importing its runtime `createIdMinter`/`highestIdNumber` here would drag
 // that whole module graph into the client bundle. These few lines mirror
 // `packages/core/src/contracts/ids.ts` exactly, kept client-safe by not importing it.

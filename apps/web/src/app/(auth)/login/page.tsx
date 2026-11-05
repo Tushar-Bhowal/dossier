@@ -105,7 +105,7 @@ function AuthContent() {
         const registeredUser = await register(email, password);
         queryClient.setQueryData(["me"], registeredUser);
         toast.success("Account created successfully!", {
-          description: "Welcome to Dossier.",
+          description: "Welcome to Roleground.",
         });
         router.push("/home");
       }
@@ -142,7 +142,7 @@ function AuthContent() {
             className="flex items-center gap-2.5 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
           >
             <Image src="/logo.png" alt="" width={30} height={30} priority className="size-[30px]" />
-            <span className="text-[17px] font-bold tracking-[-0.02em] text-white">Dossier</span>
+            <span className="text-[17px] font-bold tracking-[-0.02em] text-white">Roleground</span>
           </Link>
           <Link
             href="/"
@@ -280,7 +280,7 @@ function AuthContent() {
           </form>
 
           <p className="mt-8 text-center text-[13px] leading-relaxed text-white/45">
-            By continuing, you agree to Dossier&apos;s{" "}
+            By continuing, you agree to Roleground&apos;s{" "}
             <Link href="/terms" className="font-semibold text-white/70 underline underline-offset-4 hover:text-white">
               Terms
             </Link>{" "}

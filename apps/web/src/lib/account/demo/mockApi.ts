@@ -4,7 +4,7 @@ import {
   type ApiKeyStatus,
   type QuotaKind,
   type UsageToday,
-} from "@dossier/core/account";
+} from "@roleground/core/account";
 import { ApiError } from "@/lib/api";
 import { READ_DELAY_MS, sleep, type Persona } from "@/lib/demo/scenario";
 import { nextUtcMidnight } from "../usage";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createSearchChain, searchPublicDiscussion } from '@dossier/core';
+import { createSearchChain, searchPublicDiscussion } from '@roleground/core';
 import { FakeSearchPort } from '../../fixtures/fakes/search.js';
 
 describe('createSearchChain', () => {

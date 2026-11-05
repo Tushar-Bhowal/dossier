@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { nextBox, nextReviewInDays, type Flashcard, type LeitnerBox } from '@dossier/core';
+import { nextBox, nextReviewInDays, type Flashcard, type LeitnerBox } from '@roleground/core';
 import { requireAuth } from '../middleware/auth.js';
 import { AppError } from '../middleware/error.js';
 import { getOwnedKit } from '../db/kits.js';

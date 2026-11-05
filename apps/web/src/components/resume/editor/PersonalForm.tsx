@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { LoaderCircle, ShieldCheck } from "lucide-react";
-import type { CareerProfile, PersonalDetails } from "@dossier/core/resume";
+import type { CareerProfile, PersonalDetails } from "@roleground/core/resume";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 

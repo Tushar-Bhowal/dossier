@@ -30,7 +30,7 @@ const ROWS = [
         Feedback that <Accent>quotes</Accent> you.
       </>
     ),
-    body: "Generic feedback is the top complaint about AI interview tools. Dossier's grader has to point at your actual words before it's allowed to score them.",
+    body: "Generic feedback is the top complaint about AI interview tools. Roleground's grader has to point at your actual words before it's allowed to score them.",
     points: [
       "Speak out loud with a voice interviewer, or type",
       "Scored on structure, depth and ownership",
@@ -52,7 +52,7 @@ export function DeepDives() {
               Built for the <Accent>hard</Accent> parts.
             </>
           }
-          sub="The places other tools go vague are where Dossier gets specific."
+          sub="The places other tools go vague are where Roleground gets specific."
         />
 
         <div className="mt-20 flex flex-col gap-24 sm:mt-28 sm:gap-40">

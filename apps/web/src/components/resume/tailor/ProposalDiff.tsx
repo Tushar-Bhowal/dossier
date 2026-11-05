@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, X } from "lucide-react";
-import type { Fact, Proposal, Requirement } from "@dossier/core/resume";
+import type { Fact, Proposal, Requirement } from "@roleground/core/resume";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 

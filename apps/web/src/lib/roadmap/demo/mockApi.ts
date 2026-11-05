@@ -10,7 +10,7 @@ import {
   type RoadmapListItem,
   type RoadmapRecord,
   type SaveRoadmapRequest,
-} from "@dossier/core/roadmap";
+} from "@roleground/core/roadmap";
 import { ApiError, type PracticeCard, type PracticeSession } from "@/lib/api";
 import { READ_DELAY_MS, sleep } from "@/lib/demo/scenario";
 import { genericRoadmap, seedFor } from "./data";

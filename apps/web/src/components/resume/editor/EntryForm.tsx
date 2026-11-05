@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { Entry, EntryKind } from "@dossier/core/resume";
+import type { Entry, EntryKind } from "@roleground/core/resume";
 import { normaliseUrl } from "@/lib/resume/contact";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

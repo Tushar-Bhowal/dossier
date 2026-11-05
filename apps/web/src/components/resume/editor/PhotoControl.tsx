@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Camera, LoaderCircle } from "lucide-react";
-import type { CareerProfile } from "@dossier/core/resume";
+import type { CareerProfile } from "@roleground/core/resume";
 import { resizePhoto } from "@/lib/resume/photo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

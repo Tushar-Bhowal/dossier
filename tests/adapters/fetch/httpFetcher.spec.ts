@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { FetchPortError, HttpFetcher } from '@dossier/core';
+import { FetchPortError, HttpFetcher } from '@roleground/core';
 
 function htmlResponse(body: string, status = 200): Response {
   return new Response(body, { status, headers: { 'content-type': 'text/html; charset=utf-8' } });

@@ -20,7 +20,7 @@ import {
   type ApplicationRecord,
   type LlmPort,
   type UpdateProposal,
-} from '@dossier/core';
+} from '@roleground/core';
 import { requireAuth } from '../middleware/auth.js';
 import { AppError } from '../middleware/error.js';
 import { validateBody } from '../middleware/validate.js';

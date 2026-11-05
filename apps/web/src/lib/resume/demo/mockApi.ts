@@ -25,7 +25,7 @@ import {
   type StartTailoringRequest,
   type TailoringDecision,
   type TailoringState,
-} from "@dossier/core/resume";
+} from "@roleground/core/resume";
 import { ApiError } from "@/lib/api";
 import { mergeIntoProfile } from "../profile";
 import { composeFromProfile } from "./compose";

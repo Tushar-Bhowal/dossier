@@ -8,7 +8,7 @@ import {
   type ApplicationCreate,
   type ApplicationInput,
   type ApplicationRecord,
-} from "@dossier/core/applications";
+} from "@roleground/core/applications";
 import {
   ApiError,
   createApplication,

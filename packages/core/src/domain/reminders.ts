@@ -14,7 +14,7 @@ export const SWEEP_LOOKAHEAD_MS = SWEEP_WINDOW_MS + MAX_REMINDER_OFFSET * 60_000
 export interface NotificationMessage {
   title: string;
   body: string;
-  // Path inside Dossier to open, e.g. "/applications".
+  // Path inside Roleground to open, e.g. "/applications".
   path: string;
 }
 

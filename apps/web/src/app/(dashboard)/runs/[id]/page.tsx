@@ -127,7 +127,7 @@ export default function RunPage({ params }: PageProps<"/runs/[id]">) {
             <p className="mt-1.5 max-w-xl text-[15px] leading-relaxed text-white/60">
               {run.status === "partial"
                 ? "Hit the time budget for this request, so it's picking up where it left off."
-                : "Dossier researches the company first, then writes your kit step by step."}
+                : "Roleground researches the company first, then writes your kit step by step."}
             </p>
           </div>
           <div className="shrink-0 text-right">

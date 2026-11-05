@@ -1,4 +1,4 @@
-import type { InterviewSourceType, RubricCriterion } from "@dossier/core/interview";
+import type { InterviewSourceType, RubricCriterion } from "@roleground/core/interview";
 import { FileText, FolderKanban, Map as MapIcon, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 

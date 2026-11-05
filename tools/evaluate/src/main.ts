@@ -20,7 +20,7 @@ import {
   type BatchCase,
   type BatchKitResult,
   type PipelineDeps,
-} from '@dossier/core';
+} from '@roleground/core';
 
 const CONCURRENCY = 2;
 

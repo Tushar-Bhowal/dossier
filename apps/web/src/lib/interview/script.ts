@@ -1,4 +1,4 @@
-import type { InterviewQuestion } from "@dossier/core/interview";
+import type { InterviewQuestion } from "@roleground/core/interview";
 
 // What the scripted interviewer says. The real one (S5) is a live voice model given these questions.
 export function interviewerLines(subject: string, questions: InterviewQuestion[]) {

@@ -123,7 +123,7 @@ export function RoadmapDemo() {
       ref={ref}
       className="relative overflow-hidden rounded-lg border border-white/10 bg-[#0d0d0d]/90 shadow-[0_40px_120px_-20px_rgba(0,0,0,0.9),0_0_0_1px_rgba(255,255,255,0.03)_inset] backdrop-blur-xl"
       role="img"
-      aria-label={`Demo: Dossier researching how companies interview for ${demo.subject}, then building a four-stage roadmap from concepts to a mock interview.`}
+      aria-label={`Demo: Roleground researching how companies interview for ${demo.subject}, then building a four-stage roadmap from concepts to a mock interview.`}
     >
       <div className="flex h-12 items-center justify-between border-b border-white/[0.06] px-4 sm:px-5">
         <div className="flex items-center gap-2 text-[13px] font-medium text-white/75">

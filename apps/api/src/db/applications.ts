@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { Collection } from 'mongodb';
-import type { Application, ApplicationRecord } from '@dossier/core';
+import type { Application, ApplicationRecord } from '@roleground/core';
 import { getDb } from './mongo.js';
 
 export interface ApplicationDoc {

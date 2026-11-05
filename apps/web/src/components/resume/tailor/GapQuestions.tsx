@@ -1,6 +1,6 @@
 "use client";
 
-import type { GapQuestion } from "@dossier/core/resume";
+import type { GapQuestion } from "@roleground/core/resume";
 import { Input } from "@/components/ui/input";
 import { Chip } from "../parts";
 

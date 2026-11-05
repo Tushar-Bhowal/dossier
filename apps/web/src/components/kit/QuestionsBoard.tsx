@@ -15,7 +15,7 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { HelpCircle } from "lucide-react";
-import type { Question } from "@dossier/core";
+import type { Question } from "@roleground/core";
 import { Badge } from "@/components/ui/badge";
 import { CategoryColumn } from "./CategoryColumn";
 import { reorderQuestions } from "./kitMutations";

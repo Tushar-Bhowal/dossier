@@ -1,4 +1,4 @@
-import type { SearchPort, SearchResult } from '@dossier/core';
+import type { SearchPort, SearchResult } from '@roleground/core';
 
 export class FakeSearchPort implements SearchPort {
   private routes = new Map<string, SearchResult[]>();

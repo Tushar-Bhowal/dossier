@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import type { Kit } from "@dossier/core";
+import type { Kit } from "@roleground/core";
 import { ApiError, getKit, patchKit, regenerateSection, type RegenerateSection } from "@/lib/api";
 import { useDebouncedCallback, type SaveStatus } from "@/lib/optimistic";
 import { toast } from "@/components/ui/toast";

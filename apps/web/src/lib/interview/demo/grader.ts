@@ -7,7 +7,7 @@ import {
   type QuestionScore,
   type RubricCriterion,
   type Weakness,
-} from "@dossier/core/interview";
+} from "@roleground/core/interview";
 
 // A stand-in for the real AI grader: simple, honest signals over the user's own words, and every
 // score quotes a sentence they actually said or typed.

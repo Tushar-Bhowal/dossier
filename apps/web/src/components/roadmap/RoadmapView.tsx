@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { DropdownMenu } from "radix-ui";
-import type { RoadmapRecord, RoadmapTopic } from "@dossier/core/roadmap";
+import type { RoadmapRecord, RoadmapTopic } from "@roleground/core/roadmap";
 import {
   AlertCircle,
   ArrowLeft,

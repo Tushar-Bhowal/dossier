@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import type { InterviewRound, RoadmapFlashcard, RoadmapQuestion, RoadmapTopic } from "@dossier/core/roadmap";
+import type { InterviewRound, RoadmapFlashcard, RoadmapQuestion, RoadmapTopic } from "@roleground/core/roadmap";
 import {
   ArrowLeft,
   ArrowRight,

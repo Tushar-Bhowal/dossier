@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { History, RotateCcw } from "lucide-react";
-import type { ResumeSnapshot } from "@dossier/core/resume";
+import type { ResumeSnapshot } from "@roleground/core/resume";
 import { getResumeHistory, resumeKeys } from "@/lib/resume/api";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";

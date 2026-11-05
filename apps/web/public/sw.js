@@ -3,10 +3,10 @@ self.addEventListener("push", (event) => {
   try {
     data = event.data ? event.data.json() : {};
   } catch {
-    data = { title: "Dossier", body: event.data ? event.data.text() : "" };
+    data = { title: "Roleground", body: event.data ? event.data.text() : "" };
   }
   event.waitUntil(
-    self.registration.showNotification(data.title || "Dossier", {
+    self.registration.showNotification(data.title || "Roleground", {
       body: data.body || "",
       icon: "/logo.png",
       badge: "/logo.png",

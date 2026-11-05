@@ -1,5 +1,5 @@
 import type { Collection } from 'mongodb';
-import type { Confidence, LeitnerBox } from '@dossier/core';
+import type { Confidence, LeitnerBox } from '@roleground/core';
 import { getDb } from './mongo.js';
 
 export interface CardState {

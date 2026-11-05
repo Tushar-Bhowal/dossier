@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createLlmChain, type LlmCallParams, type LlmPort } from '@dossier/core';
+import { createLlmChain, type LlmCallParams, type LlmPort } from '@roleground/core';
 
 function fakePort(impl: (params: LlmCallParams<unknown>) => Promise<unknown>): LlmPort {
   return { generate: impl as LlmPort['generate'] };

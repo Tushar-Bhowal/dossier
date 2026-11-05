@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateCompanyBrief } from '@dossier/core';
+import { generateCompanyBrief } from '@roleground/core';
 import { FakeLlmPort } from '../../fixtures/fakes/llm.js';
 
 describe('generateCompanyBrief', () => {

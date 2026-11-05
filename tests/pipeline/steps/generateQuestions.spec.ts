@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateQuestions, type Requirement } from '@dossier/core';
+import { generateQuestions, type Requirement } from '@roleground/core';
 import { FakeLlmPort } from '../../fixtures/fakes/llm.js';
 
 function req(id: string, kind: Requirement['kind']): Requirement {

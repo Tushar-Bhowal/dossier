@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarClock, LoaderCircle, MailOpen } from "lucide-react";
-import type { ApplicationRecord, EmailUpdateRecord, UpdateProposal } from "@dossier/core/applications";
+import type { ApplicationRecord, EmailUpdateRecord, UpdateProposal } from "@roleground/core/applications";
 import { ApiError, applyEmailUpdate, dismissEmailUpdate, listEmailUpdates } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";

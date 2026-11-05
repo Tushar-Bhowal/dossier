@@ -5,7 +5,7 @@ import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { AnimatePresence } from "motion/react";
 import { Boxes, Building2, MessageSquare, Plus, RefreshCw, Terminal } from "lucide-react";
-import type { Question } from "@dossier/core";
+import type { Question } from "@roleground/core";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

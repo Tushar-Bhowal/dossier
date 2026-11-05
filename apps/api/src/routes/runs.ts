@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { Router } from 'express';
 import { z } from 'zod';
-import { assembleKit, createInitialContext, createPipelineSteps, Kit, runPipeline, type RunRecord } from '@dossier/core';
+import { assembleKit, createInitialContext, createPipelineSteps, Kit, runPipeline, type RunRecord } from '@roleground/core';
 import { MongoRunStore } from '../db/mongoRunStore.js';
 import { createKit } from '../db/kits.js';
 import { requireAuth } from '../middleware/auth.js';

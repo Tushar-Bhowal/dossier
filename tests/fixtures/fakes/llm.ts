@@ -1,4 +1,4 @@
-import { LlmCallError, type LlmCallParams, type LlmPort } from '@dossier/core';
+import { LlmCallError, type LlmCallParams, type LlmPort } from '@roleground/core';
 
 export class FakeLlmPort implements LlmPort {
   private queue: unknown[] = [];

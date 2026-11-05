@@ -11,7 +11,7 @@ import {
   type ApplicationInput,
   type ApplicationRecord,
   type ApplicationStatus,
-} from "@dossier/core/applications";
+} from "@roleground/core/applications";
 import { useActiveRuns } from "@/hooks/use-active-runs";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";

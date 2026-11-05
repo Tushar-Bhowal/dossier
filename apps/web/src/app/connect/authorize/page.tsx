@@ -12,7 +12,7 @@ import { saveReturnTo } from "@/lib/returnTo";
 
 const CAN = ["See your applications, interviews and notes", "Suggest updates, such as a new interview from an email"];
 const CANNOT = [
-  "Change or delete anything by itself: you apply every suggestion in Dossier",
+  "Change or delete anything by itself: you apply every suggestion in Roleground",
   "See your resumes, interview kits, email or password",
 ];
 
@@ -48,7 +48,7 @@ function Consent() {
     );
   }
   if (client.isError || !client.data) {
-    return <Message title="Unknown app" body="This app isn't registered with Dossier. Start connecting again from your AI assistant." />;
+    return <Message title="Unknown app" body="This app isn't registered with Roleground. Start connecting again from your AI assistant." />;
   }
 
   const hidden = { client_id: clientId, redirect_uri: redirectUri, code_challenge: codeChallenge, state: params?.get("state"), resource: params?.get("resource") };
@@ -58,7 +58,7 @@ function Consent() {
       {Object.entries(hidden).map(([name, value]) => (value ? <input key={name} type="hidden" name={name} value={value} /> : null))}
       <div>
         <h1 className="text-2xl font-semibold tracking-[-0.03em] text-white">
-          {client.data.name} wants to use your Dossier tracker
+          {client.data.name} wants to use your Roleground tracker
         </h1>
         <p className="mt-2 text-[15px] font-medium text-white/60">Signed in as {user?.email}</p>
       </div>
@@ -112,7 +112,7 @@ export default function AuthorizePage() {
       <div className="w-full max-w-md rounded-lg border border-white/10 bg-[#111111] p-6 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.06)] sm:p-8">
         <div className="mb-6 flex items-center gap-2.5">
           <Image src="/logo.png" alt="" width={30} height={30} priority className="size-[30px]" />
-          <span className="text-lg font-semibold tracking-[-0.02em] text-white">Dossier</span>
+          <span className="text-lg font-semibold tracking-[-0.02em] text-white">Roleground</span>
         </div>
         <React.Suspense fallback={null}>
           <Consent />

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Plus, Trash2, X } from "lucide-react";
-import type { SkillGroup } from "@dossier/core/resume";
+import type { SkillGroup } from "@roleground/core/resume";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";

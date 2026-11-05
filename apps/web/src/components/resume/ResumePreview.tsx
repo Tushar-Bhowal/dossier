@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { AlertCircle, LoaderCircle, Minus, Plus } from "lucide-react";
-import type { RenderData } from "@dossier/core/resume";
+import type { RenderData } from "@roleground/core/resume";
 import type { ResumePdfState } from "@/lib/resume/typst/compiler";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DownloadMenu } from "./DownloadMenu";

@@ -4,7 +4,7 @@ import { AddJob } from "@/components/bookmark/AddJob";
 import { DemoControls } from "@/components/demo/DemoControls";
 import { bookmarkScenario } from "@/lib/bookmark/scenario";
 
-export const metadata: Metadata = { title: "Add to Dossier" };
+export const metadata: Metadata = { title: "Add to Roleground" };
 
 export default function AddPage() {
   return (

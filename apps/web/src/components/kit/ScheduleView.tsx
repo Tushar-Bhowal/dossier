@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { Kit, Question } from "@dossier/core";
+import type { Kit, Question } from "@roleground/core";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, ChevronDown, Clock, HelpCircle, Target } from "lucide-react";

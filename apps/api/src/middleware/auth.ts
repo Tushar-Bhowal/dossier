@@ -2,7 +2,7 @@ import type { RequestHandler } from 'express';
 import jwt from 'jsonwebtoken';
 import { AppError } from './error.js';
 
-export const SESSION_COOKIE = 'dossier_session';
+export const SESSION_COOKIE = 'roleground_session';
 const SESSION_TTL = '7d';
 
 declare global {

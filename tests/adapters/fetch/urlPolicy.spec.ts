@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { FetchPortError } from '@dossier/core';
+import { FetchPortError } from '@roleground/core';
 
 vi.mock('node:dns/promises', () => ({
   default: {
@@ -15,7 +15,7 @@ vi.mock('node:dns/promises', () => ({
   },
 }));
 
-const { assertUrlAllowed } = await import('@dossier/core');
+const { assertUrlAllowed } = await import('@roleground/core');
 
 describe('assertUrlAllowed', () => {
   it('rejects 127.0.0.1 by default', async () => {

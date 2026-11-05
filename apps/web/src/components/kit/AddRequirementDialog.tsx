@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Loader2 } from "lucide-react";
-import type { Requirement } from "@dossier/core";
+import type { Requirement } from "@roleground/core";
 import {
   Dialog,
   DialogContent,

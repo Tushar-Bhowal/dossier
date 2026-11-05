@@ -5,12 +5,12 @@ import { Reveal } from "../motion/Reveal";
 
 const FAQS = [
   {
-    q: "Is Dossier free?",
+    q: "Is Roleground free?",
     a: "Yes, it's free to start and needs no card. Resume Studio's PDF and Word downloads will always be free, with no paywall at the download button and no watermark.",
   },
   {
     q: "Which fields does it cover?",
-    a: "Any field. Dossier doesn't use a fixed list of industries. It researches how your target role is interviewed and builds the rounds from that, whether it's audit, marketing, nursing or software.",
+    a: "Any field. Roleground doesn't use a fixed list of industries. It researches how your target role is interviewed and builds the rounds from that, whether it's audit, marketing, nursing or software.",
   },
   {
     q: "Where does the research come from?",
@@ -34,7 +34,7 @@ const FAQS = [
   },
   {
     q: "Will it help me during a live interview?",
-    a: "No, deliberately. Dossier prepares you beforehand. It won't listen to a real interview or feed you answers.",
+    a: "No, deliberately. Roleground prepares you beforehand. It won't listen to a real interview or feed you answers.",
   },
   {
     q: "What happens to my data?",

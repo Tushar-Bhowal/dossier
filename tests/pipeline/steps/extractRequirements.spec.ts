@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractRequirements } from '@dossier/core';
+import { extractRequirements } from '@roleground/core';
 import { FakeLlmPort } from '../../fixtures/fakes/llm.js';
 
 const RICH_JD = `Senior Backend Engineer at Acme.

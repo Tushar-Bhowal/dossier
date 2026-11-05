@@ -8,7 +8,7 @@ export function GET(request: Request) {
       authorization_servers: [origin],
       scopes_supported: ["tracker"],
       bearer_methods_supported: ["header"],
-      resource_name: "Dossier",
+      resource_name: "Roleground",
     },
     { headers: { "Access-Control-Allow-Origin": "*", "Cache-Control": "public, max-age=3600" } },
   );

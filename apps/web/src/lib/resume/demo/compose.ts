@@ -8,7 +8,7 @@ import {
   type EntrySectionKind,
   type Fact,
   type Section,
-} from "@dossier/core/resume";
+} from "@roleground/core/resume";
 import type { PersonaFixture } from "./types";
 
 const SECTION_FOR_ENTRY: Record<EntryKind, EntrySectionKind> = {

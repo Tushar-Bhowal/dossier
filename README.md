@@ -1,12 +1,14 @@
-# Dossier
+# Roleground
 
 An AI-assisted interview prep kit. Paste a job description and a company URL, say how many days
-you have, and Dossier researches the company, finds what it can about how they hire, and builds a
+you have, and Roleground researches the company, finds what it can about how they hire, and builds a
 structured kit — a company brief, a role breakdown, a categorised question bank, flashcards, and a
 day-by-day study schedule. Edit, reorder, regenerate any section without losing your edits, and
 practise against it inside the app.
 
 Built for the Trao Full-Stack Engineering Assessment (`FS-AI-INTERVIEW-01`).
+
+*(Note: Originally developed under the project name **Dossier**, rebranded to **Roleground** to represent the platform's vision as a career proving ground and ensure an entirely distinct, unique brand identity.)*
 
 **Live:** https://dossier-navy.vercel.app
 
@@ -245,7 +247,7 @@ changes, `rm -rf apps/web/.next` first.
 | `GROQ_API_KEY` | No | Second LLM provider, used only if every Gemini attempt fails (see "LLM provider and fallback" above); unset means a Gemini failure is a failure, same as without this feature |
 | `GROQ_RPM` / `GROQ_TPM` | No (defaults set) | Requests/tokens-per-minute for the Groq rate limiter — independent of Gemini's, since it's a different provider's own free-tier budget |
 | `MONGODB_URI` | Yes | MongoDB Atlas connection string (M0 free tier works) — needs `0.0.0.0/0` network access for serverless functions |
-| `MONGODB_DB` | No (defaults to `dossier`) | Database name |
+| `MONGODB_DB` | No (defaults to `roleground`) | Database name |
 | `JWT_SECRET` | Yes | Signs session JWTs — any long random string; rotating it invalidates every existing session |
 | `ALLOW_PRIVATE_HOSTS` | No — **never set in a deployed environment** | CLI-only escape hatch so the batch command can crawl a company site served from `localhost` (§9's fixture requirement). Read only by `tools/evaluate`, never by `apps/api` — §11's private/loopback rejection always holds in the deployed app regardless of this variable |
 
@@ -614,3 +616,7 @@ network code. Phase 1 (the actual pipeline — LLM calls, crawling, search) star
   defaulting to "Other" (every route 404s despite a successful build), and MongoDB Atlas rejecting
   every serverless connection until `0.0.0.0/0` was added to Network Access. All four of Task 32's
   live checks verified against the real deployment, not just code review.
+- **Rebrand to Roleground:** Rebranded the entire platform from Dossier to Roleground across all
+  monorepo packages (`@roleground/core`, `@roleground/api`, `@roleground/web`, `@roleground/evaluate`),
+  API endpoints, database defaults, auth cookies, and UI surfaces. Replaced the brand assets with a
+  freestanding, transparent geometric monogram emblem.

@@ -62,7 +62,7 @@ function AssistantLauncher() {
       className="fixed right-4 bottom-4 z-40 inline-flex h-12 items-center gap-2 rounded-lg bg-primary pr-4 pl-3.5 text-[15px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_18px_40px_-12px_rgba(251,65,40,0.75)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring md:right-6 md:bottom-6"
     >
       <MessageSquareText className="size-5" aria-hidden />
-      Ask Dossier
+      Ask Roleground
       {!pathname.startsWith("/applications") && (
         <kbd className="ml-0.5 hidden rounded border border-white/30 px-1.5 text-[12px] font-semibold text-white/85 sm:inline">/</kbd>
       )}
@@ -93,7 +93,7 @@ function AssistantPanel() {
 
   return (
     <aside
-      aria-label="Dossier assistant"
+      aria-label="Roleground assistant"
       className={cn(
         "fixed inset-0 z-40 flex flex-col bg-[#0e0e0e] md:inset-y-0 md:right-0 md:left-auto md:w-[420px] md:border-l md:border-white/10",
         "md:shadow-[-30px_0_80px_-20px_rgba(0,0,0,0.9)] motion-safe:animate-in motion-safe:slide-in-from-right motion-safe:duration-200",
@@ -101,7 +101,7 @@ function AssistantPanel() {
     >
       <header className="flex h-14 shrink-0 items-center gap-2.5 border-b border-white/[0.08] px-4">
         <Image src="/logo.png" alt="" width={24} height={24} className="size-6 rounded-md" />
-        <h2 className="flex-1 text-[15px] font-semibold text-white">Ask Dossier</h2>
+        <h2 className="flex-1 text-[15px] font-semibold text-white">Ask Roleground</h2>
         {assistant.messages.length > 0 && (
           <Button variant="ghost" size="icon-sm" aria-label="Clear conversation" title="Clear conversation" onClick={() => setClearing(true)}>
             <Trash2 className="size-4" />

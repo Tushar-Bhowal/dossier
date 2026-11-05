@@ -1,4 +1,4 @@
-import { SECTION_TITLES, type RenderData } from "@dossier/core/resume";
+import { SECTION_TITLES, type RenderData } from "@roleground/core/resume";
 
 export type CheckStatus = "pass" | "warn" | "fail";
 

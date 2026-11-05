@@ -3,7 +3,7 @@
 import * as React from "react";
 import { DropdownMenu } from "radix-ui";
 import { BellRing, CalendarClock, Check, MoreHorizontal } from "lucide-react";
-import { followUpDue, isClosed, nextInterview, type ApplicationRecord, type ApplicationStatus } from "@dossier/core/applications";
+import { followUpDue, isClosed, nextInterview, type ApplicationRecord, type ApplicationStatus } from "@roleground/core/applications";
 import { interviewWhen } from "./calendar";
 import { cn } from "@/lib/utils";
 import { STATUS_LABEL, STATUS_TONE, relativeDays } from "./statusStyle";

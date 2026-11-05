@@ -1,4 +1,4 @@
-import type { CareerProfile, Contact, Entry, Fact, ParseResult, Region, Skill } from "@dossier/core/resume";
+import type { CareerProfile, Contact, Entry, Fact, ParseResult, Region, Skill } from "@roleground/core/resume";
 
 export interface ProfileAdditions {
   entries?: Entry[];

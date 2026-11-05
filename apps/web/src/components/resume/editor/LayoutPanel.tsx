@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Collapsible, Slider, Switch } from "radix-ui";
 import { AlertTriangle, Check, ChevronDown, Minus, Plus, RotateCcw } from "lucide-react";
-import { DEFAULT_LAYOUT, MARGIN_PRESETS, type Resume, type ResumeLayout } from "@dossier/core/resume";
+import { DEFAULT_LAYOUT, MARGIN_PRESETS, type Resume, type ResumeLayout } from "@roleground/core/resume";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -85,7 +85,7 @@ export function LayoutPanel({ resume, edit, pages }: { resume: Resume; edit: Edi
               Fit to one page
             </label>
             <p className="mt-0.5 text-sm leading-relaxed text-white/65">
-              Dossier picks the text size so everything fills exactly one page.
+              Roleground picks the text size so everything fills exactly one page.
             </p>
           </div>
           <Switch.Root

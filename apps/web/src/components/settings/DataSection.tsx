@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { AccountDataSummary } from "@dossier/core/account";
+import type { AccountDataSummary } from "@roleground/core/account";
 import { ArrowRight, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -86,7 +86,7 @@ export function DataSection() {
       <div className="flex flex-col gap-4">
         <Panel className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-[15px] font-semibold text-white">What Dossier stores</p>
+            <p className="text-[15px] font-semibold text-white">What Roleground stores</p>
             <p className="mt-0.5 text-sm font-medium text-white/55">What&apos;s kept, who processes it, and for how long.</p>
           </div>
           <div className="flex gap-2">

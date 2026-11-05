@@ -22,7 +22,7 @@ import {
   buildSystemDesignQuestionsPrompt,
   COMPANY_FIT_QUESTIONS_SYSTEM,
   buildCompanyFitQuestionsPrompt,
-} from '@dossier/core';
+} from '@roleground/core';
 import { requireAuth } from '../middleware/auth.js';
 import { AppError } from '../middleware/error.js';
 import { getOwnedKit, replaceOwnedKit } from '../db/kits.js';

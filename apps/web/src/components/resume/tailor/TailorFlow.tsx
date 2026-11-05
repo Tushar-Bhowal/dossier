@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, CheckCircle2, FileText, LoaderCircle, RefreshCcw } from "lucide-react";
-import { renderDataText, toRenderData, type TailoringState } from "@dossier/core/resume";
+import { renderDataText, toRenderData, type TailoringState } from "@roleground/core/resume";
 import { continueTailoring, getProfile, getResume, resumeKeys, startTailoring } from "@/lib/resume/api";
 import { DEMO_UI, useScenario } from "@/lib/resume/demo/scenario";
 import { fixtureFor } from "@/lib/resume/demo/store";

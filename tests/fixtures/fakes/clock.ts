@@ -1,4 +1,4 @@
-import type { Clock } from '@dossier/core';
+import type { Clock } from '@roleground/core';
 
 export class FakeClock implements Clock {
   constructor(private current: Date) {}

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { RoadmapRecord, RoadmapTopic } from "@dossier/core/roadmap";
+import type { RoadmapRecord, RoadmapTopic } from "@roleground/core/roadmap";
 import { getRoadmap, roadmapKeys, saveRoadmap } from "@/lib/roadmap/api";
 import { useDebouncedCallback, type SaveStatus } from "@/lib/optimistic";
 

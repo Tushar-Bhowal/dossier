@@ -5,7 +5,7 @@ import type {
   RoadmapListItem,
   RoadmapRecord,
   SaveRoadmapRequest,
-} from "@dossier/core/roadmap";
+} from "@roleground/core/roadmap";
 import type { PracticeSession } from "@/lib/api";
 import { mockApi } from "./demo/mockApi";
 

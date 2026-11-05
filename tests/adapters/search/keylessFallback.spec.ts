@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { KeylessSearchAdapter } from '@dossier/core';
+import { KeylessSearchAdapter } from '@roleground/core';
 
 function ddgHtml(): string {
   return `<a class="result__a" href="//duckduckgo.com/l/?uddg=https%3A%2F%2Facme.example%2Fblog">Acme engineering blog</a>`;

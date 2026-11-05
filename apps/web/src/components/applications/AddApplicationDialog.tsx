@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { ArrowRight, Bookmark, Link2, LoaderCircle } from "lucide-react";
-import { toLocalDate, type ApplicationRecord, type ApplicationStatus } from "@dossier/core/applications";
+import { toLocalDate, type ApplicationRecord, type ApplicationStatus } from "@roleground/core/applications";
 import { previewJobLink } from "@/lib/api";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";

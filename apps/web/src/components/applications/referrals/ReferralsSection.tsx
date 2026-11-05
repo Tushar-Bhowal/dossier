@@ -12,7 +12,7 @@ import {
   type ReferralContact,
   type ReferralSuggestion,
   type SuggestResult,
-} from "@dossier/core/applications";
+} from "@roleground/core/applications";
 import { ArrowRight, Check, Copy, ExternalLink, LoaderCircle, MoreHorizontal, PenLine, RefreshCcw, Search, Users, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -466,7 +466,7 @@ export function ReferralsSection({ applicationId, job }: { applicationId: string
                   <div>
                     <p className="text-[15px] font-semibold text-white">A referral can move you to the top of the pile</p>
                     <p className="mt-0.5 text-sm leading-relaxed text-white/60">
-                      Find a recruiter and people in this role at {job.company}. We search public results; Dossier never signs in to LinkedIn, and
+                      Find a recruiter and people in this role at {job.company}. We search public results; Roleground never signs in to LinkedIn, and
                       you send every message yourself.
                     </p>
                   </div>

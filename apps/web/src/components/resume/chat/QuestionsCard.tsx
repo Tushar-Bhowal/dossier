@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { PenLine } from "lucide-react";
-import type { FollowUpQuestion } from "@dossier/core/resume";
+import type { FollowUpQuestion } from "@roleground/core/resume";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Chip, DictationButton } from "../parts";

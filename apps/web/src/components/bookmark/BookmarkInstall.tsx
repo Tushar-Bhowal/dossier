@@ -20,26 +20,26 @@ const BROWSERS: { id: Browser; label: string }[] = [
 const STEPS: Record<Exclude<Browser, "phone">, string[]> = {
   chrome: [
     "Show your bookmarks bar: press Ctrl + Shift + B (⌘ + Shift + B on a Mac).",
-    "Drag the “Add to Dossier” button above onto the bar.",
+    "Drag the “Add to Roleground” button above onto the bar.",
     "On any job page, click it. A small window opens with the job filled in.",
   ],
   safari: [
     "Show the favourites bar: View → Show Favourites Bar.",
-    "Drag the “Add to Dossier” button above onto the bar.",
+    "Drag the “Add to Roleground” button above onto the bar.",
     "On any job page, click it. A small window opens with the job filled in.",
   ],
   firefox: [
     "Show the bookmarks toolbar: View → Toolbars → Bookmarks Toolbar.",
-    "Drag the “Add to Dossier” button above onto the toolbar.",
+    "Drag the “Add to Roleground” button above onto the toolbar.",
     "On any job page, click it. A small window opens with the job filled in.",
   ],
 };
 
 const noSubscribe = () => () => {};
 
-// The bookmark opens Dossier's add page with only the page's address, title and any selected text.
+// The bookmark opens Roleground's add page with only the page's address, title and any selected text.
 function bookmarkCode(origin: string): string {
-  return `javascript:(()=>{const s=String(getSelection()).slice(0,4000);window.open('${origin}/add?url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title)+'&text='+encodeURIComponent(s),'dossier','width=520,height=760')})()`;
+  return `javascript:(()=>{const s=String(getSelection()).slice(0,4000);window.open('${origin}/add?url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title)+'&text='+encodeURIComponent(s),'roleground','width=520,height=760')})()`;
 }
 
 const SAMPLE = new URLSearchParams({
@@ -82,7 +82,7 @@ export function BookmarkInstall() {
         >
           <GripVertical className="size-4 opacity-70" aria-hidden />
           <Bookmark className="size-4" aria-hidden />
-          Add to Dossier
+          Add to Roleground
         </a>
         <p className="flex items-center gap-2 text-sm font-semibold text-white/70">
           <MousePointerClick className="size-4 text-[#ff7a5c]" aria-hidden />
@@ -115,7 +115,7 @@ export function BookmarkInstall() {
           {browser === "phone" ? (
             <div className="flex flex-col gap-3">
               <p className="text-[15px] leading-relaxed text-white/80">
-                Bookmarks like this are fiddly on phones. Instead, copy the job&apos;s link, then paste it into Add application; Dossier reads the
+                Bookmarks like this are fiddly on phones. Instead, copy the job&apos;s link, then paste it into Add application; Roleground reads the
                 page for you.
               </p>
               <Button asChild variant="outline" className="h-11 self-start">
@@ -146,7 +146,7 @@ export function BookmarkInstall() {
         <Button
           variant="outline"
           className="h-11 shrink-0"
-          onClick={() => window.open(`/add?${SAMPLE}`, "dossier", "width=520,height=760")}
+          onClick={() => window.open(`/add?${SAMPLE}`, "roleground", "width=520,height=760")}
         >
           Try it
         </Button>

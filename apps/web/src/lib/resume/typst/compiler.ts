@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { RenderData } from "@dossier/core/resume";
+import type { RenderData } from "@roleground/core/resume";
 import type { CompileRequest, CompileResponse } from "./compileWorker";
 import { countPdfPages } from "../pdfText";
 

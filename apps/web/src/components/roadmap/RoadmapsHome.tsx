@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import type { RoadmapListItem } from "@dossier/core/roadmap";
+import type { RoadmapListItem } from "@roleground/core/roadmap";
 import { AlertCircle, Briefcase, CalendarDays, GraduationCap, LoaderCircle, Map as MapIcon, Plus, RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";

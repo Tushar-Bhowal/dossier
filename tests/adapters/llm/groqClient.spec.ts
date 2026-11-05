@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
-import { GroqClient, LlmCallError, RateLimiter } from '@dossier/core';
+import { GroqClient, LlmCallError, RateLimiter } from '@roleground/core';
 
 function groqResponse(content: string, status = 200, headers: Record<string, string> = {}): Response {
   const payload =

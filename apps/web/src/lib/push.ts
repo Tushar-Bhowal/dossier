@@ -1,4 +1,4 @@
-import type { PushSubscriptionInput } from "@dossier/core/applications";
+import type { PushSubscriptionInput } from "@roleground/core/applications";
 
 export type PushSupport = "supported" | "unsupported" | "needs-home-screen";
 

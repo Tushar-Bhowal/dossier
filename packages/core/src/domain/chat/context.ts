@@ -86,7 +86,7 @@ export function pageLine(page: ChatPageContext, rows: AliasedRecord[]): string {
     kits: 'their interview kits',
     resumes: 'Resume Studio',
     assistants: 'the AI assistants page',
-    other: 'Dossier',
+    other: 'Roleground',
   };
   return `The user is on ${names[page.name]}.`;
 }

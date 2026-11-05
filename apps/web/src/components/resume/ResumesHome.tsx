@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowUpRight, BookOpenText, Copy, Crosshair, FileText, GraduationCap, Mic, Plus, Trash2 } from "lucide-react";
-import type { ResumeListItem } from "@dossier/core/resume";
+import type { ResumeListItem } from "@roleground/core/resume";
 import { copyResume, deleteResume, getProfile, listResumes, resumeKeys } from "@/lib/resume/api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

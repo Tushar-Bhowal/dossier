@@ -1,4 +1,4 @@
-import type { Kit } from "@dossier/core";
+import type { Kit } from "@roleground/core";
 import type {
   ApplicationCreate,
   ApplicationInput,
@@ -13,7 +13,7 @@ import type {
   NotificationSettingsView,
   PushSubscriptionInput,
   TestResult,
-} from "@dossier/core/applications";
+} from "@roleground/core/applications";
 
 export class ApiError extends Error {
   readonly code: string;

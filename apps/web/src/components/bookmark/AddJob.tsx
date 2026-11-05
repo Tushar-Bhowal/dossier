@@ -31,7 +31,7 @@ function Shell({ children }: { children: React.ReactNode }) {
       <div className="mx-auto flex w-full max-w-lg flex-col gap-6">
         <div className="flex items-center gap-2.5">
           <Image src="/logo.png" alt="" width={26} height={26} className="size-[26px]" />
-          <span className="text-base font-bold tracking-[-0.02em] text-white">Add to Dossier</span>
+          <span className="text-base font-bold tracking-[-0.02em] text-white">Add to Roleground</span>
         </div>
         {children}
       </div>
@@ -194,7 +194,7 @@ export function AddJob() {
   });
   const [result, setResult] = React.useState<SaveApplicationResult | null>(null);
 
-  const openInDossier = (id: string) => window.open(`/applications?open=${encodeURIComponent(id)}`, "_blank", "noopener");
+  const openInRoleground = (id: string) => window.open(`/applications?open=${encodeURIComponent(id)}`, "_blank", "noopener");
 
   if (me.isPending) {
     return (
@@ -209,7 +209,7 @@ export function AddJob() {
     return (
       <Shell>
         <div className="flex flex-col gap-4 rounded-lg border border-white/[0.08] bg-[#111111] p-6">
-          <p className="text-lg font-semibold text-white">{notSignedIn ? "Sign in to save this job" : "We couldn't reach Dossier"}</p>
+          <p className="text-lg font-semibold text-white">{notSignedIn ? "Sign in to save this job" : "We couldn't reach Roleground"}</p>
           <p className="text-[15px] leading-relaxed text-white/65">
             {notSignedIn ? "You'll come straight back here after signing in." : "Check your connection, then try the bookmark again."}
           </p>
@@ -250,8 +250,8 @@ export function AddJob() {
           </div>
           <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-center">
             {record && (
-              <Button variant="outline" className="h-11" onClick={() => openInDossier(record.id)}>
-                Open in Dossier
+              <Button variant="outline" className="h-11" onClick={() => openInRoleground(record.id)}>
+                Open in Roleground
                 <ArrowUpRight className="size-4" aria-hidden />
               </Button>
             )}
@@ -268,7 +268,7 @@ export function AddJob() {
     <Shell>
       {!page.url && !page.title ? (
         <p role="note" className="rounded-lg border border-white/[0.08] bg-white/[0.02] p-4 text-sm text-white/65">
-          This page opens from the &ldquo;Add to Dossier&rdquo; bookmark on a job page. You can still fill it in by hand.
+          This page opens from the &ldquo;Add to Roleground&rdquo; bookmark on a job page. You can still fill it in by hand.
         </p>
       ) : (
         <p className="truncate text-sm font-medium text-white/50" title={page.url}>

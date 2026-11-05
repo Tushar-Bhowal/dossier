@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Check, Plus } from "lucide-react";
-import { MAX_REMINDER_OFFSET, MIN_REMINDER_OFFSET, offsetLabel } from "@dossier/core/applications";
+import { MAX_REMINDER_OFFSET, MIN_REMINDER_OFFSET, offsetLabel } from "@roleground/core/applications";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";

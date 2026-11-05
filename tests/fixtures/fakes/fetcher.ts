@@ -1,4 +1,4 @@
-import { FetchPortError, type FetchPort, type FetchResult } from '@dossier/core';
+import { FetchPortError, type FetchPort, type FetchResult } from '@roleground/core';
 
 export class FakeFetchPort implements FetchPort {
   private routes = new Map<string, FetchResult | FetchPortError>();

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FetchPortError, crawlCompany } from '@dossier/core';
+import { FetchPortError, crawlCompany } from '@roleground/core';
 import { FakeFetchPort } from '../../fixtures/fakes/fetcher.js';
 
 function page(url: string, html: string) {

@@ -6,7 +6,7 @@ import type {
   RoadmapStage,
   RoadmapTopic,
   SourceConfidence,
-} from "@dossier/core/roadmap";
+} from "@roleground/core/roadmap";
 import type { Persona } from "@/lib/demo/scenario";
 
 type Q = [prompt: string, outline: string, round: string | null, difficulty: 1 | 2 | 3];

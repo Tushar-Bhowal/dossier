@@ -241,7 +241,7 @@ export function CreateKitSheet({ open, onOpenChange, prefillSample = false }: Cr
             </Button>
           </div>
           <SheetDescription>
-            Dossier researches the company and the role in about two minutes. You can keep working while it
+            Roleground researches the company and the role in about two minutes. You can keep working while it
             runs.
           </SheetDescription>
         </SheetHeader>

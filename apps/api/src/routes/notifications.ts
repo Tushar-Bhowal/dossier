@@ -18,7 +18,7 @@ import {
   reminderMessage,
   type NotificationSettingsView,
   type TestResult,
-} from '@dossier/core';
+} from '@roleground/core';
 import { requireAuth } from '../middleware/auth.js';
 import { AppError } from '../middleware/error.js';
 import { validateBody } from '../middleware/validate.js';
@@ -88,7 +88,7 @@ notificationsRouter.post('/test', async (req, res, next) => {
       return;
     }
     const outcomes = await notifyUser(doc, {
-      title: 'Test from Dossier',
+      title: 'Test from Roleground',
       body: doc.prefs.reminderOffsetsMin.length
         ? `Your interview reminders will arrive here, ${offsetsSentence(doc.prefs.reminderOffsetsMin)} each interview.`
         : 'Interview reminders are off; your morning summary will arrive here.',
@@ -171,15 +171,15 @@ notificationHooksRouter.post('/telegram/webhook', async (req, res) => {
       const userId = await consumeLinkToken(start[1]);
       if (userId) {
         await linkTelegram(userId, chatId);
-        await sendTelegramText(chatId, 'Connected. Dossier will send your interview reminders here. Send /stop any time to disconnect.');
+        await sendTelegramText(chatId, 'Connected. Roleground will send your interview reminders here. Send /stop any time to disconnect.');
       } else {
-        await sendTelegramText(chatId, 'That link has expired. In Dossier, open Applications → Notifications and press Connect Telegram again.');
+        await sendTelegramText(chatId, 'That link has expired. In Roleground, open Applications → Notifications and press Connect Telegram again.');
       }
     } else if (text === '/stop') {
       const count = await unlinkTelegramChat(chatId);
-      await sendTelegramText(chatId, count ? 'Disconnected. You won’t get Dossier reminders here any more.' : 'This chat isn’t connected to Dossier.');
+      await sendTelegramText(chatId, count ? 'Disconnected. You won’t get Roleground reminders here any more.' : 'This chat isn’t connected to Roleground.');
     } else {
-      await sendTelegramText(chatId, 'I send interview reminders from Dossier. To connect, open Dossier → Applications → Notifications → Connect Telegram.');
+      await sendTelegramText(chatId, 'I send interview reminders from Roleground. To connect, open Roleground → Applications → Notifications → Connect Telegram.');
     }
   } catch (err) {
     console.error('telegram webhook', err);

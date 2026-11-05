@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { Kit } from '@dossier/core';
+import { Kit } from '@roleground/core';
 import { requireAuth } from '../middleware/auth.js';
 import { AppError } from '../middleware/error.js';
 import { getOwnedKit, listOwnedKits, replaceOwnedKit, deleteOwnedKit } from '../db/kits.js';

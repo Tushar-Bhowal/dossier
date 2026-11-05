@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { crawlCompany, discoverHiringPages } from '@dossier/core';
+import { crawlCompany, discoverHiringPages } from '@roleground/core';
 import { FakeFetchPort } from '../../fixtures/fakes/fetcher.js';
 import { FakeLlmPort } from '../../fixtures/fakes/llm.js';
 

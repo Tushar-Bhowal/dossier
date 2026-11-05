@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { DropdownMenu } from "radix-ui";
-import type { InterviewRecord, Weakness } from "@dossier/core/interview";
+import type { InterviewRecord, Weakness } from "@roleground/core/interview";
 import { ArrowRight, Check, ChevronDown, LoaderCircle, Map as MapIcon, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";

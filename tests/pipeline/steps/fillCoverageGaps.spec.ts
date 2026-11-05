@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fillCoverageGaps, type Requirement } from '@dossier/core';
+import { fillCoverageGaps, type Requirement } from '@roleground/core';
 import { FakeLlmPort } from '../../fixtures/fakes/llm.js';
 
 function req(id: string, priority: Requirement['priority'], kind: Requirement['kind'] = 'technical'): Requirement {

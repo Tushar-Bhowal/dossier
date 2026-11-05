@@ -1,4 +1,4 @@
-import type { ExtractStoriesResult, Story, StoryInput } from "@dossier/core/resume";
+import type { ExtractStoriesResult, Story, StoryInput } from "@roleground/core/resume";
 import { mockApi } from "./demo/mockApi";
 
 // Stage 1: demo data under Resume Studio's demo switcher. S6 adds the real routes.

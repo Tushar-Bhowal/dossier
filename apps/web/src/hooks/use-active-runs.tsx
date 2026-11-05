@@ -33,7 +33,7 @@ interface ActiveRunsContextType {
   };
 }
 
-const STORAGE_KEY = "dossier_active_runs";
+const STORAGE_KEY = "roleground_active_runs";
 const MAX_CONCURRENCY = 2;
 const TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 const POLL_INTERVAL_MS = 1500;

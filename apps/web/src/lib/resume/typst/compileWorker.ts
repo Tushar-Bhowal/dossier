@@ -1,7 +1,7 @@
 import { createTypstCompiler, CompileFormatEnum, type TypstCompiler } from "@myriaddreamin/typst.ts/compiler";
 // Deep import on purpose: the package's main entry also loads its renderer, which we don't ship.
 import { loadFonts } from "@myriaddreamin/typst.ts/dist/esm/options.init.mjs";
-import type { RenderData } from "@dossier/core/resume";
+import type { RenderData } from "@roleground/core/resume";
 import { RESUME_TEMPLATE } from "./template";
 
 export interface CompileRequest {

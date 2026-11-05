@@ -116,7 +116,7 @@ export function LanguageDemo() {
     <div
       ref={ref}
       className="grid items-stretch gap-4 lg:grid-cols-[1fr_auto_1fr] lg:gap-5"
-      aria-label="Example: a teacher describes her work in Bengali, Hindi, Hinglish or English, and Dossier writes an English resume where each line shows what it came from."
+      aria-label="Example: a teacher describes her work in Bengali, Hindi, Hinglish or English, and Roleground writes an English resume where each line shows what it came from."
       role="group"
     >
       <div className="flex flex-col rounded-lg border border-white/10 bg-[#0f0f0f] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">

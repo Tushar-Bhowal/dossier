@@ -17,7 +17,7 @@ import {
   type ChatTurn,
   type LlmPort,
   type NotificationPrefs,
-} from '@dossier/core';
+} from '@roleground/core';
 import { buildPipelineDeps } from '../pipelineDeps.js';
 
 let llm: LlmPort | null = null;
@@ -27,7 +27,7 @@ function getLlm(): LlmPort {
 }
 
 const fetcher = new HttpFetcher({ allowPrivateHosts: false });
-const ATTACHMENT_SEPARATOR = '\n\n<<<DOSSIER-ATTACHMENT>>>\n\n';
+const ATTACHMENT_SEPARATOR = '\n\n<<<ROLEGROUND-ATTACHMENT>>>\n\n';
 const MAX_LINKS_READ = 2;
 
 export interface ChannelState {

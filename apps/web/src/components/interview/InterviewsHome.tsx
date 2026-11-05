@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import type { InterviewListItem } from "@dossier/core/interview";
+import type { InterviewListItem } from "@roleground/core/interview";
 import { AlertCircle, ChevronRight, Keyboard, LoaderCircle, Mic, Plus, RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Crosshair, Eye, FileText, Trash2 } from "lucide-react";
-import { lintResume, renderDataText, toRenderData, type CareerProfile, type LintHint, type Resume } from "@dossier/core/resume";
+import { lintResume, renderDataText, toRenderData, type CareerProfile, type LintHint, type Resume } from "@roleground/core/resume";
 import { ApiError } from "@/lib/api";
 import { deleteResume, getProfile, getResume, resumeKeys, saveProfile, saveResume } from "@/lib/resume/api";
 import { usePageCount, useResumePdf } from "@/lib/resume/typst/compiler";

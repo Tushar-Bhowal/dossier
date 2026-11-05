@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { InterviewRecord, InterviewTurn } from "@dossier/core/interview";
+import type { InterviewRecord, InterviewTurn } from "@roleground/core/interview";
 import { AlertCircle, Clock, Keyboard, LoaderCircle, Mic, MicOff, SkipForward, Square, UserRound, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";

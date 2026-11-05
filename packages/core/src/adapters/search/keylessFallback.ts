@@ -1,6 +1,6 @@
 import type { SearchPort, SearchResult } from '../../ports/search.js';
 
-const USER_AGENT = 'DossierBot/1.0 (+https://github.com/Tushar-Bhowal/dossier; interview-prep research)';
+const USER_AGENT = 'RolegroundBot/1.0 (+https://github.com/Tushar-Bhowal/roleground; interview-prep research)';
 
 // DuckDuckGo's no-JS HTML endpoint wraps result links as /l/?uddg=<encoded target> — unwrap it to
 // get the real destination.

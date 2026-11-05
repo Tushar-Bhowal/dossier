@@ -51,7 +51,7 @@ export function Nav() {
             className="flex items-center gap-2.5 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
           >
             <Image src="/logo.png" alt="" width={30} height={30} priority className="size-[30px]" />
-            <span className="text-[17px] font-bold tracking-[-0.02em]">Dossier</span>
+            <span className="text-[17px] font-bold tracking-[-0.02em]">Roleground</span>
           </Link>
 
           <ul className="hidden items-center gap-1 lg:flex">

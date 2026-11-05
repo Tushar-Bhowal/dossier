@@ -1,4 +1,4 @@
-import type { Origin } from "@dossier/core";
+import type { Origin } from "@roleground/core";
 import { cn } from "@/lib/utils";
 
 const STYLE: Record<Origin, string> = {

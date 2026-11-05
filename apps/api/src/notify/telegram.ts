@@ -1,5 +1,5 @@
 import { timingSafeEqual } from 'node:crypto';
-import type { NotificationMessage } from '@dossier/core';
+import type { NotificationMessage } from '@roleground/core';
 import { appUrl } from './appUrl.js';
 
 export type SendOutcome = 'sent' | 'gone' | 'failed';
@@ -29,7 +29,7 @@ export async function sendTelegram(chatId: number, message: NotificationMessage)
   const base = appUrl();
   // Telegram refuses buttons that point at http:// or localhost, so the button only exists on a real deployment.
   const button = base?.startsWith('https://')
-    ? { reply_markup: { inline_keyboard: [[{ text: 'Open in Dossier', url: `${base}${message.path}` }]] } }
+    ? { reply_markup: { inline_keyboard: [[{ text: 'Open in Roleground', url: `${base}${message.path}` }]] } }
     : {};
   try {
     // Plain text, no parse_mode: company names with * or _ would otherwise break Markdown parsing.

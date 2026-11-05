@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { FieldResult, FixedTopic } from "@dossier/core/autofill";
+import type { FieldResult, FixedTopic } from "@roleground/core/autofill";
 import { Lock, Monitor, Paperclip } from "lucide-react";
 import { toast } from "@/components/ui/toast";
 import { SampleBanner } from "@/components/demo/SampleBanner";
@@ -93,7 +93,7 @@ function JobForm({
         ))}
         <button
           type="button"
-          onClick={() => toast.info("This is a sample form", { description: "On a real site you'd submit it yourself. Dossier never clicks Submit." })}
+          onClick={() => toast.info("This is a sample form", { description: "On a real site you'd submit it yourself. Roleground never clicks Submit." })}
           className="h-11 self-start rounded-md bg-neutral-900 px-6 text-[15px] font-semibold text-white"
         >
           Submit application
@@ -153,7 +153,7 @@ export function AutofillPreview() {
   return (
     <div className="flex flex-col gap-6">
       {AUTOFILL_SAMPLE && (
-        <SampleBanner>This preview runs on a sample form inside Dossier. The Chrome extension itself comes later, with this same panel.</SampleBanner>
+        <SampleBanner>This preview runs on a sample form inside Roleground. The Chrome extension itself comes later, with this same panel.</SampleBanner>
       )}
       <p className="flex items-center gap-2 text-sm font-medium text-white/55 lg:hidden">
         <Monitor className="size-4" aria-hidden />

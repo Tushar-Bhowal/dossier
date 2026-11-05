@@ -1,4 +1,4 @@
-import type { FieldDescriptor, FieldResult, FixedTopic } from "@dossier/core/autofill";
+import type { FieldDescriptor, FieldResult, FixedTopic } from "@roleground/core/autofill";
 import { sleep } from "@/lib/demo/scenario";
 import { autofillScenario } from "./scenario";
 import { formFor, type DemoForm } from "./forms";

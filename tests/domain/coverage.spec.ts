@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkCoverage, type Requirement, type Question } from '@dossier/core';
+import { checkCoverage, type Requirement, type Question } from '@roleground/core';
 
 function requirement(id: string, priority: 'must' | 'nice' = 'must'): Requirement {
   return {

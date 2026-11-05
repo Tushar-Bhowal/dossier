@@ -38,7 +38,7 @@ export function Principles() {
               Built to be <Accent>honest</Accent> with you.
             </>
           }
-          sub="Career tools are known for dark patterns. These are the lines Dossier doesn't cross."
+          sub="Career tools are known for dark patterns. These are the lines Roleground doesn't cross."
         />
 
         <div className="mt-16 grid gap-4 sm:mt-20 sm:grid-cols-2 lg:grid-cols-4">

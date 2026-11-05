@@ -1,4 +1,4 @@
-import type { CareerProfile, Entry, Fact, Resume, ResumeSnapshot, TailoringState } from "@dossier/core/resume";
+import type { CareerProfile, Entry, Fact, Resume, ResumeSnapshot, TailoringState } from "@roleground/core/resume";
 import { mergeIntoProfile, profileFromParse } from "../profile";
 import { composeFromProfile } from "./compose";
 import { engineer } from "./engineer";

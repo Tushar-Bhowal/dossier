@@ -3,7 +3,7 @@
 import * as React from "react";
 import { usePathname } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { ChatMessageView, ChatPageName, ChatPart, ChatRequest } from "@dossier/core/applications";
+import type { ChatMessageView, ChatPageName, ChatPart, ChatRequest } from "@roleground/core/applications";
 import { ApiError, chatAction, clearChat, getChatHistory, sendChat } from "@/lib/api";
 import { toast } from "@/components/ui/toast";
 

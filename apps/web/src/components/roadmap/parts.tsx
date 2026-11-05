@@ -1,4 +1,4 @@
-import type { Origin, RoadmapKind, RoadmapStage, SourceConfidence } from "@dossier/core/roadmap";
+import type { Origin, RoadmapKind, RoadmapStage, SourceConfidence } from "@roleground/core/roadmap";
 import { AlertTriangle, BookOpen, Briefcase, Dumbbell, GraduationCap, Mic, Puzzle, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 

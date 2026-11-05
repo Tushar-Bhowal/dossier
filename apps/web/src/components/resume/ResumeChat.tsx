@@ -12,7 +12,7 @@ import {
   type Contact,
   type ParseResult,
   type Region,
-} from "@dossier/core/resume";
+} from "@roleground/core/resume";
 import {
   addNote,
   composeResume,

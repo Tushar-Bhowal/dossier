@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useMutation } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, Check, Lightbulb, LoaderCircle, Trash2 } from "lucide-react";
-import { redact, type Bullet, type LintHint } from "@dossier/core/resume";
+import { redact, type Bullet, type LintHint } from "@roleground/core/resume";
 import { improveLine } from "@/lib/resume/api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";

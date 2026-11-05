@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, Check, LoaderCircle, Mail, MessageCircle, MessageSquareText, Send, Smartphone } from "lucide-react";
-import type { NotificationPrefs, NotificationSettingsView } from "@dossier/core/applications";
+import type { NotificationPrefs, NotificationSettingsView } from "@roleground/core/applications";
 import {
   ApiError,
   createTelegramLink,
@@ -248,7 +248,7 @@ export function ReminderSettings() {
               ) : telegramWaitUntil > 0 ? (
                 "Press Start in Telegram, then come back here"
               ) : (
-                "Free. Messages from the Dossier bot."
+                "Free. Messages from the Roleground bot."
               )
             }
           >
@@ -272,14 +272,14 @@ export function ReminderSettings() {
               !view.available.webpush
                 ? "Not set up on this server"
                 : support === "needs-home-screen"
-                  ? "On iPhone: Share → Add to Home Screen, then open Dossier from there"
+                  ? "On iPhone: Share → Add to Home Screen, then open Roleground from there"
                   : support === "unsupported"
                     ? "This browser can't show notifications"
                     : pushOnHere
                       ? `On for this device${otherDevices > 0 ? ` and ${otherDevices} other${otherDevices > 1 ? "s" : ""}` : ""}`
                       : otherDevices > 0
                         ? `On for ${otherDevices} other device${otherDevices > 1 ? "s" : ""}`
-                        : "Shows on this device, even with Dossier closed"
+                        : "Shows on this device, even with Roleground closed"
             }
           >
             {view.available.webpush &&

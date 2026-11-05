@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Dossier: interview prep for any role, researched for you";
+export const alt = "Roleground: interview prep for any role, researched for you";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -46,7 +46,7 @@ export default function OpengraphImage() {
           }}
         />
         <div style={{ fontSize: 28, color: "#fb4128", letterSpacing: 6, textTransform: "uppercase" }}>
-          Dossier
+          Roleground
         </div>
         <div
           style={{

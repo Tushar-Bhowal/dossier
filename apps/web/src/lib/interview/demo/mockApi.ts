@@ -6,7 +6,7 @@ import {
   type InterviewRecord,
   type InterviewSourceOption,
   type InterviewTurn,
-} from "@dossier/core/interview";
+} from "@roleground/core/interview";
 import { ApiError } from "@/lib/api";
 import { READ_DELAY_MS, sleep, type Persona } from "@/lib/demo/scenario";
 import { findSource, sampleAnswer, sourcesFor } from "./data";

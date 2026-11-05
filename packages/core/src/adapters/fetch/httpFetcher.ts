@@ -15,7 +15,7 @@ const DEFAULT_MAX_BYTES = 2 * 1024 * 1024;
 const DEFAULT_TIMEOUT_MS = 8000;
 const DEFAULT_MAX_REDIRECTS = 3;
 const DEFAULT_PER_HOST_INTERVAL_MS = 1000;
-const DEFAULT_USER_AGENT = 'DossierBot/1.0 (+https://github.com/Tushar-Bhowal/dossier; interview-prep research)';
+const DEFAULT_USER_AGENT = 'RolegroundBot/1.0 (+https://github.com/Tushar-Bhowal/roleground; interview-prep research)';
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 
 function sleep(ms: number): Promise<void> {

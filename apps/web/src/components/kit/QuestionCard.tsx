@@ -4,7 +4,7 @@ import * as React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { BookOpen, ChevronDown, GripVertical } from "lucide-react";
-import type { Question } from "@dossier/core";
+import type { Question } from "@roleground/core";
 import { cn } from "@/lib/utils";
 import { EditableField } from "./EditableField";
 import { ItemControls } from "./ItemControls";

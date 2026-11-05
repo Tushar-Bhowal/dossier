@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { FetchPortError, LlmCallError } from '@dossier/core';
+import { FetchPortError, LlmCallError } from '@roleground/core';
 import { FakeClock } from '../fixtures/fakes/clock.js';
 import { FakeLlmPort } from '../fixtures/fakes/llm.js';
 import { FakeFetchPort } from '../fixtures/fakes/fetcher.js';

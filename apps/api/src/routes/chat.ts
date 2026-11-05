@@ -9,7 +9,7 @@ import {
   type ChatPart,
   type ChatStreamEvent,
   type ChatTurn,
-} from '@dossier/core';
+} from '@roleground/core';
 import type { z } from 'zod';
 import { requireAuth } from '../middleware/auth.js';
 import { AppError } from '../middleware/error.js';

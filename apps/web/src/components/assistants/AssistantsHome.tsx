@@ -23,9 +23,9 @@ const CLIENTS: { id: ClientId; label: string }[] = [
 ];
 
 const PROMPTS = [
-  "Check my Gmail for recruiter emails from the last 7 days and suggest updates to my Dossier tracker.",
+  "Check my Gmail for recruiter emails from the last 7 days and suggest updates to my Roleground tracker.",
   "Which of my applications haven't heard back in 3 weeks? Draft a short follow-up for each.",
-  "Help me prepare for my next interview using its job description from Dossier.",
+  "Help me prepare for my next interview using its job description from Roleground.",
 ];
 
 function CopyField({ value, label }: { value: string; label: string }) {
@@ -59,16 +59,16 @@ function Steps({ client, url }: { client: ClientId; url: string }) {
   if (client === "code") {
     return (
       <div className="flex flex-col gap-3">
-        <p className={step}>Run this in your terminal, then type /mcp in Claude Code and choose Dossier to sign in.</p>
-        <CopyField label="command" value={`claude mcp add --transport http dossier ${url}`} />
+        <p className={step}>Run this in your terminal, then type /mcp in Claude Code and choose Roleground to sign in.</p>
+        <CopyField label="command" value={`claude mcp add --transport http roleground ${url}`} />
       </div>
     );
   }
   if (client === "cursor") {
     return (
       <div className="flex flex-col gap-3">
-        <p className={step}>Add this to ~/.cursor/mcp.json, then open Cursor&apos;s MCP settings and sign in to Dossier.</p>
-        <CopyField label="config" value={JSON.stringify({ mcpServers: { dossier: { url } } })} />
+        <p className={step}>Add this to ~/.cursor/mcp.json, then open Cursor&apos;s MCP settings and sign in to Roleground.</p>
+        <CopyField label="config" value={JSON.stringify({ mcpServers: { roleground: { url } } })} />
       </div>
     );
   }
@@ -77,14 +77,14 @@ function Steps({ client, url }: { client: ClientId; url: string }) {
       {(client === "claude"
         ? [
             "In Claude, open Settings → Connectors → Add custom connector.",
-            "Name it Dossier and paste the address above.",
-            "Press Connect, sign in to Dossier, and press Allow.",
+            "Name it Roleground and paste the address above.",
+            "Press Connect, sign in to Roleground, and press Allow.",
             "Connect Gmail in Claude too if you want it to read recruiter emails.",
           ]
         : [
             "In ChatGPT, turn on developer mode (Settings → Connectors → Advanced). It depends on your plan.",
-            "Create a connector, name it Dossier and paste the address above.",
-            "Sign in to Dossier when asked and press Allow.",
+            "Create a connector, name it Roleground and paste the address above.",
+            "Sign in to Roleground when asked and press Allow.",
           ]
       ).map((line) => (
         <li key={line} className={step}>
@@ -152,14 +152,14 @@ export function AssistantsHome() {
       <div>
         <h1 className="text-[32px] font-semibold leading-tight tracking-[-0.035em] text-white">AI assistants</h1>
         <p className="mt-2 text-base leading-relaxed text-white/60">
-          Connect Claude, ChatGPT or your code editor to Dossier. Your assistant can read your applications and suggest updates, for
-          example from recruiter emails it reads with its own Gmail access. Dossier never sees your email.
+          Connect Claude, ChatGPT or your code editor to Roleground. Your assistant can read your applications and suggest updates, for
+          example from recruiter emails it reads with its own Gmail access. Roleground never sees your email.
         </p>
       </div>
 
       <section className="flex flex-col gap-3" aria-labelledby="address-heading">
         <h2 id="address-heading" className={sectionTitle}>
-          Dossier&apos;s address for assistants
+          Roleground&apos;s address for assistants
         </h2>
         <CopyField label="address" value={url} />
       </section>

@@ -258,7 +258,7 @@ export default function KitsPage() {
             Create your first kit
           </h2>
           <p className="relative mt-2 max-w-md text-base leading-relaxed text-white/60">
-            Paste a job description and the company&apos;s URL. Dossier researches the company and builds
+            Paste a job description and the company&apos;s URL. Roleground researches the company and builds
             questions, flashcards and a study plan around your interview date.
           </p>
           <div className="relative mt-8 flex flex-col items-center gap-3 sm:flex-row">

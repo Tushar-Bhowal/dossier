@@ -10,7 +10,7 @@ import {
   type ApplicationInput,
   type ApplicationRecord,
   type Interview,
-} from "@dossier/core/applications";
+} from "@roleground/core/applications";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

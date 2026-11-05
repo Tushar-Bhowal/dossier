@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { CheckCircle2, CircleAlert, Lightbulb, LoaderCircle, ScanText, XCircle } from "lucide-react";
-import type { LintHint, RenderData } from "@dossier/core/resume";
+import type { LintHint, RenderData } from "@roleground/core/resume";
 import { useResumePdf } from "@/lib/resume/typst/compiler";
 import { extractPdfText } from "@/lib/resume/pdfText";
 import { checkAtsText, type AtsCheckResult, type CheckStatus } from "@/lib/resume/atsCheck";

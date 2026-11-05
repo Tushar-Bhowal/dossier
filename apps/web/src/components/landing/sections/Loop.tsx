@@ -209,7 +209,7 @@ function BeamDiagram() {
       ref={container}
       className="relative flex items-center justify-between gap-4 px-1 py-4 sm:px-6"
       role="img"
-      aria-label="Your resume and a job post flow into Dossier, which builds your roadmap and mock interviews; the interview report flows back into Dossier."
+      aria-label="Your resume and a job post flow into Roleground, which builds your roadmap and mock interviews; the interview report flows back into Roleground."
     >
       <div className="flex flex-col gap-10">
         <Node ref={resume} icon={FileText} label="Resume" />
@@ -223,7 +223,7 @@ function BeamDiagram() {
         >
           <Image src="/logo.png" alt="" width={48} height={48} className="size-10 sm:size-12" />
         </div>
-        <span className="text-[13px] font-bold text-white">Dossier</span>
+        <span className="text-[13px] font-bold text-white">Roleground</span>
       </div>
 
       <div className="flex flex-col gap-6">

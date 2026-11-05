@@ -1,6 +1,6 @@
 "use client";
 
-import type { Photo } from "@dossier/core/resume";
+import type { Photo } from "@roleground/core/resume";
 
 // Passport size, 35 × 45 mm, at 10 px per mm.
 const WIDTH = 350;

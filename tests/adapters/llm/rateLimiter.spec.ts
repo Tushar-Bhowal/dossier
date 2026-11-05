@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { RateLimiter } from '@dossier/core';
+import { RateLimiter } from '@roleground/core';
 
 describe('RateLimiter', () => {
   beforeEach(() => {

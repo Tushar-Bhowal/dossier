@@ -28,7 +28,7 @@ export function requestOrigin(req: Request): string {
 const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]']);
 const BLOCKED_SCHEMES = new Set(['javascript:', 'data:', 'vbscript:', 'file:', 'blob:']);
 
-// Where Dossier may send the browser back to with a code: https anywhere, http only on this computer
+// Where Roleground may send the browser back to with a code: https anywhere, http only on this computer
 // (Claude Code, Cursor listen on localhost), or a desktop app's own scheme (cursor://, vscode://).
 // Never a scheme that runs code in the page.
 export function isSafeRedirect(uri: string): boolean {
@@ -78,7 +78,7 @@ export const oauthProvider: OAuthServerProvider = {
     return clientsStore;
   },
 
-  // Send the browser to Dossier's consent screen. The code is only created once the signed-in user
+  // Send the browser to Roleground's consent screen. The code is only created once the signed-in user
   // presses Allow there (POST /api/v1/oauth/consent).
   async authorize(client: OAuthClientInformationFull, params: AuthorizationParams, res: Response) {
     const query = new URLSearchParams({

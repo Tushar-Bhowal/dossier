@@ -4,7 +4,7 @@ import { ArrowLeft, FileQuestion, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Page not found — Dossier",
+  title: "Page not found — Roleground",
 };
 
 export default function NotFound() {

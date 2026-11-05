@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractLinks, htmlToText } from '@dossier/core';
+import { extractLinks, htmlToText } from '@roleground/core';
 
 describe('htmlToText', () => {
   it('strips scripts, styles and nav, keeping visible body text', () => {

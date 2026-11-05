@@ -43,7 +43,7 @@ export function Footer() {
         <div className="max-w-xs">
           <Link href="/" className="inline-flex items-center gap-2.5">
             <Image src="/logo.png" alt="" width={28} height={28} className="size-7" />
-            <span className="text-[17px] font-bold tracking-[-0.02em]">Dossier</span>
+            <span className="text-[17px] font-bold tracking-[-0.02em]">Roleground</span>
           </Link>
           <p className="mt-4 text-base leading-relaxed text-white/65">
             Interview prep for any role, researched for you.
@@ -73,7 +73,7 @@ export function Footer() {
       </Container>
       <Container className="mt-14">
         <div className="flex items-center justify-between border-t border-white/[0.06] pt-6">
-          <p className="text-sm text-white/55">© {new Date().getFullYear()} Dossier</p>
+          <p className="text-sm text-white/55">© {new Date().getFullYear()} Roleground</p>
           <a href="#top" className="text-sm text-white/55 transition-colors hover:text-foreground">
             Back to top
           </a>
@@ -81,7 +81,7 @@ export function Footer() {
       </Container>
       <div aria-hidden className="pointer-events-none mt-10 select-none overflow-hidden">
         <p className="text-center text-[26vw] font-semibold leading-[0.8] tracking-[-0.06em] text-transparent [background-image:linear-gradient(to_bottom,rgba(255,255,255,0.09),transparent_85%)] [-webkit-background-clip:text] [background-clip:text] xl:text-[340px]">
-          Dossier
+          Roleground
         </p>
       </div>
     </footer>

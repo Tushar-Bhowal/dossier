@@ -1,4 +1,4 @@
-import type { AccountDataSummary, ApiKeyStatus, SaveApiKeyRequest, UsageToday } from "@dossier/core/account";
+import type { AccountDataSummary, ApiKeyStatus, SaveApiKeyRequest, UsageToday } from "@roleground/core/account";
 import { mockApi } from "./demo/mockApi";
 
 // Usage, the user's own key and account deletion run on demo data until Stage 2 (S2) adds the real

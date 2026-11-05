@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { StoryInput, type ExtractStoriesResult, type Story } from "@dossier/core/resume";
+import { StoryInput, type ExtractStoriesResult, type Story } from "@roleground/core/resume";
 import { AlertCircle, BookOpenText, FileText, LoaderCircle, Mic, Pencil, Plus, RefreshCcw, Search, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

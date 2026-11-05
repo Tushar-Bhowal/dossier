@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { nextBox, nextReviewInDays, type LeitnerBox, type Confidence } from '@dossier/core';
+import { nextBox, nextReviewInDays, type LeitnerBox, type Confidence } from '@roleground/core';
 
 describe('nextBox', () => {
   it('promotes on high confidence, capped at box 5', () => {

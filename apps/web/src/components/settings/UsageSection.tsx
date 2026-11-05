@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import type { QuotaKind, UsageMeter } from "@dossier/core/account";
+import type { QuotaKind, UsageMeter } from "@roleground/core/account";
 import { AlertCircle, Clock, RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -72,7 +72,7 @@ export function UsageSection() {
       id="usage"
       sample
       title="Today's AI use"
-      description="Dossier is free, so everyone gets a daily allowance of AI help. Anything you've already made stays usable when it runs out."
+      description="Roleground is free, so everyone gets a daily allowance of AI help. Anything you've already made stays usable when it runs out."
     >
       <div className="flex flex-col gap-4">
         {capped && <QuotaNotice resetsAt={data.resetsAt} />}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { runPipeline, type PipelineContext, type PipelineDeps, type StepDefinition } from '@dossier/core';
+import { runPipeline, type PipelineContext, type PipelineDeps, type StepDefinition } from '@roleground/core';
 import { InMemoryRunStore } from '../fixtures/fakes/runStore.js';
 import { FakeClock } from '../fixtures/fakes/clock.js';
 import { FakeLlmPort } from '../fixtures/fakes/llm.js';

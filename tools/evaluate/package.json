@@ -1,11 +1,11 @@
 {
-  "name": "@dossier/evaluate",
+  "name": "@roleground/evaluate",
   "private": true,
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@dossier/core": "*"
+    "@roleground/core": "*"
   }
 }

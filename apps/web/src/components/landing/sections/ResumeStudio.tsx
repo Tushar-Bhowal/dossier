@@ -17,7 +17,7 @@ const STEPS = [
   },
   {
     title: "Tick what you actually did",
-    body: "Dossier lists the usual duties for your job, whether that's a classroom, a hospital ward or a shop floor. Tick yours, and only those go in.",
+    body: "Roleground lists the usual duties for your job, whether that's a classroom, a hospital ward or a shop floor. Tick yours, and only those go in.",
     Mock: DutiesMock,
   },
   {
@@ -27,7 +27,7 @@ const STEPS = [
   },
   {
     title: "See what the ATS sees",
-    body: "Hiring systems read your resume as plain text. Dossier shows you exactly what they pull out, plus tips for lines that undersell you.",
+    body: "Hiring systems read your resume as plain text. Roleground shows you exactly what they pull out, plus tips for lines that undersell you.",
     Mock: AtsMock,
   },
   {

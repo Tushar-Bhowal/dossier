@@ -1,5 +1,5 @@
 {
-  "name": "@dossier/api",
+  "name": "@roleground/api",
   "private": true,
   "type": "module",
   "main": "./src/app.ts",
@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@dossier/core": "*",
+    "@roleground/core": "*",
     "@modelcontextprotocol/sdk": "^1.32.1",
     "argon2": "^0.45.1",
     "cookie-parser": "^1.4.7",

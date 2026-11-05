@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { Collection } from 'mongodb';
-import type { Application, ChatActionState, ChatMessageView, ChatPart, NotificationPrefs } from '@dossier/core';
+import type { Application, ChatActionState, ChatMessageView, ChatPart, NotificationPrefs } from '@roleground/core';
 import { getDb } from './mongo.js';
 
 // Pasted attachments are never stored, only their label. Deleted automatically after 30 days (TTL).

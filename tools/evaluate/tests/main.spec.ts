@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { InMemoryRunStore, createSearchChain, type PipelineDeps } from '@dossier/core';
+import { InMemoryRunStore, createSearchChain, type PipelineDeps } from '@roleground/core';
 import { parseArgs, parseBatchInput, processCase, runBatch } from '../src/main.js';
 import { FakeLlmPort } from '../../../tests/fixtures/fakes/llm.js';
 import { FakeFetchPort } from '../../../tests/fixtures/fakes/fetcher.js';
@@ -70,10 +70,10 @@ describe('processCase', () => {
   it('produces an "ok" result with a schema-valid kit for a successful run', async () => {
     const llm = new FakeLlmPort();
     const fetcher = new FakeFetchPort();
-    fetcher.set('http://127.0.0.1:9999/', new (await import('@dossier/core')).FetchPortError('down', 'network-error'));
+    fetcher.set('http://127.0.0.1:9999/', new (await import('@roleground/core')).FetchPortError('down', 'network-error'));
     fetcher.set(
       'http://127.0.0.1:9999/sitemap.xml',
-      new (await import('@dossier/core')).FetchPortError('down', 'network-error'),
+      new (await import('@roleground/core')).FetchPortError('down', 'network-error'),
     );
     queueHappyPathResponses(llm);
 

@@ -1,4 +1,4 @@
-import { CLOSED_STATUSES, type Application, type ApplicationStatus } from "@dossier/core/applications";
+import { CLOSED_STATUSES, type Application, type ApplicationStatus } from "@roleground/core/applications";
 
 export const STATUS_LABEL: Record<ApplicationStatus, string> = {
   saved: "Saved",

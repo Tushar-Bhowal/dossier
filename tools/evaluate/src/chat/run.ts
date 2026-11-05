@@ -15,7 +15,7 @@ import {
   type ChatAction,
   type LlmModel,
   type LlmPort,
-} from '@dossier/core';
+} from '@roleground/core';
 
 // Scores the chat planner on fixed messages: does each one produce the actions a person would expect?
 // Usage: npm run evaluate:chat -- [--provider gemini|groq] [--model flash-lite|flash] [--only en-04] [--out results.json]

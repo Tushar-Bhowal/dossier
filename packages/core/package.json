@@ -1,5 +1,5 @@
 {
-  "name": "@dossier/core",
+  "name": "@roleground/core",
   "private": true,
   "type": "module",
   "main": "./src/index.ts",

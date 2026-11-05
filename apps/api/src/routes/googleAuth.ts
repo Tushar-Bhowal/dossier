@@ -7,7 +7,7 @@ import { setSessionCookie, signSession } from '../middleware/auth.js';
 const AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const ISSUERS = new Set(['https://accounts.google.com', 'accounts.google.com']);
-const STATE_COOKIE = 'dossier_google_oauth';
+const STATE_COOKIE = 'roleground_google_oauth';
 const STATE_COOKIE_PATH = '/api/v1/auth/google';
 const STATE_TTL_MS = 10 * 60 * 1000;
 

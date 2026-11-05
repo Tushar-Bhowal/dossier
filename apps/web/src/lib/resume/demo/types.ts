@@ -10,7 +10,7 @@ import type {
   Requirement,
   RequirementVerdict,
   TailorTarget,
-} from "@dossier/core/resume";
+} from "@roleground/core/resume";
 import type { Persona } from "./scenario";
 
 export interface TailoringFixture {

@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { DeliveryMetrics, InterviewRecord, QuestionScore, Weakness } from "@dossier/core/interview";
+import type { DeliveryMetrics, InterviewRecord, QuestionScore, Weakness } from "@roleground/core/interview";
 import { AlertCircle, ChevronDown, ExternalLink, FileText, LoaderCircle, Mic, PlayCircle, Quote, RefreshCcw, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SampleBanner } from "@/components/demo/SampleBanner";

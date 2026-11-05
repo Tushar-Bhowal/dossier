@@ -1,4 +1,4 @@
-import { StoryInput, type ExtractStoriesResult, type Story } from "@dossier/core/resume";
+import { StoryInput, type ExtractStoriesResult, type Story } from "@roleground/core/resume";
 import { ApiError } from "@/lib/api";
 import { READ_DELAY_MS, sleep, type Persona } from "@/lib/demo/scenario";
 import { aiDelayMs, getScenario } from "@/lib/resume/demo/scenario";

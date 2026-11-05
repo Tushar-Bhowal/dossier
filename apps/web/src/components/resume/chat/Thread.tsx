@@ -60,7 +60,7 @@ export function AssistantMessage({
   return (
     <div className={cn("flex items-start gap-3", className)}>
       {avatar ? (
-        <Image src="/logo.png" alt="Dossier" width={28} height={28} className="mt-0.5 size-7 shrink-0 rounded-md" />
+        <Image src="/logo.png" alt="Roleground" width={28} height={28} className="mt-0.5 size-7 shrink-0 rounded-md" />
       ) : (
         <span className="w-7 shrink-0" aria-hidden />
       )}

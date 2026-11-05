@@ -61,7 +61,7 @@ v1.use('/applications', applicationsRouter);
 // Hooks first: they're called by Telegram and QStash, which prove themselves by secret or signature, not a session.
 v1.use('/notifications', notificationHooksRouter);
 v1.use('/notifications', notificationsRouter);
-// Dossier as an MCP server: OAuth sign-in for AI assistants, the connected-apps list, and the MCP endpoint.
+// Roleground as an MCP server: OAuth sign-in for AI assistants, the connected-apps list, and the MCP endpoint.
 v1.use('/oauth', oauthRouter);
 v1.use('/assistants', assistantsRouter);
 v1.use('/mcp', mcpRouter);

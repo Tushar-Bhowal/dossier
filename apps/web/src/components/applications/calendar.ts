@@ -1,4 +1,4 @@
-import { interviewEnds, type Application, type Interview } from "@dossier/core/applications";
+import { interviewEnds, type Application, type Interview } from "@roleground/core/applications";
 
 // 20261008T093000Z — the UTC form both Google Calendar links and .ics files use.
 function utcStamp(ms: number): string {
@@ -34,9 +34,9 @@ export function downloadIcs(app: Pick<Application, "company" | "role">, intervie
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Dossier//Interviews//EN",
+    "PRODID:-//Roleground//Interviews//EN",
     "BEGIN:VEVENT",
-    `UID:${interview.id}@dossier`,
+    `UID:${interview.id}@roleground`,
     `DTSTAMP:${utcStamp(Date.now())}`,
     `DTSTART:${utcStamp(Date.parse(interview.startsAt))}`,
     `DTEND:${utcStamp(interviewEnds(interview))}`,

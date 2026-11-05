@@ -1,4 +1,4 @@
-import { ApplicationInput, applyStatusChange, normalizeInterviews, type ChatActionState } from '@dossier/core';
+import { ApplicationInput, applyStatusChange, normalizeInterviews, type ChatActionState } from '@roleground/core';
 import { deleteOwnedApplication, getOwnedApplication, replaceOwnedApplication } from '../db/applications.js';
 import { getAction, moveAction, setPartState, type ChatActionDoc } from '../db/chat.js';
 import { getSettings, savePrefs } from '../db/notifications.js';

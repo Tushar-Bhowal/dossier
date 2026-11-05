@@ -4,7 +4,7 @@ import type {
   InterviewListItem,
   InterviewRecord,
   InterviewSourceOption,
-} from "@dossier/core/interview";
+} from "@roleground/core/interview";
 import { mockApi } from "./demo/mockApi";
 
 // Stage 1: scripted interviewer and a simple stand-in grader. S5 swaps in Gemini Live and real grading.
