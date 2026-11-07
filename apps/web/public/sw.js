@@ -8,8 +8,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title || "Roleground", {
       body: data.body || "",
-      icon: "/logo.png",
-      badge: "/logo.png",
+      icon: "/icon-192.png",
+      badge: "/notification-badge.png",
       data: { path: data.path || "/applications" },
     }),
   );
